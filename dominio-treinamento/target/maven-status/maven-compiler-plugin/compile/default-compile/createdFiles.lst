@@ -1,0 +1,8 @@
+dev\academia\sga\dominio\treinamento\treino\Treino.class
+dev\academia\sga\dominio\treinamento\treino\TreinoId.class
+dev\academia\sga\dominio\treinamento\exercicio\ExercicioServico.class
+dev\academia\sga\dominio\treinamento\exercicio\Exercicio.class
+dev\academia\sga\dominio\treinamento\exercicio\ExercicioId.class
+dev\academia\sga\dominio\treinamento\exercicio\ExercicioRepositorio.class
+dev\academia\sga\dominio\treinamento\treino\TreinoServico.class
+dev\academia\sga\dominio\treinamento\treino\TreinoRepositorio.class

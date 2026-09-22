@@ -1,0 +1,15 @@
+services:
+  postgres:
+    container_name: postgres
+    image: postgres:18
+    environment:
+      POSTGRES_DB: sga
+      POSTGRES_USER: sga
+      POSTGRES_PASSWORD: sga
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+
+volumes:
+  postgres:
