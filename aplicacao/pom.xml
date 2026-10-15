@@ -14,15 +14,16 @@
 	<artifactId>sga-aplicacao</artifactId>
 
 	<dependencies>
+		<!-- um dominio por contexto; contexto novo entra aqui -->
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sga-dominio-administracao</artifactId>
+			<artifactId>sga-dominio-matricula</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 
 		<dependency>
 			<groupId>${project.groupId}</groupId>
-			<artifactId>sga-dominio-treinamento</artifactId>
+			<artifactId>sga-dominio-administracao</artifactId>
 			<version>${project.version}</version>
 		</dependency>
 	</dependencies>

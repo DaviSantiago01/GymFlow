@@ -2,6 +2,8 @@ package dev.academia.sga.dominio.administracao.instrutor;
 
 import static org.apache.commons.lang3.Validate.notNull;
 
+import dev.academia.sga.dominio.compartilhado.InstrutorId;
+
 public class InstrutorServico {
 	private final InstrutorRepositorio instrutorRepositorio;
 

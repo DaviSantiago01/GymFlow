@@ -1,7 +1,0 @@
-dev\academia\sga\dominio\administracao\aluno\Email.class
-dev\academia\sga\dominio\administracao\instrutor\InstrutorRepositorio.class
-dev\academia\sga\dominio\administracao\instrutor\InstrutorServico.class
-dev\academia\sga\dominio\administracao\aluno\Aluno.class
-dev\academia\sga\dominio\administracao\aluno\AlunoServico.class
-dev\academia\sga\dominio\administracao\aluno\AlunoRepositorio.class
-dev\academia\sga\dominio\administracao\instrutor\Instrutor.class

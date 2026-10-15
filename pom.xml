@@ -19,7 +19,8 @@
 		<module>apresentacao-backend</module>
 		<module>dominio-administracao</module>
 		<module>dominio-compartilhado</module>
-		<module>dominio-treinamento</module>
+		<module>dominio-matricula</module>
+		<module>dominio-treino</module>
 		<module>infraestrutura</module>
 		<module>pai</module>
 	</modules>

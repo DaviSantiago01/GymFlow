@@ -1,0 +1,15 @@
+# saida do maven
+target/
+
+# banco h2 criado ao rodar a aplicacao
+*.mv.db
+*.trace.db
+
+# arquivos de ide
+.idea/
+*.iml
+.vscode/
+.classpath
+.project
+.settings/
+.factorypath
