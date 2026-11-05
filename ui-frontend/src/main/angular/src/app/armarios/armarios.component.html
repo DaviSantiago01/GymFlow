@@ -29,14 +29,18 @@
     <section class="painel resumo-reserva">
       @if (vigente()) {
         <div class="linha">
-          <span class="etiqueta">● RESERVA EM USO</span><span class="cota">Cota 1/1</span>
+          <span class="etiqueta">● {{ agendada() ? 'RESERVA AGENDADA' : 'RESERVA EM USO' }}</span
+          ><span class="cota">Cota 1/1</span>
         </div>
         <div class="linha">
           <div>
             <h2>Armário {{ dados().reserva!.armario }}</h2>
             <p>{{ dados().reserva!.localizacao }}</p>
           </div>
-          <strong class="cronometro-pequeno">{{ tempo() }}</strong>
+          <div>
+            <span class="sobretitulo neutro">{{ agendada() ? 'COMEÇA EM' : 'TEMPO RESTANTE' }}</span
+            ><strong class="cronometro-pequeno">{{ tempo() }}</strong>
+          </div>
         </div>
         <progress [value]="progresso()" max="100" aria-label="Tempo de uso decorrido"></progress>
         <a class="botao principal" routerLink="/core/reserva-armario/ativa"
@@ -53,7 +57,8 @@
       <div>
         <strong>UM ARMÁRIO POR ALUNO</strong>
         <p>
-          Até 3 horas contínuas de utilização. A liberação acontece automaticamente ao fim do prazo.
+          Escolha data e horário para reservar de 1 a 3 horas consecutivas. Todos os dias, das 06h
+          às 22h.
         </p>
       </div>
     </aside>
@@ -81,7 +86,7 @@
     </div>
     <div class="linha titulo-grade">
       <h2>Armários da academia</h2>
-      <span>Disponibilidade em tempo real</span>
+      <span>Ocupação neste momento · selecione para ver a agenda</span>
     </div>
     <div class="grade">
       @for (a of filtrados(); track a.identificador) {
@@ -92,7 +97,7 @@
           </div>
           <p>{{ a.localizacao }}</p>
           <span class="etiqueta" [class.ocupada]="!a.disponivel"
-            >● {{ a.disponivel ? 'Disponível' : 'Ocupado' }}</span
+            >● {{ a.disponivel ? 'Livre agora' : 'Em uso agora' }}</span
           >
           <div class="linha descricao">
             <span>{{ a.descricao }}</span
@@ -108,48 +113,85 @@
   @if (modo() === 'detalhe' && dados().armario; as a) {
     <section class="painel destaque">
       <span class="etiqueta" [class.ocupada]="!a.disponivel"
-        >● {{ a.disponivel ? 'DISPONÍVEL' : 'OCUPADO' }}</span
+        >● {{ a.disponivel ? 'LIVRE AGORA' : 'EM USO AGORA' }}</span
       ><span class="sobretitulo neutro">IDENTIFICADOR</span>
       <h2>Armário {{ a.identificador }}</h2>
-    </section>
-    <div class="ilustracao" aria-hidden="true">
-      @for (n of [1, 2, 3, 4, 5, 6, 7, 8]; track n) {
-        <span class="porta"><i></i></span>
-      }
-      <span class="legenda">{{ a.localizacao }}</span>
-    </div>
-    <h3 class="titulo-secao">INFORMAÇÕES DO ARMÁRIO</h3>
-    <section class="painel">
-      <span class="sobretitulo neutro">LOCALIZAÇÃO</span>
-      <h2>{{ a.localizacao }}</h2>
-      <p>{{ a.descricao }}</p>
+      <p>{{ a.localizacao }} · {{ a.descricao }}</p>
       <button class="botao secundario" (click)="atualizar()" [disabled]="atualizando()">
         ↻ Verificar disponibilidade
       </button>
     </section>
-    <h3 class="titulo-secao">REGRAS E CONDIÇÕES DE USO</h3>
-    <section class="painel regras-detalhe">
-      <span class="sobretitulo">DURAÇÃO MÁXIMA PERMITIDA</span>
-      <h2>3 horas contínuas</h2>
-      <p>
-        A contagem começa no momento da confirmação. Ao atingir o prazo, o armário é liberado e a
-        reserva permanece no seu histórico.
-      </p>
-      <p>
-        Limite de uma reserva ativa por aluno. Apenas você pode cancelar ou encerrar sua reserva.
-      </p>
+    <section class="painel agenda" aria-labelledby="titulo-agenda" [attr.aria-busy]="atualizando()">
+      <h2 id="titulo-agenda">Escolha quando reservar</h2>
+      <p>Todos os dias, das 06h às 22h · Horário de Brasília.</p>
+      <label for="data-reserva">Data da reserva</label>
+      <input
+        id="data-reserva"
+        type="date"
+        [min]="dados().agenda?.hoje"
+        max="9999-12-31"
+        [ngModel]="dataEscolhida()"
+        (ngModelChange)="mudarData($event)"
+        [disabled]="ocupado()"
+      />
+      @if (atualizando()) {
+        <p role="status">Consultando horários…</p>
+      } @else if (agendaAtual(); as agenda) {
+        <h3>Horário de início</h3>
+        <p>Cada bloco representa uma hora. Escolha o início e depois a duração.</p>
+        <div class="grade-horarios" role="group" aria-label="Horários disponíveis">
+          @for (h of agenda.horarios; track h.hora) {
+            <button
+              type="button"
+              class="horario"
+              [class.selecionado]="horaEscolhida() === h.hora"
+              [attr.aria-pressed]="horaEscolhida() === h.hora"
+              [disabled]="!blocoDisponivel(h) || ocupado()"
+              (click)="selecionarHora(h)"
+            >
+              <strong
+                >{{ h.inicio | date: 'HH:mm' : '-0300' }} –
+                {{ h.termino | date: 'HH:mm' : '-0300' }}</strong
+              >
+              <span>{{ blocoDisponivel(h) ? 'Disponível' : 'Indisponível' }}</span>
+            </button>
+          }
+        </div>
+        @if (semHorarios()) {
+          <p role="status">Não há horários disponíveis nesta data. Escolha outro dia.</p>
+        }
+        @if (horarioEscolhido(); as h) {
+          <h3>Duração da reserva</h3>
+          <div class="duracoes" role="group" aria-label="Duração da reserva">
+            @for (horas of [1, 2, 3]; track horas) {
+              <button
+                type="button"
+                class="horario"
+                [class.selecionado]="duracaoEscolhida() === horas"
+                [attr.aria-pressed]="duracaoEscolhida() === horas"
+                [disabled]="!duracoesDisponiveis().includes(horas) || ocupado()"
+                (click)="duracaoEscolhida.set(horas)"
+              >
+                {{ horas }} {{ horas === 1 ? 'hora' : 'horas' }}
+              </button>
+            }
+          </div>
+          <p class="resumo-agendamento" role="status">
+            {{ dataEscolhida() | date: 'dd/MM/yyyy' }} · {{ h.inicio | date: 'HH:mm' : '-0300' }} às
+            {{ h.hora + duracaoEscolhida() }}:00 · {{ duracaoEscolhida() }}
+            {{ duracaoEscolhida() === 1 ? 'hora' : 'horas' }}
+          </p>
+        }
+      }
+      <p>Uma reserva em uso ou agendada por aluno. O tempo de uso começa no horário escolhido.</p>
     </section>
     @if (vigente()) {
       <p class="mensagem">
-        Você já possui uma reserva ativa.
+        Você já possui uma reserva em uso ou agendada.
         <a routerLink="/core/reserva-armario/ativa">Acessar minha reserva</a>
       </p>
     }
-    <button
-      class="botao principal largo"
-      (click)="reservar()"
-      [disabled]="!a.disponivel || vigente() || ocupado() || !sincronizado()"
-    >
+    <button class="botao principal largo" (click)="reservar()" [disabled]="!podeReservar()">
       {{ ocupado() ? 'Confirmando…' : 'Reservar armário ' + a.identificador }}
     </button>
     <a class="botao secundario largo" routerLink="/core/armario/pesquisa">← Voltar para a lista</a>
@@ -168,7 +210,9 @@
       }
       <section class="painel resumo-reserva">
         <div class="linha">
-          <span class="etiqueta" [class.ocupada]="!vigente()">{{ rotulos[r.situacao] }}</span
+          <span class="etiqueta" [class.ocupada]="!vigente()">{{
+            r.situacao === 'ATIVA' ? (agendada() ? 'Agendada' : 'Em uso') : rotulos[r.situacao]
+          }}</span
           ><span class="icone-armario" aria-hidden="true">▥</span>
         </div>
         <span class="sobretitulo neutro">LOCAL DE GUARDA</span>
@@ -181,30 +225,36 @@
           </div>
           <div>
             <dt>Confirmação</dt>
-            <dd>{{ r.confirmacao | date: 'dd/MM/yyyy HH:mm:ss' }}</dd>
+            <dd>{{ r.confirmacao | date: 'dd/MM/yyyy HH:mm:ss' : '-0300' }}</dd>
+          </div>
+          <div>
+            <dt>Início agendado</dt>
+            <dd>{{ r.inicio | date: 'dd/MM/yyyy HH:mm' : '-0300' }}</dd>
           </div>
           <div>
             <dt>Término previsto</dt>
-            <dd>{{ r.termino | date: 'dd/MM/yyyy HH:mm:ss' }}</dd>
+            <dd>{{ r.termino | date: 'dd/MM/yyyy HH:mm:ss' : '-0300' }}</dd>
           </div>
           @if (r.encerramento) {
             <div>
               <dt>Encerramento</dt>
-              <dd>{{ r.encerramento | date: 'dd/MM/yyyy HH:mm:ss' }}</dd>
+              <dd>{{ r.encerramento | date: 'dd/MM/yyyy HH:mm:ss' : '-0300' }}</dd>
             </div>
           }
         </dl>
         @if (vigente()) {
           <div class="tempo">
-            <span class="sobretitulo neutro">◷ TEMPO RESTANTE</span><strong>{{ tempo() }}</strong
+            <span class="sobretitulo neutro"
+              >◷ {{ agendada() ? 'COMEÇA EM' : 'TEMPO RESTANTE' }}</span
+            ><strong>{{ tempo() }}</strong
             ><progress
               [value]="progresso()"
               max="100"
               aria-label="Tempo de uso decorrido"
             ></progress>
             <div class="linha">
-              <span>Início {{ r.confirmacao | date: 'HH:mm' }}</span
-              ><span>Encerramento automático {{ r.termino | date: 'HH:mm' }}</span>
+              <span>Início {{ r.inicio | date: 'HH:mm' : '-0300' }}</span
+              ><span>Encerramento automático {{ r.termino | date: 'HH:mm' : '-0300' }}</span>
             </div>
           </div>
         }
@@ -219,7 +269,7 @@
           <button
             class="botao principal largo"
             (click)="finalizar('encerrar')"
-            [disabled]="ocupado() || !sincronizado()"
+            [disabled]="agendada() || ocupado() || !sincronizado()"
           >
             Encerrar uso do armário</button
           ><button
@@ -255,21 +305,27 @@
           [routerLink]="['/core/reserva-armario', r.identificador, 'visualizacao']"
           ><div class="linha">
             <h2>Armário {{ r.armario }}</h2>
-            <span class="etiqueta ocupada">{{ rotulos[r.situacao] }}</span>
+            <span class="etiqueta ocupada">{{
+              r.situacao === 'ATIVA' ? (agendada() ? 'Agendada' : 'Em uso') : rotulos[r.situacao]
+            }}</span>
           </div>
           <p>{{ r.localizacao }}</p>
           <dl>
             <div>
               <dt>Confirmação</dt>
-              <dd>{{ r.confirmacao | date: 'dd/MM/yyyy HH:mm' }}</dd>
+              <dd>{{ r.confirmacao | date: 'dd/MM/yyyy HH:mm' : '-0300' }}</dd>
+            </div>
+            <div>
+              <dt>Início agendado</dt>
+              <dd>{{ r.inicio | date: 'dd/MM/yyyy HH:mm' : '-0300' }}</dd>
             </div>
             <div>
               <dt>Término previsto</dt>
-              <dd>{{ r.termino | date: 'dd/MM/yyyy HH:mm' }}</dd>
+              <dd>{{ r.termino | date: 'dd/MM/yyyy HH:mm' : '-0300' }}</dd>
             </div>
             <div>
               <dt>Encerramento</dt>
-              <dd>{{ r.encerramento | date: 'dd/MM/yyyy HH:mm' }}</dd>
+              <dd>{{ r.encerramento | date: 'dd/MM/yyyy HH:mm' : '-0300' }}</dd>
             </div>
           </dl>
           <span class="ver-detalhes">Ver detalhes →</span></a
@@ -297,6 +353,6 @@
   }
   <footer class="rodape">
     {{ atualizando() ? 'Atualizando disponibilidade…' : 'Sincronizado com o servidor' }} · Horários
-    exibidos no seu fuso local
+    no horário de Brasília (America/Sao_Paulo)
   </footer>
 </main>

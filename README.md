@@ -49,7 +49,9 @@ mesmos dados. Nenhum Docker ou serviço adicional é necessário.
 
 As migrações **Flyway são aplicadas automaticamente na inicialização**. O arquivo
 `infraestrutura/src/main/resources/db/migration/V1__armarios_e_reservas.sql` cria
-as tabelas e restrições; Hibernate apenas valida o esquema (`ddl-auto=validate`).
+as tabelas e restrições. `V2__reservas_por_horario.sql` adiciona o início agendado,
+preserva reservas antigas e permite diferentes períodos no mesmo armário.
+Hibernate apenas valida o esquema (`ddl-auto=validate`).
 Para aplicar as migrações, execute o backend com o comando acima. Não é necessário
 um comando Flyway separado nem alteração manual de esquema.
 
@@ -84,15 +86,25 @@ não existe uma requisição HTTP nessa execução. Os erros mantêm o contrato
 
 | Regra | Garantia implementada |
 |---|---|
-| RN01 | Bloqueio pessimista e índice único calculado por armário ativo |
+| RN01 | Bloqueio pessimista do armário e rejeição de períodos sobrepostos |
 | RN02 | Bloqueio do aluno e índice único calculado por aluno ativo |
-| RN03 | Três horas em UTC; agendador a cada segundo; consultas e novas reservas respeitam imediatamente o vencimento |
-| RN04 | Aluno obtido da sessão, conferência de propriedade, bloqueio da reserva e preservação do histórico |
+| RN03 | Data, horas inteiras e duração de 1 a 3 horas; todos os dias das 06h às 22h em America/Sao_Paulo |
+| RN04 | Confirmação e início distintos; vencimento no término escolhido, inclusive após parada |
+| RN05 | Propriedade, cancelamento antes do início, encerramento durante uso e histórico preservado |
 
-Os índices H2 usam colunas **geradas pelo banco** quando a situação é ATIVA.
-Não são estados de disponibilidade mantidos pela aplicação. Eles também rejeitam
-inserções duplicadas feitas diretamente em SQL. Um comando usa a ordem de bloqueio
-aluno → armário → reservas. Cancelamento e encerramento só alteram registros ativos.
+O índice único de aluno usa coluna gerada quando a situação é ATIVA, abrangendo
+reservas em uso ou agendadas. Um comando usa a ordem de bloqueio aluno → armário →
+reservas e reconsulta sobreposições dentro da transação. Intervalos são [início, término):
+um pode começar exatamente quando outro termina. O índice único global por armário
+foi removido; a garantia de não sobreposição depende dos comandos transacionais.
+Escritas administrativas diretas devem respeitar essa mesma regra.
+
+Na tela de detalhes, escolha a data, um bloco inicial e uma duração disponível.
+O servidor rejeita passado, horas fracionadas, duração fora de 1–3h, períodos que
+ultrapassem 22h e qualquer sobreposição. Continua permitido um único agendamento
+ou reserva em uso por aluno. Antes do início é possível cancelar; encerrar uso só
+fica disponível a partir do início. Uma mudança de disponibilidade invalida a
+seleção afetada e pede que o aluno escolha novamente.
 
 A interface calcula o tempo restante a partir de `termino`, `horarioServidor` e
 `performance.now()`, sincroniza a cada 15 segundos e ao retornar à aba, e bloqueia
@@ -111,8 +123,9 @@ Os endpoints de reservas exigem autenticação; o cadastro é público. POSTs ex
 | POST | `/backend/cadastro` | Criar aluno e credencial, exigindo CSRF |
 | GET | `/backend/core/armario/pesquisa` | Catálogo e disponibilidade, consulta D5 paginada |
 | GET | `/backend/core/armario/{codigo}/visualizacao` | Detalhes e disponibilidade |
-| POST | `/backend/core/armario/{codigo}/reservar` | Confirmar reserva imediatamente |
-| GET | `/backend/core/reserva-armario/ativa` | Reserva ativa do aluno ou `dados: null` |
+| GET | `/backend/core/armario/{codigo}/horarios?data=AAAA-MM-DD` | Blocos de 1h e durações consecutivas disponíveis |
+| POST | `/backend/core/armario/{codigo}/reservar` | Agendar com corpo `{data, hora, duracaoHoras}` |
+| GET | `/backend/core/reserva-armario/ativa` | Reserva em uso ou agendada do aluno, ou `dados: null` |
 | GET | `/backend/core/reserva-armario/pesquisa` | Histórico do aluno, paginado |
 | GET | `/backend/core/reserva-armario/{id}/confirmacao` | Tela de confirmação |
 | GET | `/backend/core/reserva-armario/{id}/visualizacao` | Detalhes da própria reserva |
@@ -140,7 +153,7 @@ npm run test:e2e
 Os testes Java usam H2 isolado em memória e as migrações reais. Cobrem todos os
 12 casos solicitados, incluindo concorrência em conexões/transações separadas,
 restrições diretas do banco, rollback, CSRF, login real e o agendador sem HTTP.
-Os testes de navegador criam reservas nas contas de desenvolvimento e as finalizam;
+Os testes de navegador criam contas próprias e reservas futuras e as cancelam;
 o histórico desses testes permanece no banco de desenvolvimento.
 
 O [relatório de validação](docs/validacao/RESULTADOS.md) contém resultados, evidências

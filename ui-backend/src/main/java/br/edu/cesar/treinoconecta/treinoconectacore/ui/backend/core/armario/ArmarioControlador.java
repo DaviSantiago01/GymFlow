@@ -25,7 +25,7 @@ public class ArmarioControlador extends AgregadoControladorAbstrato<ArmarioCodig
     }
     @PostMapping("{identificador}/reservar")
     public RespostaTemporal<ReservaArmarioProjecao> reservar(@PathVariable ArmarioCodigo identificador, @jakarta.validation.Valid @RequestBody ReservaRequisicao requisicao) {
-        var reserva=reservas.reservar(identificador,requisicao.data(),requisicao.hora(),requisicao.duracaoHoras());
+        var reserva=reservas.reservar(identificador,requisicao.data(),requisicao.hora().intValueExact(),requisicao.duracaoHoras().intValueExact());
         return consultasReservas.detalhe(reserva.getIdentificador().orElseThrow());
     }
 }

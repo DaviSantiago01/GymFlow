@@ -21,7 +21,7 @@ class AgendamentoIntegracaoTest {
         var inicio=Instant.parse("2020-01-01T00:00:00Z");
         banco.update("insert into ALU_ALUNO(ALU_USUARIO,ALU_NOME) values ('agendamento','Aluno')");
         banco.update("insert into ARM_ARMARIO values ('B-01','Vestiário B','Padrão')");
-        banco.update("insert into RSV_RESERVA_ARMARIO(ALU_ID,ARM_CODIGO,RSV_CONFIRMACAO,RSV_TERMINO,RSV_SITUACAO) select ALU_ID,'B-01',?,?,'ATIVA' from ALU_ALUNO where ALU_USUARIO='agendamento'",inicio,inicio.plusSeconds(10800));
+        banco.update("insert into RSV_RESERVA_ARMARIO(ALU_ID,ARM_CODIGO,RSV_CONFIRMACAO,RSV_INICIO,RSV_TERMINO,RSV_SITUACAO) select ALU_ID,'B-01',?,?,?,'ATIVA' from ALU_ALUNO where ALU_USUARIO='agendamento'",inicio,inicio,inicio.plusSeconds(10800));
         await().atMost(Duration.ofSeconds(5)).untilAsserted(()->assertEquals("VENCIDA",
             banco.queryForObject("select RSV_SITUACAO from RSV_RESERVA_ARMARIO",String.class)));
         assertEquals(inicio.plusSeconds(10800),banco.queryForObject("select RSV_ENCERRAMENTO from RSV_RESERVA_ARMARIO",OffsetDateTime.class).toInstant());

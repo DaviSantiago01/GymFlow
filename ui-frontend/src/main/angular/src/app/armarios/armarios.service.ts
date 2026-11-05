@@ -15,9 +15,23 @@ export interface Reserva {
   armario: string;
   localizacao: string;
   confirmacao: string;
+  inicio: string;
   termino: string;
   encerramento: string | null;
   situacao: 'ATIVA' | 'CANCELADA' | 'ENCERRADA' | 'VENCIDA';
+}
+export interface Horario {
+  hora: number;
+  inicio: string;
+  termino: string;
+  disponivel: boolean;
+  duracoesDisponiveis: number[];
+}
+export interface Agenda {
+  data: string;
+  hoje: string;
+  fuso: string;
+  horarios: Horario[];
 }
 export interface Temporal<T> {
   dados: T;
@@ -30,6 +44,7 @@ export type Modo = 'lista' | 'detalhe' | 'confirmacao' | 'ativa' | 'historico' |
 export interface DadosTela {
   armarios?: Armario[];
   armario?: Armario;
+  agenda?: Agenda;
   reserva: Reserva | null;
   historico?: Reserva[];
   total?: number;
@@ -41,7 +56,7 @@ export interface DadosTela {
 export class ArmariosService {
   private readonly http = inject(HttpClient);
   private readonly base = '/backend/core';
-  carregar(modo: Modo, id = '', pagina = 0): Observable<DadosTela> {
+  carregar(modo: Modo, id = '', pagina = 0, data = ''): Observable<DadosTela> {
     const ativa = this.http.get<Temporal<Reserva | null>>(`${this.base}/reserva-armario/ativa`);
     if (modo === 'lista')
       return forkJoin({
@@ -58,9 +73,13 @@ export class ArmariosService {
     if (modo === 'detalhe')
       return forkJoin({
         detalhe: this.http.get<Temporal<Armario>>(`${this.base}/armario/${id}/visualizacao`),
+        agenda: this.http.get<Temporal<Agenda>>(`${this.base}/armario/${id}/horarios`, {
+          params: data ? { data } : {},
+        }),
         ativa,
       }).pipe(
-        map(({ detalhe, ativa }) => ({
+        map(({ detalhe, ativa, agenda }) => ({
+          agenda: agenda.dados,
           armario: detalhe.dados,
           reserva: ativa.dados,
           horarioServidor: ativa.horarioServidor,
@@ -96,8 +115,12 @@ export class ArmariosService {
       })),
     );
   }
-  reservar(codigo: string) {
-    return this.http.post<Temporal<Reserva>>(`${this.base}/armario/${codigo}/reservar`, null);
+  reservar(codigo: string, data: string, hora: number, duracaoHoras: number) {
+    return this.http.post<Temporal<Reserva>>(`${this.base}/armario/${codigo}/reservar`, {
+      data,
+      hora,
+      duracaoHoras,
+    });
   }
   finalizar(id: string, acao: 'cancelar' | 'encerrar') {
     return this.http.post<Temporal<Reserva>>(`${this.base}/reserva-armario/${id}/${acao}`, null);

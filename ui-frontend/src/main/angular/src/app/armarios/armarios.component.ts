@@ -3,8 +3,8 @@ import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { finalize } from 'rxjs';
-import { ArmariosService, DadosTela, Modo } from './armarios.service';
+import { finalize, Subscription } from 'rxjs';
+import { ArmariosService, DadosTela, Modo, Horario } from './armarios.service';
 import { segundosRestantes, formatarDuracao } from './relogio';
 
 @Component({
@@ -27,18 +27,61 @@ export class ArmariosComponent {
   readonly busca = signal('');
   readonly filtro = signal('todos');
   readonly agora = signal(performance.now());
+  readonly dataEscolhida = signal('');
+  readonly horaEscolhida = signal<number | null>(null);
+  readonly duracaoEscolhida = signal(1);
+  readonly horarioAtual = computed(
+    () =>
+      Date.parse(this.dados().horarioServidor) +
+      Math.max(0, this.agora() - this.dados().recebidoEm),
+  );
+  readonly agendaAtual = computed(() =>
+    this.dados().agenda?.data === this.dataEscolhida() ? this.dados().agenda : undefined,
+  );
+  readonly horarioEscolhido = computed(() =>
+    this.agendaAtual()?.horarios.find((h) => h.hora === this.horaEscolhida()),
+  );
+  readonly duracoesDisponiveis = computed(() => this.horarioEscolhido()?.duracoesDisponiveis ?? []);
+  readonly podeReservar = computed(
+    () =>
+      !this.vigente() &&
+      !this.ocupado() &&
+      !this.atualizando() &&
+      this.sincronizado() &&
+      this.duracoesDisponiveis().includes(this.duracaoEscolhida()) &&
+      !!this.horarioEscolhido() &&
+      this.blocoDisponivel(this.horarioEscolhido()!),
+  );
+  readonly semHorarios = computed(
+    () => !this.agendaAtual()?.horarios.some((h) => this.blocoDisponivel(h)),
+  );
   readonly restante = computed(() => {
     const d = this.dados();
     return d.reserva
       ? segundosRestantes(d.reserva.termino, d.horarioServidor, d.recebidoEm, this.agora())
       : 0;
   });
-  readonly tempo = computed(() => formatarDuracao(this.restante()));
+  readonly agendada = computed(
+    () => this.vigente() && Date.parse(this.dados().reserva!.inicio) > this.horarioAtual(),
+  );
+  readonly tempo = computed(() => {
+    const d = this.dados();
+    return formatarDuracao(
+      this.agendada()
+        ? segundosRestantes(d.reserva!.inicio, d.horarioServidor, d.recebidoEm, this.agora())
+        : this.restante(),
+    );
+  });
   readonly vigente = computed(
     () => this.dados().reserva?.situacao === 'ATIVA' && this.restante() > 0,
   );
   readonly sincronizado = computed(() => this.agora() - this.dados().recebidoEm < 45000);
-  readonly progresso = computed(() => Math.min(100, Math.max(0, 100 - this.restante() / 108)));
+  readonly progresso = computed(() => {
+    const r = this.dados().reserva;
+    if (!r || this.agendada()) return 0;
+    const duracao = (Date.parse(r.termino) - Date.parse(r.inicio)) / 1000;
+    return Math.min(100, Math.max(0, 100 * (1 - this.restante() / duracao)));
+  });
   readonly disponiveis = computed(
     () => this.dados().armarios?.filter((a) => a.disponivel).length ?? 0,
   );
@@ -67,9 +110,14 @@ export class ArmariosComponent {
     reserva: 'Detalhes da reserva',
   };
   private vencimentoAtualizado = '';
+  private consulta?: Subscription;
   constructor() {
     this.rota.data.pipe(takeUntilDestroyed()).subscribe((data) => {
+      this.consulta?.unsubscribe();
       this.dados.set(data['tela']);
+      this.dataEscolhida.set(this.dados().agenda?.data ?? '');
+      this.horaEscolhida.set(null);
+      this.duracaoEscolhida.set(1);
       this.modo.set(data['modo']);
       this.erro.set('');
       this.aviso.set('');
@@ -93,16 +141,45 @@ export class ArmariosComponent {
     };
     document.addEventListener('visibilitychange', aoVoltar);
     this.destroy.onDestroy(() => {
+      this.consulta?.unsubscribe();
       clearInterval(contador);
       clearInterval(sincronizacao);
       document.removeEventListener('visibilitychange', aoVoltar);
     });
   }
-  atualizar() {
+  blocoDisponivel(horario: Horario) {
+    return horario.disponivel && Date.parse(horario.inicio) >= this.horarioAtual();
+  }
+  selecionarHora(horario: Horario) {
+    if (!this.blocoDisponivel(horario) || this.atualizando() || this.ocupado()) return;
+    this.horaEscolhida.set(horario.hora);
+    this.duracaoEscolhida.set(1);
+  }
+  mudarData(data: string) {
+    this.consulta?.unsubscribe();
+    this.dataEscolhida.set(data);
+    this.horaEscolhida.set(null);
+    this.duracaoEscolhida.set(1);
+    this.atualizar();
+  }
+  atualizar(limparErro = true) {
     if (this.atualizando() || this.ocupado()) return;
+    if (
+      this.modo() === 'detalhe' &&
+      (!/^\d{4}-\d{2}-\d{2}$/.test(this.dataEscolhida()) ||
+        this.dataEscolhida() < (this.dados().agenda?.hoje ?? ''))
+    ) {
+      this.erro.set('Escolha uma data válida a partir de hoje.');
+      return;
+    }
     this.atualizando.set(true);
-    this.api
-      .carregar(this.modo(), this.rota.snapshot.paramMap.get('id') ?? '', this.pagina())
+    this.consulta = this.api
+      .carregar(
+        this.modo(),
+        this.rota.snapshot.paramMap.get('id') ?? '',
+        this.pagina(),
+        this.dataEscolhida(),
+      )
       .pipe(
         takeUntilDestroyed(this.destroy),
         finalize(() => this.atualizando.set(false)),
@@ -110,7 +187,17 @@ export class ArmariosComponent {
       .subscribe({
         next: (d) => {
           this.dados.set(d);
-          this.erro.set('');
+          if (limparErro) this.erro.set('');
+          if (
+            this.horaEscolhida() !== null &&
+            (!this.duracoesDisponiveis().includes(this.duracaoEscolhida()) ||
+              !this.horarioEscolhido() ||
+              !this.blocoDisponivel(this.horarioEscolhido()!))
+          ) {
+            this.horaEscolhida.set(null);
+            this.duracaoEscolhida.set(1);
+            this.aviso.set('A disponibilidade mudou. Selecione novamente o horário e a duração.');
+          }
         },
         error: (e) =>
           this.erro.set(
@@ -121,11 +208,16 @@ export class ArmariosComponent {
   }
   reservar() {
     const armario = this.dados().armario;
-    if (!armario || this.ocupado()) return;
+    if (!armario || !this.podeReservar() || this.horaEscolhida() === null) return;
     this.ocupado.set(true);
     this.erro.set('');
     this.api
-      .reservar(armario.identificador)
+      .reservar(
+        armario.identificador,
+        this.dataEscolhida(),
+        this.horaEscolhida()!,
+        this.duracaoEscolhida(),
+      )
       .pipe(
         takeUntilDestroyed(this.destroy),
         finalize(() => this.ocupado.set(false)),
@@ -138,6 +230,8 @@ export class ArmariosComponent {
             e.error?.mensagem ??
               'Não foi possível reservar. Consulte sua reserva antes de tentar novamente.',
           );
+          this.ocupado.set(false);
+          this.atualizar(false);
         },
       });
   }
@@ -146,6 +240,7 @@ export class ArmariosComponent {
     if (
       !reserva ||
       this.ocupado() ||
+      (acao === 'encerrar' && this.agendada()) ||
       !window.confirm(
         acao === 'cancelar'
           ? 'Cancelar sua reserva e liberar o armário?'

@@ -1,76 +1,97 @@
 # Contratos das telas de armários
 
-Base: `/backend`. As rotas Angular têm o mesmo caminho do GET que resolve seus dados.
-O histórico usa a rota `core/reserva-armario/pesquisa`, com o rótulo visual Histórico.
+Base: `/backend`. As consultas exigem sessão; os POSTs exigem também `X-XSRF-TOKEN`.
+O fuso de funcionamento é `America/Sao_Paulo`. Instantes são transportados em UTC.
 
-## Pesquisar
+## Catálogo e detalhe
 
-`GET /backend/core/armario/pesquisa?tamanhoPagina=1000`
+`GET /backend/core/armario/pesquisa?tamanhoPagina=1000` retorna o envelope D5
+`{consulta, resultado: {total, projecoes}}`. Cada projeção possui identificador,
+localizacao, descricao e disponivel. **Disponível significa livre agora**, não em
+todas as datas. Um armário em uso agora pode ser reservado para outro período.
 
-```json
-{"consulta":{"indicePagina":0,"tamanhoPagina":1000},"resultado":{"total":1,"projecoes":[{"identificador":"A-01","localizacao":"Vestiário A","descricao":"Padrão","disponivel":true}]}}
-```
+`GET /backend/core/armario/A-01/visualizacao` retorna
+`{dados: {identificador, localizacao, descricao, disponivel}, horarioServidor}`.
 
-Os atributos de consulta seguem o D5 (`indicePagina`, `tamanhoPagina`, `ordenacao`,
-`descendente`). O histórico usa o mesmo envelope e ordena do mais recente ao mais antigo.
+## Consultar agenda
 
-## Reservar e consultar a reserva
+`GET /backend/core/armario/A-01/horarios?data=2026-11-06`
 
-`POST /backend/core/armario/A-01/reservar`, sem corpo. Exemplo de resposta:
+Sem `data`, utiliza o dia corrente da academia. Datas passadas ou inválidas são
+rejeitadas. Exemplo abreviado (a resposta real contém 16 blocos, das 06h às 22h):
 
 ```json
 {
   "dados": {
-    "identificador": "1",
-    "alunoNome": "Mariana Costa",
-    "armario": "A-01",
-    "localizacao": "Ala Vestiário A · Piso térreo",
-    "confirmacao": "2026-11-04T12:00:00Z",
-    "termino": "2026-11-04T15:00:00Z",
-    "encerramento": null,
-    "situacao": "ATIVA"
+    "data": "2026-11-06",
+    "hoje": "2026-11-05",
+    "fuso": "America/Sao_Paulo",
+    "horarios": [
+      {"hora": 6, "inicio": "2026-11-06T09:00:00Z", "termino": "2026-11-06T10:00:00Z", "disponivel": true, "duracoesDisponiveis": [1,2,3]},
+      {"hora": 21, "inicio": "2026-11-07T00:00:00Z", "termino": "2026-11-07T01:00:00Z", "disponivel": true, "duracoesDisponiveis": [1]}
+    ]
   },
-  "horarioServidor": "2026-11-04T12:00:00Z"
+  "horarioServidor": "2026-11-05T13:00:00Z"
 }
 ```
 
-`GET /backend/core/reserva-armario/ativa` usa esse envelope. Sem reserva ativa:
+`duracoesDisponiveis` é vazio quando o bloco passou ou está ocupado. Um início livre
+pode permitir só uma hora se houver reserva no bloco seguinte. Não são expostos
+nomes nem identificadores de reservas de outros alunos.
+
+## Confirmar agendamento
+
+`POST /backend/core/armario/A-01/reservar`, `Content-Type: application/json`:
 
 ```json
-{"dados":null,"horarioServidor":"2026-11-04T15:00:00Z"}
+{"data":"2026-11-06","hora":6,"duracaoHoras":2}
 ```
 
-`GET /backend/core/reserva-armario/1/confirmacao` e `.../visualizacao` retornam a
-reserva somente para seu responsável, inclusive após finalizar.
-
-## Detalhes do armário
-
-`GET /backend/core/armario/A-01/visualizacao`
+Data é a do calendário da academia, hora é inteira de 6 a 21, duração é 1, 2 ou 3.
+A reserva deve terminar até 22h. Nenhum início no passado é aceito. O backend
+revalida o intervalo sob bloqueio, mesmo que a consulta de disponibilidade seja antiga.
+Confirmação, término e responsável são calculados pelo servidor.
 
 ```json
-{"dados":{"identificador":"A-01","localizacao":"Vestiário A","descricao":"Padrão","disponivel":true},"horarioServidor":"2026-11-04T12:00:00Z"}
+{
+  "dados": {
+    "identificador":"1", "alunoNome":"Aluno", "armario":"A-01",
+    "localizacao":"Vestiário A", "confirmacao":"2026-11-05T13:00:00Z",
+    "inicio":"2026-11-06T09:00:00Z", "termino":"2026-11-06T11:00:00Z",
+    "encerramento":null, "situacao":"ATIVA"
+  },
+  "horarioServidor":"2026-11-05T13:00:00Z"
+}
 ```
 
-## Finalizar
+`ATIVA` identifica uma reserva pendente, tanto antes quanto depois do início.
+A interface apresenta **Agendada** antes de `inicio` e **Em uso** durante o período.
 
-`POST /backend/core/reserva-armario/1/cancelar` ou `.../encerrar`, sem corpo.
-Resposta temporal com a mesma reserva, `encerramento` preenchido e situação
-`CANCELADA` ou `ENCERRADA`. Vencimentos usam `VENCIDA`.
+## Consultar e finalizar
 
-## Autenticação e erros
+- `GET /backend/core/reserva-armario/ativa`: a reserva em uso ou agendada do aluno;
+  sem reserva retorna `{dados: null, horarioServidor}`.
+- `GET /backend/core/reserva-armario/{id}/confirmacao` e `.../visualizacao`:
+  o mesmo envelope, somente para o responsável.
+- `GET /backend/core/reserva-armario/pesquisa?indicePagina=0&tamanhoPagina=10`:
+  histórico finalizado, no envelope D5, ordenado do mais recente ao mais antigo.
+- `POST /backend/core/reserva-armario/{id}/cancelar`: sem corpo; permite cancelar
+  antes ou durante o período, mas nunca após o término.
+- `POST /backend/core/reserva-armario/{id}/encerrar`: sem corpo; somente durante o uso.
 
-O login é `GET /backend/autenticacao` com Basic; o D5 mantém o contexto de segurança
-na sessão HttpOnly e fornece as permissões de menu `armario` e `reservaArmario`.
-As solicitações seguintes usam cookies. Comandos exigem CSRF.
+Finalizações mantêm confirmação, início e término, preenchem encerramento e alteram
+a situação para CANCELADA ou ENCERRADA. O agendador usa VENCIDA no fim do período.
+
+## Erros
 
 | Status | Significado |
 |---|---|
-| 200 | Consulta/comando concluído |
+| 400 | Corpo incompleto ou campos fora das restrições do DTO |
 | 401 | Sessão ou credencial inválida |
 | 403 | Sem permissão, vínculo de aluno ou token CSRF válido |
-| 404 | Registro não encontrado nas consultas permitidas ao aluno |
-| 409 | Ocupação, cota excedida ou reserva finalizada |
-| 422 | Argumento/identificador inválido |
+| 404 | Registro inexistente ou reserva que não pertence ao aluno |
+| 409 | Sobreposição, limite de reserva, finalização indevida ou uso ainda não iniciado |
+| 422 | Data, identificador ou combinação de período inválida |
 
-Exemplo: `{"mensagem":"Você já possui uma reserva ativa"}`.
-Os exemplos ilustram o contrato; a aplicação nunca usa esses objetos como mocks.
+Exemplo: `{"mensagem":"Este horário não está mais disponível. Escolha outro período"}`.
+Os exemplos documentam o contrato; não são utilizados como dados simulados.

@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { escolherData, horario } from './agenda-ajudantes';
 
 test('criar conta, entrar com senha acentuada e reservar como o novo aluno', async ({ page }) => {
   const usuario = `aluno_${Date.now()}`;
@@ -25,14 +26,17 @@ test('criar conta, entrar com senha acentuada e reservar como o novo aluno', asy
     .getByRole('link', { name: 'Reservar armário', exact: true })
     .click();
   await expect(page.getByRole('heading', { name: 'Armários', exact: true })).toBeVisible();
-  await page.locator('.cartao-armario').filter({ hasText: 'Disponível' }).first().click();
+  await page.locator('.cartao-armario').first().click();
+  await escolherData(page, 5);
+  await horario(page, 6).click();
   await page.getByRole('button', { name: /Reservar armário/ }).click();
   await expect(page.getByRole('heading', { name: 'Reserva confirmada!' })).toBeVisible();
   await expect(page.locator('dd').first()).toHaveText('Aluno Cadastrado no Navegador');
   await page.getByRole('link', { name: 'Acessar minha reserva ativa →' }).click();
   page.on('dialog', (dialog) => dialog.accept());
-  await page.getByRole('button', { name: 'Encerrar uso do armário' }).click();
-  await expect(page.getByRole('status')).toContainText('Uso encerrado');
+  await expect(page.getByRole('button', { name: 'Encerrar uso do armário' })).toBeDisabled();
+  await page.getByRole('button', { name: 'Cancelar reserva' }).click();
+  await expect(page.getByRole('status')).toContainText('Reserva cancelada');
   await page.getByRole('button', { name: 'Sair', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Entrar', exact: true })).toBeVisible();
   await page.getByLabel('Usuário', { exact: true }).fill(usuario);
@@ -42,5 +46,5 @@ test('criar conta, entrar com senha acentuada e reservar como o novo aluno', asy
     .getByRole('navigation', { name: 'Menu do aluno' })
     .getByRole('link', { name: 'Histórico de reservas', exact: true })
     .click();
-  await expect(page.locator('.item-historico').first()).toContainText('Uso encerrado');
+  await expect(page.locator('.item-historico').first()).toContainText('Cancelada');
 });

@@ -20,11 +20,11 @@ public class ReservaArmarioServicoTest {
         when(alunos.bloquearPorUsuario("u")).thenReturn(new Aluno(Optional.of(aluno),"u","Aluno"));
         when(reservas.incluir(any())).thenAnswer(i->i.getArgument(0));
         var servico=new ReservaArmarioServico(seguranca,reservas,alunos,armarios,Clock.fixed(agora,ZoneOffset.UTC));
-        assertEquals(agora.plusSeconds(10800),servico.reservar(armario).getTermino());
+        assertEquals(agora.plusSeconds(10800),servico.reservar(armario, java.time.LocalDate.parse("2026-11-04"), 9, 3).getTermino());
         var ordem=inOrder(alunos,armarios,reservas);
         ordem.verify(alunos).bloquearPorUsuario("u");ordem.verify(armarios).bloquear(armario);
         ordem.verify(reservas).vencerRelacionadas(aluno,armario,agora);
-        ordem.verify(reservas).existeAtivaPorAluno(aluno,agora);ordem.verify(reservas).existeAtivaPorArmario(armario,agora);
+        ordem.verify(reservas).existeAtivaPorAluno(aluno,agora);ordem.verify(reservas).existeSobreposicao(armario,agora,agora.plusSeconds(10800));
         ordem.verify(reservas).incluir(any());
     }
 }

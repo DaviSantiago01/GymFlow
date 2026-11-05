@@ -67,7 +67,8 @@ class CadastroIntegracaoTest {
         var login=mvc.perform(get("/backend/autenticacao").with(httpBasic("NOVO.ALUNO",SENHA)))
             .andExpect(status().isOk()).andExpect(jsonPath("$.usuario").value("novo.aluno")).andReturn();
         var sessao=(MockHttpSession)login.getRequest().getSession(false);
-        mvc.perform(post("/backend/core/armario/C-01/reservar").session(sessao).with(csrf()))
+        mvc.perform(post("/backend/core/armario/C-01/reservar").session(sessao).with(csrf()).contentType("application/json")
+            .content(json.writeValueAsString(Map.of("data",java.time.LocalDate.now(java.time.ZoneId.of("America/Sao_Paulo")).plusDays(1).toString(),"hora",6,"duracaoHoras",1))))
             .andExpect(status().isOk()).andExpect(jsonPath("$.dados.alunoNome").value("Aluno Novo"));
         mvc.perform(get("/backend/autenticacao").with(httpBasic("novo.aluno","incorreta"))).andExpect(status().isUnauthorized());
     }

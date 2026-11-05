@@ -492,3 +492,76 @@ progress::-moz-progress-bar {
     transition: none;
   }
 }
+
+.agenda {
+  margin-top: 24px;
+}
+.agenda label {
+  display: block;
+  margin: 20px 0 8px;
+  font-size: 13px;
+}
+.agenda input {
+  display: block;
+  width: 100%;
+  max-width: 300px;
+  padding: 12px;
+  border: 1px solid #4a5740;
+  border-radius: 8px;
+  color: #e8efdf;
+  background: #101720;
+  color-scheme: dark;
+}
+.agenda h3 {
+  font-size: 15px;
+  margin: 26px 0 12px;
+}
+.grade-horarios {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 18px 0;
+}
+.horario {
+  padding: 12px 8px;
+  border: 1px solid #4a5740;
+  border-radius: 8px;
+  background: #18231b;
+  color: #d5e6bf;
+  font-size: 12px;
+}
+.horario strong,
+.horario span {
+  display: block;
+}
+.horario span {
+  font-size: 10px;
+  margin-top: 6px;
+}
+.horario:disabled {
+  background: #20262f;
+  border-color: #343b46;
+  color: #929aa7;
+  cursor: not-allowed;
+}
+.horario.selecionado:not(:disabled) {
+  color: #1b270f;
+  background: #c5ff78;
+  border-color: #c5ff78;
+}
+.duracoes {
+  display: flex;
+  gap: 10px;
+}
+.duracoes .horario {
+  flex: 1;
+}
+.resumo-agendamento {
+  margin: 20px 0;
+  color: #d7f3b4;
+}
+@media (max-width: 600px) {
+  .grade-horarios {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}

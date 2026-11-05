@@ -24,6 +24,7 @@ public record PeriodoReserva(Instant inicio, Instant termino) implements IObjeto
     }
     public static PeriodoReserva criar(LocalDate data, int hora, int duracaoHoras) {
         Objects.requireNonNull(data);
+        Validate.isTrue(data.getYear() >= 1 && data.getYear() <= 9999, "Data fora do intervalo permitido");
         Validate.isTrue(hora >= ABERTURA && hora < FECHAMENTO, "O início deve estar entre 06h e 21h");
         Validate.isTrue(duracaoHoras >= 1 && duracaoHoras <= 3, "A duração deve ser de uma a três horas");
         Validate.isTrue(hora + duracaoHoras <= FECHAMENTO, "A reserva deve terminar até as 22h");

@@ -21,13 +21,13 @@ public class ReservaArmarioStepDefinitions {
         org.mockito.Mockito.when(seguranca.getUsuario()).thenReturn("u");
         org.mockito.Mockito.when(alunos.bloquearPorUsuario("u")).thenReturn(new br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.aluno.Aluno(java.util.Optional.of(aluno),"u","Aluno"));
         org.mockito.Mockito.when(reservas.existeAtivaPorAluno(aluno,agora)).thenReturn(indisponibilidade.equals("aluno"));
-        org.mockito.Mockito.when(reservas.existeAtivaPorArmario(armario,agora)).thenReturn(indisponibilidade.equals("armario"));
+        org.mockito.Mockito.when(reservas.existeSobreposicao(armario,agora,agora.plusSeconds(10800))).thenReturn(indisponibilidade.equals("armario"));
         var servico=new ReservaArmarioServico(seguranca,reservas,alunos,armarios,java.time.Clock.fixed(agora,java.time.ZoneOffset.UTC));
-        try { servico.reservar(armario); } catch(RuntimeException e) { falha=e; }
+        try { servico.reservar(armario, java.time.LocalDate.parse("2026-11-04"), 9, 3); } catch(RuntimeException e) { falha=e; }
         org.mockito.Mockito.verify(reservas,org.mockito.Mockito.never()).incluir(org.mockito.ArgumentMatchers.any());
     }
     @Dado("uma reserva confirmada às {string}") public void confirmar(String horario) {
-        reserva=ReservaArmario.confirmar(new AlunoIdentificador("1"),new ArmarioCodigo("A-01"),Instant.parse(horario));
+        reserva=ReservaArmario.confirmar(new AlunoIdentificador("1"),new ArmarioCodigo("A-01"),Instant.parse(horario),new PeriodoReserva(Instant.parse(horario),Instant.parse(horario).plusSeconds(10800)));
     }
     @Então("o término previsto é {string}") public void termino(String horario) { assertEquals(Instant.parse(horario),reserva.getTermino()); }
     @Então("a reserva está ativa às {string}") public void ativa(String horario) { assertTrue(reserva.ativaEm(Instant.parse(horario))); }
@@ -39,4 +39,10 @@ public class ReservaArmarioStepDefinitions {
         catch(RuntimeException e) { falha=e; }
     }
     @Então("a operação é rejeitada") public void rejeitada() { assertNotNull(falha); }
+    @Quando("agendar em {string} às {int} por {int} horas") public void agendar(String data,int hora,int duracao) {
+        try {
+            reserva=ReservaArmario.confirmar(new AlunoIdentificador("1"),new ArmarioCodigo("A-01"),
+                Instant.parse("2026-11-04T12:00:00Z"),PeriodoReserva.criar(java.time.LocalDate.parse(data),hora,duracao));
+        } catch(RuntimeException e) { falha=e; }
+    }
 }

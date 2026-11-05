@@ -1,93 +1,76 @@
 # Validação da implementação
 
-Data: 4 de novembro de 2026. Ambiente: Windows 11, Java 25.0.5, Maven 3.9.16,
-Node 24.16.0, H2 fornecido pelo D5, Spring Boot 4.1.1 e Angular 22.
+Atualizado em 5 de novembro de 2026. Windows, Java 25.0.5, Maven 3.9.16,
+Node 24.16.0, H2 2.4.240, Spring Boot 4.1.1 e Angular 22.
 
-## Testes automatizados executados
+## Testes e compilação
 
 | Verificação | Resultado |
 |---|---|
-| Cucumber — regras RN01 a RN04 | 11 cenários passaram |
-| Serviço de domínio — ordem dos bloqueios e confirmação | 1 teste passou |
-| API, segurança, transações e banco H2 real | 19 testes passaram |
-| Agendador executado pelo Spring sem chamadas HTTP | 1 teste passou |
-| Cadastro público, hash de senha, login, validação, concorrência e rollback | 6 testes passaram |
+| Cucumber — domínio e agenda | 23 cenários passaram |
+| Serviço de domínio — ordem dos bloqueios | 1 teste passou |
+| API, agenda, concorrência, segurança e transações | 26 testes passaram |
+| Agendador real sem chamadas HTTP | 1 teste passou |
+| Migração V1 para V2 com reservas existentes | 1 teste passou |
+| Cadastro, hash, login, concorrência e rollback | 6 testes passaram |
 | Angular / Vitest | 6 testes passaram |
-| Playwright / Microsoft Edge | 4 testes passaram, incluindo cadastro e login com senha acentuada |
-| Maven `package` | Compilou e gerou o JAR executável |
-| Angular `build` com `strictTemplates` | Compilou o bundle de produção |
-| Context Mapper | Os três arquivos CML foram validados sem erros de sintaxe |
+| Playwright / Microsoft Edge | 6 testes passaram |
+| Maven | Testes Java aprovados; JAR final empacotado |
+| Angular `build` com `strictTemplates` | Aprovado |
+| Context Mapper `docs/core/projeto.cml` | Validado sem erros |
 
-Os testes de concorrência repetem cinco vezes cada disputa (mesmo armário e mesmo
-aluno), sincronizando duas threads e requisições HTTP independentes. Em todas,
-um comando retornou 200, o outro 409 e só uma reserva foi gravada.
-Há ainda tentativas de inserir duplicidades diretamente no banco, rejeitadas pelas
-restrições únicas, e um teste que comprova rollback após uma gravação intermediária.
+Total Java: 58 casos, incluindo exemplos de cenários parametrizados do Cucumber.
+O empacotamento final exigiu parar o backend, pois o Windows bloqueava a troca do
+JAR em uso. Depois de passar a suíte Java, o pacote foi gerado com `-DskipTests`.
+Os testes de navegador foram repetidos com o JAR final em execução.
 
-## Cobertura dos casos solicitados
+## Agenda e concorrência
 
-| Caso | Evidência |
-|---|---|
-| 1. Reserva disponível | `reservaDisponivelPersisteComPrazoExato` e navegador |
-| 2. Armário ocupado | `armarioOcupadoRejeitaOutraReserva` |
-| 3. Solicitações simultâneas | `concorrenciaNoMesmoArmarioConfirmaSomenteUma` |
-| 4. Dois armários pelo mesmo aluno | Teste sequencial e `concorrenciaDoMesmoAlunoConfirmaSomenteUma` |
-| 5. Expiração em três horas | Cucumber no limite exato e teste real do agendador |
-| 6. Disponibilidade após expiração | `consultasRespeitamVencimentoAntesDoAgendador` |
-| 7. Cancelamento pelo responsável | `cancelarLiberaArmarioEPreservaHistorico` e navegador |
-| 8. Cancelamento por outro aluno | `outroAlunoNaoConsultaNemManipulaReserva` e duas sessões no Edge |
-| 9. Encerramento antecipado | `encerrarLiberaArmarioEPreservaHistorico` e navegador |
-| 10. Histórico preservado | Histórico filtrado por aluno, finalizações e reinício do backend |
-| 11. Reserva já finalizada | `finalizadaNaoPodeSerCanceladaOuEncerrada` e limite exato |
-| 12. Horários e transações | UTC/fuso -03:00, relógio monotônico, rollback e concorrência |
+Verificados: durações de 1, 2 e 3 horas; limites 06h e 22h; data passada; horário
+passado no mesmo dia; campos ausentes; números fracionados; preservação da identidade
+da sessão; ausência de informações privadas na agenda; cancelamento antes do início;
+encerramento somente após começar; vencimento no limite e após indisponibilidade.
 
-## Interface e inicialização
+Disputas pelo mesmo armário e pelo mesmo aluno são repetidas cinco vezes. Também
+há concorrência entre intervalos parcialmente sobrepostos (somente um sucesso) e
+intervalos adjacentes (dois sucessos). A unicidade de aluno continua protegida no
+banco. A exclusividade de armário por intervalo é validada sob bloqueio transacional.
 
-Backend e frontend foram iniciados em `localhost:8080` e `127.0.0.1:4200`.
-O backend foi encerrado e iniciado novamente com o mesmo arquivo H2: os três
-registros de histórico existentes mantiveram todos os atributos e a mesma contagem.
-A comparação foi feita antes de uma segunda execução dos testes de navegador;
-veja a [evidência de persistência](persistencia.json).
-O navegador percorreu login, catálogo, filtro, detalhes, confirmação, reserva ativa,
-cancelamento, histórico e encerramento antecipado, usando somente dados da API.
-O teste com duas sessões verificou ocupação e rejeição HTTP 403 ao tentar cancelar
-a reserva de outro aluno. O teste móvel verificou ausência de rolagem horizontal
-em uma janela de 390 × 844 pixels. Nenhum erro de JavaScript foi detectado no fluxo completo.
+No navegador, duas sessões consultam o mesmo horário: uma confirma e a outra recebe
+conflito, atualiza a agenda e consegue reservar o intervalo seguinte. A troca rápida
+de datas descarta uma resposta atrasada. O teste de fechamento confirma uma hora às
+21h e bloqueia durações maiores. Os testes usam contas próprias, sem cancelar reservas
+de usuários reais. Cadastro e login com senha acentuada continuam funcionando.
 
-Capturas inspecionadas visualmente:
+## Migração e execução local
 
-- [Lista](01-lista.png)
-- [Detalhes](02-detalhe.png)
-- [Confirmação](03-confirmacao.png)
-- [Reserva ativa](04-reserva.png)
-- [Histórico](05-historico.png)
-- [Celular](06-celular.png)
-- [Cadastro de conta](07-cadastro.png)
-- [Início com menu lateral](08-inicio.png)
-- [Menu aberto no celular](09-menu-celular.png)
+O teste de migração cria um banco na V1, insere uma reserva ativa com início fora da
+hora cheia e uma cancelada, aplica V2 e verifica os valores preservados. Em registros
+antigos, início recebe confirmação. Um segundo aluno passa a poder reservar outro
+intervalo do mesmo armário. A migração usa pool de conexões, como a aplicação.
 
-Atualização da navegação: build Angular, seis testes unitários e quatro testes
-Playwright passaram. Os fluxos verificam a entrada em `/inicio`, opções ilustrativas
-desabilitadas, navegação para armários, fechamento do menu no celular e cadastro/login.
-Os testes de reserva escolhem armários disponíveis, respeitando a ocupação existente.
+O banco local recebeu a migração V2 com sucesso. Antes dela foi salva uma cópia em
+`../.tools/treino-conecta-antes-agenda-20261105.mv.db`, fora do Git. Backend e frontend
+foram iniciados nas portas 8080 e 4200. A evidência anterior `persistencia.json` e
+as capturas 01–09 pertencem à versão anterior da interface.
 
-Os relatórios gerados pelos testes ficam em `dominio-core/target/surefire-reports`,
-`ui-backend/target/surefire-reports` e `ui-frontend/src/main/angular/playwright-report`.
-O ZIP de entrega contém código, documentação e capturas; dependências instaladas,
-banco de desenvolvimento e diretórios de build não fazem parte dele.
+Capturas atuais inspecionadas:
 
-## Avisos e limites da validação
+- [Data, horários e duração](10-agenda.png)
+- [Reserva agendada](11-reserva-agendada.png)
+- [Agenda no celular](12-agenda-celular.png)
 
-O build Angular passa com dois avisos de tamanho: bundle inicial de aproximadamente
-594 kB (limite de aviso 500 kB, limite de erro 1 MB) e estilo do componente de
-6,11 kB (limite de aviso 4 kB, limite de erro 8 kB). Os limites originais não foram
-aumentados para ocultar os avisos.
+Relatórios: `dominio-core/target/surefire-reports`, `ui-backend/target/surefire-reports`
+e `ui-frontend/src/main/angular/playwright-report`. Artefatos de teste, banco e
+dependências são ignorados pelo Git.
 
-O validador Context Mapper imprime avisos de API Java obsoleta e uma interrupção
-da thread de limpeza ao terminar. Os três resultados contêm explicitamente
-`has been validated without errors`. O escape `^core` corrige o uso de palavra
-reservada que já existia no modelo gerado.
+## Limites
 
-Não foram validados outros SGBDs, implantação pública, balanceamento entre múltiplas
-instâncias ou integração com fechaduras físicas. O ambiente de produção depende
-do provisionamento administrativo e de HTTPS, conforme o README.
+O build Angular mantém avisos de tamanho: bundle inicial de aproximadamente 595 kB
+(aviso em 500 kB) e CSS do componente de 7,08 kB (aviso em 4 kB). Ambos abaixo dos
+limites de erro originais; os limites não foram ampliados.
+
+Não foram validados outros SGBDs, implantação pública ou integração com fechaduras.
+O limite de uma reserva pendente por aluno foi preservado. Aulas e grupos de treino
+continuam ilustrativos, como solicitado. Os ZIPs anteriores são versões históricas;
+o código atualizado está na pasta do projeto e na branch de desenvolvimento.
