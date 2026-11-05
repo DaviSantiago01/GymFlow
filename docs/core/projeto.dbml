@@ -1,0 +1,31 @@
+Table ALU_ALUNO {
+  ALU_ID bigint [pk, increment]
+  ALU_USUARIO varchar(100) [not null, unique]
+  ALU_NOME varchar(100) [not null]
+}
+Table USU_CREDENCIAL {
+  ALU_USUARIO varchar(100) [pk, ref: - ALU_ALUNO.ALU_USUARIO]
+  USU_SENHA varchar(255) [not null, note: 'Hash compatível com DelegatingPasswordEncoder']
+  USU_ATIVO boolean [not null, default: true]
+}
+Table ARM_ARMARIO {
+  ARM_CODIGO varchar(5) [pk]
+  ARM_LOCALIZACAO varchar(150) [not null]
+  ARM_DESCRICAO varchar(250) [not null]
+}
+Table RSV_RESERVA_ARMARIO {
+  RSV_ID bigint [pk, increment]
+  ALU_ID bigint [not null, ref: > ALU_ALUNO.ALU_ID]
+  ARM_CODIGO varchar(5) [not null, ref: > ARM_ARMARIO.ARM_CODIGO]
+  RSV_CONFIRMACAO timestamptz [not null]
+  RSV_INICIO timestamptz [not null, note: 'Início agendado, não anterior à confirmação']
+  RSV_TERMINO timestamptz [not null, note: 'Início + 1, 2 ou 3 horas']
+  RSV_ENCERRAMENTO timestamptz
+  RSV_SITUACAO varchar(20) [not null, note: 'ATIVA, CANCELADA, ENCERRADA, VENCIDA']
+  RSV_ALUNO_ATIVO bigint [unique, note: 'Gerada pelo H2: ALU_ID quando ATIVA, NULL nos demais estados']
+  indexes {
+    (RSV_SITUACAO, RSV_TERMINO)
+    (ARM_CODIGO, RSV_SITUACAO, RSV_INICIO, RSV_TERMINO)
+    (ALU_ID, RSV_CONFIRMACAO)
+  }
+}

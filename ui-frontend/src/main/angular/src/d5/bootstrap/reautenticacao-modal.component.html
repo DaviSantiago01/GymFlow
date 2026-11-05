@@ -1,0 +1,32 @@
+<div class="modal-header">
+  <h1 class="modal-title h5">Sessão expirada</h1>
+</div>
+<div class="modal-body">
+  <p class="text-muted small">
+    Sua sessão expirou. Entre novamente para continuar de onde parou — o que você preencheu no
+    formulário não será perdido.
+  </p>
+  <form #formulario="ngForm" (ngSubmit)="entrar()">
+    @if (mensagemErro()) {
+    <div class="alert alert-danger py-2" role="alert">{{ mensagemErro() }}</div>
+    }
+    <div class="mb-3">
+      <label class="form-label" for="reautenticacao-usuario">Usuário</label>
+      <input class="form-control" id="reautenticacao-usuario" name="usuario" [(ngModel)]="usuario" required autofocus
+        [class.is-invalid]="mensagemErro()" />
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="reautenticacao-senha">Senha</label>
+      <input class="form-control" id="reautenticacao-senha" name="senha" type="password" [(ngModel)]="senha" required
+        [class.is-invalid]="mensagemErro()" />
+    </div>
+    <div class="d-flex gap-2">
+      <button class="btn btn-primary flex-grow-1" type="submit" [disabled]="formulario.invalid || entrando()">
+        Entrar
+      </button>
+      <button class="btn btn-outline-secondary" type="button" (click)="modal.dismiss()">
+        Voltar
+      </button>
+    </div>
+  </form>
+</div>

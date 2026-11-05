@@ -1,0 +1,41 @@
+.cadastro {
+  max-width: 480px;
+  padding: 36px 16px;
+  margin: auto;
+}
+.card-body {
+  padding: 28px;
+}
+.marca {
+  color: #c5ff78;
+  font-size: 11px;
+  letter-spacing: 1px;
+}
+.retorno {
+  margin: 22px 0 0;
+  text-align: center;
+}
+a {
+  color: #c5ff78;
+}
+.btn-primary {
+  color: #19230e;
+}
+.concluido {
+  text-align: center;
+}
+.concluido p {
+  margin: 20px 0;
+  color: #b9c3b1;
+}
+.selo {
+  display: block;
+  margin: 0 auto 24px;
+  background: #c5ff78;
+  color: #19230e;
+  font-size: 36px;
+  border-radius: 50%;
+  width: 64px;
+  height: 64px;
+  line-height: 64px;
+}

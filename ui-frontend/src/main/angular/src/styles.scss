@@ -1,0 +1,48 @@
+:root {
+  color-scheme: dark;
+}
+body {
+  margin: 0;
+  background: #0f141e;
+  color: #e5e8ef;
+  font-family:
+    Inter,
+    system-ui,
+    -apple-system,
+    'Segoe UI',
+    sans-serif;
+}
+.card,
+.modal-content {
+  background: #1c232e;
+  color: #e5e8ef;
+  border-color: #35402f;
+}
+.form-control {
+  background: #101720;
+  border-color: #3d473b;
+  color: #f3f6ed;
+}
+.form-control:focus {
+  background: #141d28;
+  color: white;
+  border-color: #c4f078;
+  box-shadow: 0 0 0 0.2rem #b8ed7526;
+}
+.btn-primary {
+  --bs-btn-bg: #c5ff78;
+  --bs-btn-border-color: #c5ff78;
+  --bs-btn-color: #19230e;
+  --bs-btn-hover-bg: #b1ed65;
+  --bs-btn-hover-color: #19230e;
+  --bs-btn-disabled-bg: #8eae63;
+  --bs-btn-disabled-border-color: #8eae63;
+}
+.text-muted {
+  color: #b1b9ab !important;
+}
+a:focus-visible,
+button:focus-visible {
+  outline: 2px solid #c5ff78;
+  outline-offset: 4px;
+}

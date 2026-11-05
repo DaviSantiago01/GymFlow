@@ -1,0 +1,35 @@
+<main class="inicio">
+  <header>
+    <p class="sobretitulo">SEU ESPAÇO NA ACADEMIA</p>
+    <h1>Boas-vindas, {{ autenticacao.usuarioAtual() }}.</h1>
+    <p>Organize seu treino. Comece por aqui.</p>
+  </header>
+  <section aria-labelledby="titulo-atalhos">
+    <h2 id="titulo-atalhos">Acesso rápido</h2>
+    <div class="atalhos">
+      @if (autenticacao.autorizacoesDe('armario')?.buscar) {
+        <a routerLink="/core/armario/pesquisa">
+          <span class="icone" aria-hidden="true">▥</span>
+          <strong>Reservar armário</strong>
+          <span>Consulte os armários disponíveis e faça sua reserva.</span>
+          <span class="acessar">Ver armários <span aria-hidden="true">↗</span></span>
+        </a>
+      }
+      @if (autenticacao.autorizacoesDe('reservaArmario')?.buscar) {
+        <a routerLink="/core/reserva-armario/ativa">
+          <span class="icone" aria-hidden="true">◷</span>
+          <strong>Minha reserva</strong>
+          <span>Acompanhe o tempo e gerencie sua reserva ativa.</span>
+          <span class="acessar">Consultar reserva <span aria-hidden="true">↗</span></span>
+        </a>
+        <a routerLink="/core/reserva-armario/pesquisa">
+          <span class="icone" aria-hidden="true">↺</span>
+          <strong>Histórico de reservas</strong>
+          <span>Veja os detalhes das suas reservas anteriores.</span>
+          <span class="acessar">Ver histórico <span aria-hidden="true">↗</span></span>
+        </a>
+      }
+    </div>
+  </section>
+  <p class="nota">Marcar aula e Grupos de treino são opções ilustrativas por enquanto.</p>
+</main>

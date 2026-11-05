@@ -1,0 +1,6 @@
+{
+  "verificacao": "Reinicio do JAR mantendo o arquivo H2",
+  "reservasAntes": 3,
+  "reservasDepois": 3,
+  "registrosIdenticos": true
+}

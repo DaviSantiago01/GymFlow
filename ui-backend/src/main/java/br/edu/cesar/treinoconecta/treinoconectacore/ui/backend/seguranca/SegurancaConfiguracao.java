@@ -1,0 +1,21 @@
+package br.edu.cesar.treinoconecta.treinoconectacore.ui.backend.seguranca;
+
+import org.springframework.context.annotation.*;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
+import org.springframework.security.core.userdetails.*;
+import dev.sauloaraujo.d5.framework.ui.seguranca.SegurancaConfiguracaoAbstrata;
+@Configuration
+public class SegurancaConfiguracao extends SegurancaConfiguracaoAbstrata {
+    @Override protected void autorizar(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry autorizacao) {
+        autorizacao.requestMatchers(org.springframework.http.HttpMethod.GET, "/backend/cadastro").permitAll();
+        autorizacao.requestMatchers(org.springframework.http.HttpMethod.POST, "/backend/cadastro").permitAll();
+        autorizacao.requestMatchers(BACKEND).authenticated();
+    }
+    @Bean UserDetailsService usuarios(JdbcTemplate banco) {
+        return usuario -> banco.query("select ALU_USUARIO,USU_SENHA,USU_ATIVO from USU_CREDENCIAL where ALU_USUARIO = ?",
+            (r,n) -> User.withUsername(r.getString(1)).password(r.getString(2)).disabled(!r.getBoolean(3)).authorities("USUARIO").build(),usuario.strip().toLowerCase(java.util.Locale.ROOT))
+            .stream().findFirst().orElseThrow(() -> new UsernameNotFoundException("Usuário ou senha inválidos"));
+    }
+}

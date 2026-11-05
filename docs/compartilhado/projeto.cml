@@ -1,0 +1,18 @@
+Domain dominio {
+	domainVisionStatement = "Núcleo do sistema Treino Conecta para gerenciamento de alunos, professores e academias."
+
+	Subdomain ^core {
+		type = CORE_DOMAIN
+		domainVisionStatement = "Núcleo do sistema Treino Conecta para gerenciamento de alunos, professores e academias."
+	}
+}
+
+BoundedContext compartilhado {
+	Module compartilhado {
+		Aggregate compartilhado {
+			enum Autorizacao {
+				ADMINISTRADOR, USUARIO
+			}
+		}
+	}
+}

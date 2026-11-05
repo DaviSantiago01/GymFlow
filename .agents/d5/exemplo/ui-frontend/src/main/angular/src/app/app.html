@@ -1,0 +1,23 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+  <div class="container">
+    <a class="navbar-brand d-flex align-items-center gap-2" routerLink="/">
+      <strong>Exemplo</strong>
+    </a>
+    @if (servicoAutenticacao.autenticado()) {
+    <div class="collapse navbar-collapse show" id="navbarNav">
+      <ul class="navbar-nav">
+        <!-- Um item de menu por agregado, protegido por servicoAutenticacao.autorizacoesDe('agregado')?.buscar -->
+      </ul>
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item">
+          <button class="btn btn-link nav-link" type="button" (click)="sair()">Sair</button>
+        </li>
+      </ul>
+    </div>
+    }
+  </div>
+</nav>
+
+<app-notificacoes />
+
+<router-outlet />

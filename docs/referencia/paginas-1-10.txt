@@ -1,0 +1,217 @@
+​O​ ​objetivo​ ​dessa​ ​atividade​ ​é​ ​ajudá-los​ ​a​ ​documentar​ ​as​ ​funcionalidades​ ​(de​ ​duas​ ​a​
+​quatro)​ ​que​ ​vocês​ ​escolheram​ ​desenvolver​ ​no​ ​projeto​ ​da​ ​disciplina​ ​e​ ​refletir​ ​acerca​​de​​sua​
+​completude​​e​​complexidade​.​
+​A atividade consiste em vocês preencherem o formulário abaixo.​
+​Funcionalidade 1​
+​Título​
+​Preencha com uma frase, por exemplo:​
+​Gerenciamento de reservas e uso de armários.​
+​Descrição​
+​Preencha com uma frase ou parágrafo detalhando um pouco a funcionalidade,​
+​por exemplo:​
+​● Permitir que o aluno consulte os armários disponíveis, reserve um​
+​armário, visualize sua reserva, cancele a reserva ou encerre o uso. O​
+​sistema deve controlar o prazo de utilização, liberar o armário após o​
+​cancelamento, encerramento ou vencimento e manter o histórico de​
+​reservas do aluno.​
+​IMPORTANTE​: Note que uma funcionalidade precisa ser​​completa, do ponto de​
+​vista do usuário. Por exemplo, apenas o cadastro de livros, do ponto de vista do​
+​usuário, não é uma funcionalidade completa, pois certamente o usuário​
+​precisará pesquisar, alterar e excluir livros que foram cadastrados. Um outro​
+​exemplo de funcionalidade incompleta consiste em desenvolver apenas o​
+​empréstimo de exemplares, não implementando a devolução de exemplares.​
+​Um terceiro exemplo de funcionalidade incompleta seria, em um sistema de​
+​comércio eletrônico, desenvolver a compra (pesquisar produtos, adicionar no​
+​carrinho, efetuar pagamento, etc.), mas não implementar a visualização das​
+​compras realizadas, cancelamento, devolução de itens, etc.​
+​Entidad​
+​es​
+​envolvid​
+​as​
+​Preencha com uma lista formada pelas entidades envolvidas (criadas,​
+​pesquisadas, alteradas, excluídas ou associadas) na funcionalidade, por​
+​exemplo:​
+​● Aluno, Armário e Reserva de Armário.​
+​Regras de negócio​
+​RN 1​
+​Título​
+​Uma frase, por exemplo: Exclusividade da reserva do armário​
+​Descrição: Um armário não pode possuir mais de uma reserva ativa ao mesmo​
+​tempo. Se dois alunos tentarem reservá-lo simultaneamente, apenas uma​
+​reserva​
+
+​poderá ser confirmada.​
+​Consultas: Consultar o armário e verificar se existe uma reserva ativa associada​
+​a ele.​
+​Complexidade: Média, pois relaciona o armário com suas reservas.​
+​Descrição​
+​Uma frase ou parágrafo detalhando um pouco a regra de negócio, por exemplo:​
+​● todo livro possui um título com, no máximo, 100 caracteres;​
+​● todo livro possui, pelo menos, um autor;​
+​● não existem livros diferentes com o mesmo ISBN.​
+​Consultas​
+​Uma frase para cada consulta ao banco de dados que é​
+​necessária à implementação da regra, por exemplo:​
+​● consultar se já existe no banco de dados um livro com o ISBN​
+​informado pelo usuário;​
+​IMPORTANTE​:​ ​nem​ ​toda​ ​regra​ ​de​ ​negócio​ ​requer​ ​uma​ ​ou​ ​mais​ ​consultas​​ao​
+​banco​​de​​dados​​para​​ser​​implementada,​​como​​é​​o​​caso,​​por​​exemplo,​​da​​regra​
+​de negócio “todo livro possui um título com, no máximo, 100 caracteres”.​
+​Complexidade​
+​Preencha com baixa, média ou alta:​
+​●​​baixa​​- regras de negócio cuja implementação envolve​​atributos de um​
+​único agregado, por exemplo, a regra “todo livro possui um título com,​
+​no máximo, 100 caracteres”;​
+​●​​média​​- regras de negócio cuja implementação envolve​​atributos de mais​
+​de um agregado e/ou consultas ao banco de dados, por exemplo, a regra​
+​“não existem livros diferentes com o mesmo ISBN”;​
+​●​​alta​​- regras de negócio cuja implementação envolve​​algoritmos,​
+​lógicas, cálculos e/ou consultas elaboradas.​
+​RN 2​
+​Título​
+​Limite de reservas por aluno​
+​Descrição​
+​Cada aluno poderá possuir, no máximo, uma reserva ativa de armário.​
+​Consultas​
+​Consultar se o aluno já possui uma reserva ativa.​
+​Complexidade​
+​Média, pois relaciona o aluno com suas reservas.​
+​RN 3​
+​Título​
+​Prazo de utilização**​
+
+​Descrição​
+​A reserva terá duração máxima de três horas, contadas a partir de sua​
+​confirmação. Ao atingir o horário de término, a reserva será encerrada​
+​por vencimento e o armário ficará disponível no sistema.​
+​Consultas​
+​Consultar as reservas ativas cujo horário de término seja menor ou igual ao​
+​horário atual.​
+​Complexidade​
+​Média, pois exige consultar as reservas vencidas e atualizar sua situação.​
+​RN 4​
+​Título​
+​Cancelamento e encerramento pelo responsável​
+​Descrição​
+​Somente o aluno responsável poderá cancelar sua reserva ou encerrar o uso​
+​pelo aplicativo. Essas ações somente serão permitidas enquanto a reserva​
+​estiver ativa. Após a ação, o armário ficará disponível e a reserva será mantida​
+​no histórico.​
+​Consultas​
+​Consultar a reserva, seu aluno responsável e sua situação atual.​
+​Complexidade​
+​Média, pois verifica o vínculo entre o aluno e a reserva.​
+​RN 5​
+​Título​
+​Descrição​
+​Consultas​
+​Complexidad​
+​e​
+​RN 6​
+​Título​
+​Descrição​
+​Consultas​
+​Complexidad​
+​e​
+
+​RN 7​
+​Título​
+​Descrição​
+​Consultas​
+​Complexidad​
+​e​
+​RN 8​
+​Título​
+​Descrição​
+​Consultas​
+​Complexidad​
+​e​
+​RN 9​
+​Título​
+​Descrição​
+​Consultas​
+​Complexidad​
+​e​
+​RN 10​
+​Título​
+​Descrição​
+​Consultas​
+​Complexidad​
+​e​
+​RN 11​
+​Título​
+
+​Descrição​
+​Consultas​
+​Complexidad​
+​e​
+​RN 12​
+​Título​
+​Descrição​
+​Consultas​
+​Complexidad​
+​e​
+​RN 13​
+​Título​
+​Descrição​
+​Consultas​
+​Complexidad​
+​e​
+​RN 14​
+​Título​
+​Descrição​
+​Consultas​
+​Complexidad​
+​e​
+​RN 15​
+​Título​
+​Descrição​
+
+​Consultas​
+​Complexidad​
+​e​
+​RN 16​
+​Título​
+​Descrição​
+​Consultas​
+​Complexidad​
+​e​
+​RN 17​
+​Título​
+​Descrição​
+​Consultas​
+​Complexidad​
+​e​
+​RN 18​
+​Título​
+​Descrição​
+​Consultas​
+​Complexidad​
+​e​
+​RN 19​
+​Título​
+​Descrição​
+​Consultas​
+
+​Complexidad​
+​e​
+​RN 20​
+​Título​
+​Descrição​
+​Consultas​
+​Complexidad​
+​e​
+​Protótipos da interface com o usuário​
+​Adicione os protótipos das telas (ou partes de telas) relacionados à funcionalidade nesta seção.​
+
+
+
+​Funcionalidade 2​
+​Título​
+​Avaliação de professores​
+​Descrição​
+​Permitir que o aluno registre, consulte, edite e exclua sua avaliação de um​
+​professor. A avaliação terá notas por critério e um comentário opcional.​
+​Cada professor terá um perfil acessível aos alunos, apresentando a média​
+​geral, as médias por critério, a quantidade de avaliações e as avaliações​
+​mais recentes.​

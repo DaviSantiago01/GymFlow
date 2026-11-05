@@ -1,0 +1,105 @@
+:host {
+  display: block;
+}
+.inicio {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 72px 48px;
+}
+header {
+  margin-bottom: 56px;
+}
+.sobretitulo {
+  color: #bddc96;
+  font-size: 11px;
+  letter-spacing: 1.8px;
+  margin-bottom: 18px;
+}
+h1 {
+  font-size: clamp(26px, 3vw, 38px);
+  font-weight: 550;
+  letter-spacing: -1px;
+  overflow-wrap: anywhere;
+  margin-bottom: 16px;
+}
+header > p:last-child {
+  color: #9aa5b2;
+  font-size: 15px;
+}
+h2 {
+  font-size: 14px;
+  font-weight: 500;
+  color: #bbc3cc;
+  margin-bottom: 18px;
+}
+.atalhos {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.atalhos > a {
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  border: 1px solid #2b333f;
+  border-radius: 12px;
+  color: #e5e8ef;
+  text-decoration: none;
+  background: #141c27;
+  transition: border-color 150ms;
+}
+.atalhos > a:hover {
+  border-color: #8da86e;
+}
+.icone {
+  font-size: 26px;
+  color: #c5df9f;
+  margin-bottom: 28px;
+}
+strong {
+  font-size: 16px;
+  font-weight: 550;
+  margin-bottom: 12px;
+}
+strong + span {
+  font-size: 13px;
+  color: #9aa5b2;
+  line-height: 1.7;
+  margin-bottom: 28px;
+}
+.acessar {
+  font-size: 12px;
+  color: #c5df9f;
+  margin-top: auto;
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+.nota {
+  margin-top: 28px;
+  color: #8f9aa8;
+  font-size: 12px;
+  line-height: 1.7;
+}
+@media (max-width: 1100px) {
+  .atalhos {
+    grid-template-columns: 1fr;
+  }
+  .icone {
+    display: none;
+  }
+  .inicio {
+    padding: 40px 28px;
+  }
+}
+@media (max-width: 767px) {
+  .inicio {
+    padding: 36px 20px;
+  }
+  header {
+    margin-bottom: 32px;
+  }
+  .atalhos > a {
+    padding: 20px;
+  }
+}

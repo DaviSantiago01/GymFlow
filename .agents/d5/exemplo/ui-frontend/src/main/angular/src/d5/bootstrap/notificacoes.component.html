@@ -1,0 +1,11 @@
+@if (servicoNotificacao.notificacoes().length) {
+<div class="container mt-5">
+    <div class="row">
+        <div class="col">
+            @for (notificacao of servicoNotificacao.notificacoes(); track notificacao.id) {
+            <app-notificacao-item [notificacao]="notificacao" (fechar)="servicoNotificacao.remover(notificacao.id)" />
+            }
+        </div>
+    </div>
+</div>
+}

@@ -1,0 +1,102 @@
+<main class="cadastro">
+  <section class="card shadow-sm">
+    <div class="card-body">
+      @if (criado()) {
+        <div class="concluido" role="status">
+          <span class="selo" aria-hidden="true">✓</span>
+          <h1 class="h4">Conta criada com sucesso!</h1>
+          <p>
+            Seu usuário é <strong>{{ criado() }}</strong
+            >. Entre com a senha que você escolheu para reservar seu armário.
+          </p>
+          <a class="btn btn-primary w-100" routerLink="/login" [queryParams]="{ usuario: criado() }"
+            >Entrar com minha conta</a
+          >
+        </div>
+      } @else {
+        <span class="marca">TREINO CONECTA</span>
+        <h1 class="h4 mt-2">Criar minha conta</h1>
+        <p class="text-muted">Cadastre-se para reservar armários e acompanhar seu histórico.</p>
+        @if (erro()) {
+          <p class="alert alert-danger" role="alert">{{ erro() }}</p>
+        }
+        @if (!pronto() && erro()) {
+          <button type="button" class="btn btn-outline-light mb-3" (click)="preparar()">
+            Reconectar
+          </button>
+        }
+        <form #formulario="ngForm" (ngSubmit)="cadastrar()">
+          <div class="mb-3">
+            <label class="form-label" for="nome">Nome completo</label>
+            <input
+              class="form-control"
+              id="nome"
+              name="nome"
+              autocomplete="name"
+              [(ngModel)]="nome"
+              required
+              minlength="2"
+              maxlength="100"
+            />
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="novo-usuario">Nome de usuário</label>
+            <input
+              class="form-control"
+              id="novo-usuario"
+              name="usuario"
+              autocomplete="username"
+              autocapitalize="none"
+              [(ngModel)]="usuario"
+              required
+              pattern="[a-zA-Z0-9][a-zA-Z0-9._-]{2,39}"
+              maxlength="40"
+              aria-describedby="ajuda-usuario"
+            />
+            <small id="ajuda-usuario" class="text-muted"
+              >3 a 40 caracteres: letras, números, ponto, hífen ou sublinhado.</small
+            >
+          </div>
+          <div class="mb-3">
+            <label class="form-label" for="nova-senha">Senha</label>
+            <input
+              class="form-control"
+              id="nova-senha"
+              name="senha"
+              type="password"
+              autocomplete="new-password"
+              [(ngModel)]="senha"
+              required
+              minlength="8"
+              maxlength="72"
+              aria-describedby="ajuda-senha"
+            />
+            <small id="ajuda-senha" class="text-muted">Pelo menos 8 caracteres.</small>
+          </div>
+          <div class="mb-4">
+            <label class="form-label" for="confirmacao">Confirmar senha</label>
+            <input
+              class="form-control"
+              id="confirmacao"
+              name="confirmacaoSenha"
+              type="password"
+              autocomplete="new-password"
+              [(ngModel)]="confirmacaoSenha"
+              required
+              minlength="8"
+              maxlength="72"
+            />
+          </div>
+          <button
+            type="submit"
+            class="btn btn-primary w-100"
+            [disabled]="formulario.invalid || enviando() || !pronto()"
+          >
+            {{ enviando() ? 'Criando conta…' : 'Criar conta' }}
+          </button>
+        </form>
+        <p class="retorno">Já tem uma conta? <a routerLink="/login">Entrar</a></p>
+      }
+    </div>
+  </section>
+</main>

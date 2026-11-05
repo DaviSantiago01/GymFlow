@@ -1,0 +1,76 @@
+import "../compartilhado/projeto.cml"
+
+ContextMap {
+	contains ^core, compartilhado
+
+	^core Downstream-Upstream compartilhado
+}
+
+BoundedContext ^core implements ^core {
+	Module ^core {
+		Aggregate Aluno {
+			Entity Aluno {
+				aggregateRoot
+				-AlunoIdentificador identificador key
+				String usuario
+				String nome
+				Repository AlunoRepository {
+					boolean existePorUsuario(String usuario);
+					@Aluno buscarPorUsuario(String usuario);
+					@Aluno bloquearPorUsuario(String usuario);
+				}
+			}
+			ValueObject AlunoIdentificador { String valor }
+			Service AlunoServico {
+				@Aluno buscar(@AlunoIdentificador identificador);
+				@Aluno cadastrar(String nome, String usuario, String senha, String confirmacaoSenha);
+			}
+		}
+		Aggregate Armario {
+			Entity Armario {
+				aggregateRoot
+				-ArmarioCodigo identificador key
+				String localizacao
+				String descricao
+				Repository ArmarioRepository {
+					@Armario buscarPorIdentificador(@ArmarioCodigo codigo);
+					@Armario bloquear(@ArmarioCodigo codigo);
+				}
+			}
+			ValueObject ArmarioCodigo { String valor }
+			Service ArmarioServico { @Armario buscar(@ArmarioCodigo codigo); }
+		}
+		Aggregate ReservaArmario {
+			Entity ReservaArmario {
+				aggregateRoot
+				-ReservaArmarioIdentificador identificador key
+				-AlunoIdentificador aluno
+				-ArmarioCodigo armario
+				DateTime confirmacao
+				DateTime inicio
+				DateTime termino
+				DateTime encerramento nullable
+				-SituacaoReserva situacao
+				def @ReservaArmario cancelar(@AlunoIdentificador responsavel, DateTime agora);
+				def @ReservaArmario encerrar(@AlunoIdentificador responsavel, DateTime agora);
+				def @ReservaArmario vencer(DateTime agora);
+				Repository ReservaArmarioRepository {
+					@ReservaArmario incluir(@ReservaArmario reserva);
+					void alterar(@ReservaArmario reserva);
+					@ReservaArmario bloquear(@ReservaArmarioIdentificador identificador);
+					boolean existeAtivaPorAluno(@AlunoIdentificador aluno, DateTime agora);
+					boolean existeSobreposicao(@ArmarioCodigo armario, DateTime inicio, DateTime termino);
+					int vencerTodas(DateTime agora);
+				}
+			}
+			ValueObject ReservaArmarioIdentificador { String valor }
+			ValueObject PeriodoReserva { DateTime inicio DateTime termino }
+			enum SituacaoReserva { ATIVA, CANCELADA, ENCERRADA, VENCIDA }
+			Service ReservaArmarioServico {
+				@ReservaArmario reservar(@ArmarioCodigo codigo, Date data, int hora, int duracaoHoras);
+				@ReservaArmario cancelar(@ReservaArmarioIdentificador identificador);
+				@ReservaArmario encerrar(@ReservaArmarioIdentificador identificador);
+			}
+		}
+	}
+}

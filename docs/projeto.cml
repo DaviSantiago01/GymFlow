@@ -1,0 +1,2 @@
+import "compartilhado/projeto.cml"
+import "core/projeto.cml"

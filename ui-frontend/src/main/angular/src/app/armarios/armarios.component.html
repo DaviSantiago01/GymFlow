@@ -1,0 +1,302 @@
+<main class="area-armarios">
+  <header class="cabecalho-pagina">
+    <div>
+      <span class="sobretitulo">● TREINO CONECTA</span>
+      <h1>{{ titulos[modo()] }}</h1>
+    </div>
+    <div class="atalhos">
+      <a routerLink="/core/armario/pesquisa">Armários</a
+      ><a routerLink="/core/reserva-armario/ativa">Minha reserva</a
+      ><a routerLink="/core/reserva-armario/pesquisa">Histórico ↗</a>
+    </div>
+  </header>
+  @if (erro()) {
+    <div class="mensagem erro" role="alert">
+      {{ erro() }}
+      <button (click)="atualizar()" [disabled]="atualizando()">Tentar atualizar</button>
+    </div>
+  }
+  @if (aviso()) {
+    <div class="mensagem sucesso" role="status">{{ aviso() }}</div>
+  }
+  @if (!sincronizado()) {
+    <div class="mensagem erro" role="status">
+      Aguardando sincronização com o servidor. Atualize antes de realizar uma ação.
+    </div>
+  }
+
+  @if (modo() === 'lista') {
+    <section class="painel resumo-reserva">
+      @if (vigente()) {
+        <div class="linha">
+          <span class="etiqueta">● RESERVA EM USO</span><span class="cota">Cota 1/1</span>
+        </div>
+        <div class="linha">
+          <div>
+            <h2>Armário {{ dados().reserva!.armario }}</h2>
+            <p>{{ dados().reserva!.localizacao }}</p>
+          </div>
+          <strong class="cronometro-pequeno">{{ tempo() }}</strong>
+        </div>
+        <progress [value]="progresso()" max="100" aria-label="Tempo de uso decorrido"></progress>
+        <a class="botao principal" routerLink="/core/reserva-armario/ativa"
+          >Acessar minha reserva →</a
+        >
+      } @else {
+        <span class="sobretitulo neutro">STATUS ATUAL · SEM RESERVA</span>
+        <h2>Nenhuma reserva ativa no momento</h2>
+        <p>Escolha um armário e aproveite seu treino.</p>
+      }
+    </section>
+    <aside class="regras">
+      <span>ⓘ</span>
+      <div>
+        <strong>UM ARMÁRIO POR ALUNO</strong>
+        <p>
+          Até 3 horas contínuas de utilização. A liberação acontece automaticamente ao fim do prazo.
+        </p>
+      </div>
+    </aside>
+    <label class="busca"
+      ><span aria-hidden="true">⌕</span
+      ><input
+        aria-label="Buscar armário"
+        placeholder="Buscar por número (ex.: A-01) ou localização..."
+        [ngModel]="busca()"
+        (ngModelChange)="busca.set($event)"
+    /></label>
+    <div class="filtros" aria-label="Disponibilidade">
+      <button [class.selecionado]="filtro() === 'todos'" (click)="filtro.set('todos')">
+        Todos {{ dados().armarios?.length }}
+      </button>
+      <button [class.selecionado]="filtro() === 'livres'" (click)="filtro.set('livres')">
+        ● Disponíveis {{ disponiveis() }}
+      </button>
+      <button [class.selecionado]="filtro() === 'ocupados'" (click)="filtro.set('ocupados')">
+        Ocupados {{ (dados().armarios?.length ?? 0) - disponiveis() }}
+      </button>
+      <button class="atualizar" (click)="atualizar()" [disabled]="atualizando()">
+        {{ atualizando() ? 'Atualizando…' : '↻ Atualizar' }}
+      </button>
+    </div>
+    <div class="linha titulo-grade">
+      <h2>Armários da academia</h2>
+      <span>Disponibilidade em tempo real</span>
+    </div>
+    <div class="grade">
+      @for (a of filtrados(); track a.identificador) {
+        <a class="cartao-armario" [routerLink]="['/core/armario', a.identificador, 'visualizacao']">
+          <div class="linha">
+            <h3>{{ a.identificador }}</h3>
+            <span class="icone-armario" aria-hidden="true">▥</span>
+          </div>
+          <p>{{ a.localizacao }}</p>
+          <span class="etiqueta" [class.ocupada]="!a.disponivel"
+            >● {{ a.disponivel ? 'Disponível' : 'Ocupado' }}</span
+          >
+          <div class="linha descricao">
+            <span>{{ a.descricao }}</span
+            ><span aria-hidden="true">›</span>
+          </div>
+        </a>
+      } @empty {
+        <div class="vazio">Nenhum armário encontrado para este filtro.</div>
+      }
+    </div>
+  }
+
+  @if (modo() === 'detalhe' && dados().armario; as a) {
+    <section class="painel destaque">
+      <span class="etiqueta" [class.ocupada]="!a.disponivel"
+        >● {{ a.disponivel ? 'DISPONÍVEL' : 'OCUPADO' }}</span
+      ><span class="sobretitulo neutro">IDENTIFICADOR</span>
+      <h2>Armário {{ a.identificador }}</h2>
+    </section>
+    <div class="ilustracao" aria-hidden="true">
+      @for (n of [1, 2, 3, 4, 5, 6, 7, 8]; track n) {
+        <span class="porta"><i></i></span>
+      }
+      <span class="legenda">{{ a.localizacao }}</span>
+    </div>
+    <h3 class="titulo-secao">INFORMAÇÕES DO ARMÁRIO</h3>
+    <section class="painel">
+      <span class="sobretitulo neutro">LOCALIZAÇÃO</span>
+      <h2>{{ a.localizacao }}</h2>
+      <p>{{ a.descricao }}</p>
+      <button class="botao secundario" (click)="atualizar()" [disabled]="atualizando()">
+        ↻ Verificar disponibilidade
+      </button>
+    </section>
+    <h3 class="titulo-secao">REGRAS E CONDIÇÕES DE USO</h3>
+    <section class="painel regras-detalhe">
+      <span class="sobretitulo">DURAÇÃO MÁXIMA PERMITIDA</span>
+      <h2>3 horas contínuas</h2>
+      <p>
+        A contagem começa no momento da confirmação. Ao atingir o prazo, o armário é liberado e a
+        reserva permanece no seu histórico.
+      </p>
+      <p>
+        Limite de uma reserva ativa por aluno. Apenas você pode cancelar ou encerrar sua reserva.
+      </p>
+    </section>
+    @if (vigente()) {
+      <p class="mensagem">
+        Você já possui uma reserva ativa.
+        <a routerLink="/core/reserva-armario/ativa">Acessar minha reserva</a>
+      </p>
+    }
+    <button
+      class="botao principal largo"
+      (click)="reservar()"
+      [disabled]="!a.disponivel || vigente() || ocupado() || !sincronizado()"
+    >
+      {{ ocupado() ? 'Confirmando…' : 'Reservar armário ' + a.identificador }}
+    </button>
+    <a class="botao secundario largo" routerLink="/core/armario/pesquisa">← Voltar para a lista</a>
+  }
+
+  @if (modo() === 'confirmacao' || modo() === 'ativa' || modo() === 'reserva') {
+    @if (dados().reserva; as r) {
+      @if (modo() === 'confirmacao' && vigente()) {
+        <div class="confirmacao" role="status">
+          <span class="selo">✓</span><span class="etiqueta">OPERAÇÃO CONCLUÍDA</span>
+          <h2>Reserva confirmada!</h2>
+          <p>
+            O armário <strong>{{ r.armario }}</strong> está reservado para o seu treino.
+          </p>
+        </div>
+      }
+      <section class="painel resumo-reserva">
+        <div class="linha">
+          <span class="etiqueta" [class.ocupada]="!vigente()">{{ rotulos[r.situacao] }}</span
+          ><span class="icone-armario" aria-hidden="true">▥</span>
+        </div>
+        <span class="sobretitulo neutro">LOCAL DE GUARDA</span>
+        <h2>Armário {{ r.armario }}</h2>
+        <p>{{ r.localizacao }}</p>
+        <dl>
+          <div>
+            <dt>Aluno responsável</dt>
+            <dd>{{ r.alunoNome }}</dd>
+          </div>
+          <div>
+            <dt>Confirmação</dt>
+            <dd>{{ r.confirmacao | date: 'dd/MM/yyyy HH:mm:ss' }}</dd>
+          </div>
+          <div>
+            <dt>Término previsto</dt>
+            <dd>{{ r.termino | date: 'dd/MM/yyyy HH:mm:ss' }}</dd>
+          </div>
+          @if (r.encerramento) {
+            <div>
+              <dt>Encerramento</dt>
+              <dd>{{ r.encerramento | date: 'dd/MM/yyyy HH:mm:ss' }}</dd>
+            </div>
+          }
+        </dl>
+        @if (vigente()) {
+          <div class="tempo">
+            <span class="sobretitulo neutro">◷ TEMPO RESTANTE</span><strong>{{ tempo() }}</strong
+            ><progress
+              [value]="progresso()"
+              max="100"
+              aria-label="Tempo de uso decorrido"
+            ></progress>
+            <div class="linha">
+              <span>Início {{ r.confirmacao | date: 'HH:mm' }}</span
+              ><span>Encerramento automático {{ r.termino | date: 'HH:mm' }}</span>
+            </div>
+          </div>
+        }
+      </section>
+      @if (vigente()) {
+        @if (modo() === 'confirmacao') {
+          <a class="botao principal largo" routerLink="/core/reserva-armario/ativa"
+            >Acessar minha reserva ativa →</a
+          >
+        } @else {
+          <p class="sobretitulo neutro">AÇÕES PERMITIDAS · {{ r.alunoNome }}</p>
+          <button
+            class="botao principal largo"
+            (click)="finalizar('encerrar')"
+            [disabled]="ocupado() || !sincronizado()"
+          >
+            Encerrar uso do armário</button
+          ><button
+            class="botao perigo largo"
+            (click)="finalizar('cancelar')"
+            [disabled]="ocupado() || !sincronizado()"
+          >
+            Cancelar reserva
+          </button>
+        }
+      } @else {
+        <p class="mensagem sucesso">Esta reserva está finalizada e foi preservada no histórico.</p>
+      }
+    } @else {
+      <section class="painel vazio">
+        <h2>Você está sem reserva ativa</h2>
+        <p>Consulte os armários disponíveis para começar.</p>
+      </section>
+    }
+    <a class="botao secundario largo" routerLink="/core/armario/pesquisa"
+      >← Voltar para os armários</a
+    >
+  }
+
+  @if (modo() === 'historico') {
+    <p class="introducao">
+      Suas reservas finalizadas, com todos os horários e a situação de encerramento.
+    </p>
+    <div class="historico">
+      @for (r of dados().historico; track r.identificador) {
+        <a
+          class="painel item-historico"
+          [routerLink]="['/core/reserva-armario', r.identificador, 'visualizacao']"
+          ><div class="linha">
+            <h2>Armário {{ r.armario }}</h2>
+            <span class="etiqueta ocupada">{{ rotulos[r.situacao] }}</span>
+          </div>
+          <p>{{ r.localizacao }}</p>
+          <dl>
+            <div>
+              <dt>Confirmação</dt>
+              <dd>{{ r.confirmacao | date: 'dd/MM/yyyy HH:mm' }}</dd>
+            </div>
+            <div>
+              <dt>Término previsto</dt>
+              <dd>{{ r.termino | date: 'dd/MM/yyyy HH:mm' }}</dd>
+            </div>
+            <div>
+              <dt>Encerramento</dt>
+              <dd>{{ r.encerramento | date: 'dd/MM/yyyy HH:mm' }}</dd>
+            </div>
+          </dl>
+          <span class="ver-detalhes">Ver detalhes →</span></a
+        >
+      } @empty {
+        <div class="painel vazio">
+          <h2>Seu histórico começa aqui</h2>
+          <p>As reservas canceladas, encerradas e vencidas aparecerão nesta lista.</p>
+        </div>
+      }
+    </div>
+    <div class="paginacao">
+      @if (pagina() > 0) {
+        <a class="botao secundario" routerLink="." [queryParams]="{ pagina: pagina() - 1 }"
+          >← Anterior</a
+        >
+      }
+      <span>{{ dados().total ?? 0 }} reservas</span>
+      @if ((pagina() + 1) * 10 < (dados().total ?? 0)) {
+        <a class="botao secundario" routerLink="." [queryParams]="{ pagina: pagina() + 1 }"
+          >Próxima →</a
+        >
+      }
+    </div>
+  }
+  <footer class="rodape">
+    {{ atualizando() ? 'Atualizando disponibilidade…' : 'Sincronizado com o servidor' }} · Horários
+    exibidos no seu fuso local
+  </footer>
+</main>
