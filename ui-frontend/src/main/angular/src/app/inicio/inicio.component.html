@@ -10,26 +10,26 @@
       @if (autenticacao.autorizacoesDe('armario')?.buscar) {
         <a routerLink="/core/armario/pesquisa">
           <span class="icone" aria-hidden="true">▥</span>
-          <strong>Reservar armário</strong>
-          <span>Consulte os armários disponíveis e faça sua reserva.</span>
+          <strong>Armários</strong>
+          <span>Reserve um armário, acompanhe sua reserva e consulte seu histórico.</span>
           <span class="acessar">Ver armários <span aria-hidden="true">↗</span></span>
         </a>
       }
-      @if (autenticacao.autorizacoesDe('reservaArmario')?.buscar) {
-        <a routerLink="/core/reserva-armario/ativa">
-          <span class="icone" aria-hidden="true">◷</span>
-          <strong>Minha reserva</strong>
-          <span>Acompanhe o tempo e gerencie sua reserva ativa.</span>
-          <span class="acessar">Consultar reserva <span aria-hidden="true">↗</span></span>
-        </a>
-        <a routerLink="/core/reserva-armario/pesquisa">
-          <span class="icone" aria-hidden="true">↺</span>
-          <strong>Histórico de reservas</strong>
-          <span>Veja os detalhes das suas reservas anteriores.</span>
-          <span class="acessar">Ver histórico <span aria-hidden="true">↗</span></span>
-        </a>
+      @if (autenticacao.autorizacoesDe('avaliacaoProfessor')?.buscar) {
+        <a routerLink="/core/treino/pesquisa"
+          ><span class="icone" aria-hidden="true">☆</span><strong>Avaliações</strong
+          ><span>Consulte seus treinos e avalie sua experiência em cada aula.</span
+          ><span class="acessar">Ver avaliações <span aria-hidden="true">↗</span></span></a
+        >
+      }
+      @if (autenticacao.autorizacoesDe('grupoTreino')?.buscar) {
+        <a routerLink="/core/grupo-treino/pesquisa"
+          ><span class="icone" aria-hidden="true">♧</span><strong>Grupos de treino</strong
+          ><span>Reúna seus colegas, proponha treinos e confirme sua presença.</span
+          ><span class="acessar">Ver meus grupos ↗</span></a
+        >
       }
     </div>
   </section>
-  <p class="nota">Marcar aula e Grupos de treino são opções ilustrativas por enquanto.</p>
+  <p class="nota">Marcar aula é uma opção ilustrativa por enquanto.</p>
 </main>

@@ -9,7 +9,12 @@ public final class Aluno implements IAgregado<AlunoIdentificador> {
     private final Optional<AlunoIdentificador> identificador;
     private final String usuario;
     private final String nome;
+    private final br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.academia.AcademiaIdentificador academia;
     public Aluno(Optional<AlunoIdentificador> identificador, String usuario, String nome) {
+        this(identificador,usuario,nome,new br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.academia.AcademiaIdentificador("1"));
+    }
+    public Aluno(Optional<AlunoIdentificador> identificador,String usuario,String nome,br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.academia.AcademiaIdentificador academia) {
+        this.academia=Objects.requireNonNull(academia);
         this.identificador = Objects.requireNonNull(identificador);
         this.usuario = Validate.notBlank(usuario, "Usuário obrigatório");
         this.nome = Validate.notBlank(nome, "Nome obrigatório");
@@ -17,5 +22,6 @@ public final class Aluno implements IAgregado<AlunoIdentificador> {
     }
     public Optional<AlunoIdentificador> getIdentificador() { return identificador; }
     public String getUsuario() { return usuario; }
+    public br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.academia.AcademiaIdentificador getAcademia(){return academia;}
     public String getNome() { return nome; }
 }

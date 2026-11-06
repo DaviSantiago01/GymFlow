@@ -1,0 +1,130 @@
+PÁGINA 21
+​Funcionalidade 3​
+​Título​
+​Grupos de treino da academia​
+
+PÁGINA 22
+​Descrição​
+​Permitir que o aluno crie um grupo, edite seu nome e convide outros alunos da​
+​academia. Os convidados poderão aceitar ou recusar a participação, e os​
+​membros poderão consultar e sair do grupo. O criador poderá propor e​
+​cancelar treinos, informando data, horário e prazo de confirmação. Os​
+​participantes poderão confirmar, recusar ou cancelar sua presença. O sistema​
+​encerrará as confirmações no prazo definido, preservará as presenças​
+​confirmadas e expirará os convites sem resposta​
+​Entidad​
+​es​
+​envolvid​
+​as​
+​Aluno, Grupo de Treino, Participação no Grupo, Convite para o Grupo, Treino​
+​em Grupo e Convite para o Treino.​
+​RN 1​
+​Título​
+​Nome do grupo​
+​Descrição​
+​O grupo deverá possuir um nome obrigatório, com no máximo 60​
+​caracteres, desconsiderando espaços no início e no final.​
+​Consultas​
+​Nenhuma consulta ao banco é necessária para validar o nome.​
+​Complexidade​
+​Baixa, pois envolve apenas um atributo do grupo.​
+​RN 2​
+​Título​
+​Administração do grupo​
+​Descrição​
+​O aluno que criar o grupo será seu organizador e participará​
+​automaticamente dele. Somente o organizador poderá alterar o nome, enviar​
+​convites de entrada, propor ou cancelar treinos​
+​Consultas​
+​Consultar o grupo e verificar se o aluno autenticado é seu organizador.​
+​Complexidade​
+​Média, pois verifica o vínculo entre o aluno e o grupo.​
+​RN 3​
+​Título​
+​Entrada no grupo mediante convite​
+​Descrição​
+​Somente alunos cadastrados na mesma academia poderão ser convidados. Um​
+​aluno não poderá receber um novo convite se já participar do grupo ou possuir​
+​um convite pendente. Apenas o destinatário poderá aceitar ou recusar seu​
+​convite. A aceitação criará sua participação no grupo.​
+
+PÁGINA 23
+​Consultas​
+​Consultar o aluno convidado, seu vínculo com a academia, as participações​
+​no grupo e os convites pendentes.​
+​Complexidade​
+​Média, pois relaciona alunos, participações e convites.​
+​RN 4​
+​Título​
+​Agendamento e prazo de confirmação​
+​Descrição​
+​O treino deverá possuir data e horário futuros. O prazo de confirmação deverá​
+​ser posterior ao momento do agendamento e anterior ao início do treino. Ao​
+​propor o treino, o sistema criará um convite para cada membro atual do grupo,​
+​incluindo o organizador, sem duplicações.​
+​Consultas​
+​Consultar os membros atuais do grupo e verificar a existência de convites para​
+​o treino.​
+​Complexidade​
+​Média, pois relaciona o treino com os membros e seus convites.​
+​RN 5​
+​Título​
+​Resposta ao convite de treino​
+​Descrição​
+​Somente o destinatário poderá aceitar ou recusar seu convite, enquanto ele​
+​estiver pendente e antes do prazo de confirmação. O aluno deverá continuar​
+​participando do grupo, e o treino não poderá estar cancelado.​
+​Consultas​
+​Consultar o convite, o treino e a participação atual do aluno no grupo.​
+​Complexidade​
+​Média, pois verifica informações de diferentes entidades.​
+​RN 6​
+​Título​
+​Encerramento das confirmações​
+​Descrição​
+​Ao atingir o prazo de confirmação, os convites pendentes passarão para a​
+​situação “Expirado”. Os convites aceitos permanecerão confirmados, e​
+​nenhuma nova confirmação será permitida.​
+​Consultas​
+​Consultar os treinos cujo prazo de confirmação terminou e seus convites​
+​ainda pendentes.​
+
+PÁGINA 24
+​Complexidade​
+​Média, pois relaciona os prazos dos treinos com as situações dos convites.​
+​RN 7​
+​Título​
+​Cancelamento da presença​
+​Descrição​
+​Um participante confirmado poderá cancelar sua presença até uma hora antes​
+​do início do treino. Depois do cancelamento, deixará de constar na lista de​
+​confirmados.​
+​Consultas​
+​Consultar o convite confirmado, seu destinatário e o horário de início do treino.​
+​Complexidade​
+​Média, pois relaciona o participante com o convite e o treino.​
+​RN 8​
+​Título​
+​Saída e encerramento do grupo​
+​Descrição​
+​Um membro poderá sair do grupo desde que não possua presença confirmada​
+​em um treino futuro. Seus convites pendentes serão cancelados. O organizador​
+​deverá encerrar o grupo caso deseje deixar sua administração. O encerramento​
+​cancelará​
+​os treinos futuros e os convites pendentes, preservando o histórico. O​
+​organizador também poderá cancelar individualmente um treino antes de seu​
+​início.​
+​Consultas​
+​Consultar o organizador, os membros, os treinos futuros e seus convites​
+​e confirmações.​
+​Complexidade​
+​Média, pois exige verificar e atualizar registros relacionados.​
+​Protótipos da interface com o usuário​
+
+PÁGINA 25
+
+PÁGINA 26
+
+PÁGINA 27
+
+PÁGINA 28

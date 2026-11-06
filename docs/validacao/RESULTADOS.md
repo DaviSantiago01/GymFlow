@@ -1,5 +1,9 @@
 # Validação da implementação
 
+> Atualização vigente: [Histórico e avaliações por treino](TREINOS.md). A regra e o acesso
+> direto por professor descritos na entrega anterior foram substituídos pelo esclarecimento do usuário.
+
+
 Atualizado em 5 de novembro de 2026. Windows, Java 25.0.5, Maven 3.9.16,
 Node 24.16.0, H2 2.4.240, Spring Boot 4.1.1 e Angular 22.
 
@@ -73,4 +77,13 @@ limites de erro originais; os limites não foram ampliados.
 Não foram validados outros SGBDs, implantação pública ou integração com fechaduras.
 O limite de uma reserva pendente por aluno foi preservado. Aulas e grupos de treino
 continuam ilustrativos, como solicitado. Os ZIPs anteriores são versões históricas;
-o código atualizado está na pasta do projeto e na branch de desenvolvimento.
+o código atualizado está na pasta do projeto.
+
+## Atualização — Avaliações de professores
+
+A entrega seguinte está documentada em [AVALIACOES.md](AVALIACOES.md), com a
+decisão RN03, API, entidades, arquivos e limitações. A validação conjunta aprovou
+112 testes Java, 9 Angular e 8 fluxos de navegador. O banco recebeu V3 preservando
+os armários. Capturas 13–18 mostram a nova funcionalidade; os dados dessas capturas
+foram criados por contas identificadas como teste e as avaliações foram removidas
+ao final. Os avisos atuais de bundle/CSS estão no novo relatório.

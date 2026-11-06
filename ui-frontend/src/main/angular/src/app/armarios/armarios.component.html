@@ -4,11 +4,23 @@
       <span class="sobretitulo">● TREINO CONECTA</span>
       <h1>{{ titulos[modo()] }}</h1>
     </div>
-    <div class="atalhos">
-      <a routerLink="/core/armario/pesquisa">Armários</a
-      ><a routerLink="/core/reserva-armario/ativa">Minha reserva</a
-      ><a routerLink="/core/reserva-armario/pesquisa">Histórico ↗</a>
-    </div>
+    <nav class="atalhos" aria-label="Navegação de armários">
+      <a
+        routerLink="/core/armario/pesquisa"
+        [attr.aria-current]="modo() === 'lista' || modo() === 'detalhe' ? 'page' : null"
+        >Armários</a
+      >
+      <a
+        routerLink="/core/reserva-armario/ativa"
+        [attr.aria-current]="modo() === 'ativa' || modo() === 'confirmacao' ? 'page' : null"
+        >Minha reserva</a
+      >
+      <a
+        routerLink="/core/reserva-armario/pesquisa"
+        [attr.aria-current]="modo() === 'historico' || modo() === 'reserva' ? 'page' : null"
+        >Histórico de reservas</a
+      >
+    </nav>
   </header>
   @if (erro()) {
     <div class="mensagem erro" role="alert">

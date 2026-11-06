@@ -11,11 +11,13 @@ public class AlunoJpa implements IAgregadoJpa<Aluno> {
     private @Nullable Long identificador;
     @NotNull @Size(max=100) @Column(name="ALU_USUARIO",unique=true) private String usuario;
     @NotNull @Size(max=100) @Column(name="ALU_NOME") private String nome;
+    @ManyToOne(fetch=FetchType.LAZY,optional=false) @JoinColumn(name="ACD_ID") private br.edu.cesar.treinoconecta.treinoconectacore.infraestrutura.core.academia.AcademiaJpa academia;
     protected AlunoJpa() { }
-    public AlunoJpa(@Nullable Long identificador, String usuario, String nome) {
-        this.identificador=identificador; this.usuario=usuario; this.nome=nome;
+    public AlunoJpa(@Nullable Long identificador,String usuario,String nome,br.edu.cesar.treinoconecta.treinoconectacore.infraestrutura.core.academia.AcademiaJpa academia){
+        this.academia=academia;this.identificador=identificador; this.usuario=usuario; this.nome=nome;
     }
     public Long getIdentificador() { return java.util.Objects.requireNonNull(identificador); }
     public String getUsuario() { return usuario; }
+    public br.edu.cesar.treinoconecta.treinoconectacore.infraestrutura.core.academia.AcademiaJpa getAcademia(){return academia;}
     public String getNome() { return nome; }
 }
