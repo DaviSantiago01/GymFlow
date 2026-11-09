@@ -1,0 +1,58 @@
+<main class="tela">
+  <header class="cabecalho-pagina">
+    <div>
+      <span class="sobretitulo">● TREINO CONECTA</span>
+      <h1>Histórico de cargas e repetições</h1>
+    </div>
+    <div class="atalhos">
+      <a
+        routerLink="/core/execucao-de-exercicio/evolucao"
+        [queryParams]="aluno() ? { aluno: aluno() } : {}"
+        >Evolução</a
+      >
+    </div>
+  </header>
+  <section class="painel">
+    <label for="busca-exercicio">Filtrar por exercício</label>
+    <input
+      id="busca-exercicio"
+      [ngModel]="busca()"
+      (ngModelChange)="busca.set($event)"
+      autocomplete="off"
+    />
+  </section>
+  <section class="painel tabela">
+    <table>
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Aluno</th>
+          <th>Plano</th>
+          <th>Treino</th>
+          <th>Exercício</th>
+          <th>Séries</th>
+          <th>Repetições</th>
+          <th>Carga</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (execucao of filtradas(); track execucao.identificador) {
+          <tr>
+            <td>{{ dataHora(execucao.data) }}</td>
+            <td>{{ execucao.alunoNome }}</td>
+            <td>{{ execucao.planoNome }}</td>
+            <td>{{ rotulosDia[execucao.dia] }}</td>
+            <td>{{ execucao.exercicioNome }}</td>
+            <td>{{ execucao.series }}</td>
+            <td>{{ execucao.repeticoes }}</td>
+            <td>{{ numero(execucao.carga) }} kg</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="8" class="vazio">Nenhuma execução encontrada.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+</main>

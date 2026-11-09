@@ -1,0 +1,74 @@
+<main class="tela">
+  <header class="cabecalho-pagina">
+    <div>
+      <span class="sobretitulo">● TREINO CONECTA</span>
+      <h1>Alunos</h1>
+    </div>
+  </header>
+  <section class="painel">
+    <label for="busca-aluno">Buscar por nome ou usuário</label>
+    <input
+      id="busca-aluno"
+      [ngModel]="busca()"
+      (ngModelChange)="busca.set($event)"
+      autocomplete="off"
+    />
+  </section>
+  <section class="painel tabela">
+    <table>
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Usuário</th>
+          <th>Treinos</th>
+          <th>Avaliações</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (aluno of filtrados(); track aluno.identificador) {
+          <tr>
+            <td>{{ aluno.nome }}</td>
+            <td>{{ aluno.usuario }}</td>
+            <td>
+              <a routerLink="/core/plano-de-treino/pesquisa" [queryParams]="{ aluno: aluno.identificador }"
+                >Planos</a
+              >
+              <a routerLink="/core/plano-de-treino/inclusao" [queryParams]="{ aluno: aluno.identificador }"
+                >Novo plano</a
+              >
+              <a
+                routerLink="/core/execucao-de-exercicio/pesquisa"
+                [queryParams]="{ aluno: aluno.identificador }"
+                >Cargas</a
+              >
+              <a
+                routerLink="/core/execucao-de-exercicio/evolucao"
+                [queryParams]="{ aluno: aluno.identificador }"
+                >Evolução</a
+              >
+            </td>
+            <td>
+              <a routerLink="/core/avaliacao-fisica/pesquisa" [queryParams]="{ aluno: aluno.identificador }"
+                >Histórico</a
+              >
+              <a routerLink="/core/avaliacao-fisica/inclusao" [queryParams]="{ aluno: aluno.identificador }"
+                >Nova avaliação</a
+              >
+              <a routerLink="/core/avaliacao-fisica/evolucao" [queryParams]="{ aluno: aluno.identificador }"
+                >Indicadores</a
+              >
+              <a routerLink="/core/avaliacao-fisica/situacao" [queryParams]="{ aluno: aluno.identificador }"
+                >Situação</a
+              >
+              <a routerLink="/core/meta/pesquisa" [queryParams]="{ aluno: aluno.identificador }">Metas</a>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="4" class="vazio">Nenhum aluno encontrado.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+</main>

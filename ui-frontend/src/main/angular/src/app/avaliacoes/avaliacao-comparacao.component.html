@@ -1,0 +1,65 @@
+<main class="tela">
+  <header class="cabecalho-pagina">
+    <div>
+      <span class="sobretitulo">● TREINO CONECTA</span>
+      <h1>Comparação entre avaliações</h1>
+    </div>
+    <div class="atalhos">
+      <a [routerLink]="['/core/avaliacao-fisica', comparacao().atual.identificador, 'visualizacao']"
+        >Resultado</a
+      >
+    </div>
+  </header>
+
+  @if (comparacao().referencia; as referencia) {
+    <section class="painel">
+      <h2>{{ comparacao().atual.alunoNome }}</h2>
+      <p>Avaliação de {{ data(comparacao().atual.data) }} comparada com a de {{ data(referencia.data) }}.</p>
+      <label
+        >Avaliação de referência
+        <select (change)="escolherReferencia($any($event.target).value)">
+          @for (opcao of comparacao().disponiveis; track opcao.identificador) {
+            <option
+              [value]="opcao.identificador"
+              [selected]="opcao.identificador === referencia.identificador"
+            >
+              {{ data(opcao.data) }}
+            </option>
+          }
+        </select>
+      </label>
+    </section>
+    <section class="painel tabela" aria-label="Comparação por indicador">
+      <table>
+        <thead>
+          <tr>
+            <th>Indicador</th>
+            <th>Referência</th>
+            <th>Atual</th>
+            <th>Diferença</th>
+            <th>Diferença %</th>
+            <th>Evolução %</th>
+            <th>Interpretação</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of comparacao().indicadores; track item.indicador) {
+            <tr>
+              <td>{{ rotulosIndicador[item.indicador] }}</td>
+              <td>{{ numero(item.valorReferencia) }}</td>
+              <td>{{ numero(item.valorAtual) }}</td>
+              <td>{{ numero(item.diferencaAbsoluta) }}</td>
+              <td>{{ numero(item.diferencaPercentual) }}%</td>
+              <td>{{ numero(item.evolucaoPercentual) }}%</td>
+              <td>{{ rotulosInterpretacao[item.interpretacao] }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </section>
+  } @else {
+    <section class="painel">
+      <p class="vazio">Esta é a primeira avaliação do aluno. Ainda não há referência para comparar.</p>
+    </section>
+  }
+</main>

@@ -1,0 +1,117 @@
+<main class="tela">
+  <header class="cabecalho-pagina">
+    <div>
+      <span class="sobretitulo">● TREINO CONECTA</span>
+      <h1>Registrar execução</h1>
+    </div>
+    <div class="atalhos">
+      <a [routerLink]="['/core/plano-de-treino', detalhe().plano.identificador, 'visualizacao']"
+        >Meu treino</a
+      >
+      <a routerLink="/core/execucao-de-exercicio/pesquisa">Histórico de cargas</a>
+      <a routerLink="/core/execucao-de-exercicio/evolucao">Evolução</a>
+    </div>
+  </header>
+
+  @if (aviso()) {
+    <div class="mensagem sucesso" role="status">{{ aviso() }}</div>
+  }
+  @if (sugestao(); as sugestao) {
+    <div class="mensagem sucesso" role="status">
+      Você pode progredir de {{ numero(sugestao.cargaAtual) }} kg para
+      <strong>{{ numero(sugestao.cargaSugerida) }} kg</strong>.
+      @if (sugestao.progressaoMaximaAtingida) {
+        Esta é a progressão máxima do exercício.
+      }
+    </div>
+  }
+  @if (erro()) {
+    <div class="mensagem erro" role="alert">{{ erro() }}</div>
+  }
+
+  <section class="painel">
+    <h2>{{ detalhe().plano.nome }}</h2>
+    <div class="dias" role="group" aria-label="Dia do treino">
+      @for (treino of detalhe().treinos; track treino.dia) {
+        <button
+          type="button"
+          [class.selecionado]="diaEscolhido() === treino.dia"
+          [attr.aria-pressed]="diaEscolhido() === treino.dia"
+          (click)="diaEscolhido.set(treino.dia)"
+        >
+          {{ rotulosDia[treino.dia] }}
+        </button>
+      }
+    </div>
+  </section>
+
+  <section class="painel tabela">
+    <table>
+      <thead>
+        <tr>
+          <th>Exercício</th>
+          <th>Prescrição</th>
+          <th>Séries feitas</th>
+          <th>Repetições</th>
+          <th>Carga (kg)</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (entrada of entradas(); track entrada.serie.exercicio) {
+          <tr>
+            <td>{{ entrada.serie.exercicioNome }}</td>
+            <td>
+              {{ entrada.serie.quantidade }} × {{ entrada.serie.repeticoesMinimas }}-{{
+                entrada.serie.repeticoesMaximas
+              }}
+              · {{ numero(entrada.serie.carga) }} kg
+            </td>
+            <td>
+              <input
+                type="number"
+                min="1"
+                [max]="entrada.serie.quantidade"
+                [(ngModel)]="entrada.series"
+                [attr.aria-label]="'Séries feitas de ' + entrada.serie.exercicioNome"
+              />
+            </td>
+            <td>
+              <input
+                type="number"
+                min="1"
+                [max]="entrada.serie.repeticoesMaximas"
+                [(ngModel)]="entrada.repeticoes"
+                [attr.aria-label]="'Repetições feitas de ' + entrada.serie.exercicioNome"
+              />
+            </td>
+            <td>
+              <input
+                type="number"
+                min="0"
+                step="0.5"
+                [(ngModel)]="entrada.carga"
+                [attr.aria-label]="'Carga usada em ' + entrada.serie.exercicioNome"
+              />
+            </td>
+            <td>
+              <button
+                type="button"
+                class="botao principal"
+                [disabled]="ocupado()"
+                [attr.aria-label]="'Registrar ' + entrada.serie.exercicioNome"
+                (click)="registrar(entrada)"
+              >
+                Registrar
+              </button>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="vazio">Nenhum exercício neste treino.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+</main>

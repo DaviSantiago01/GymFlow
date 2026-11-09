@@ -1,0 +1,56 @@
+<main class="tela">
+  <header class="cabecalho-pagina">
+    <div>
+      <span class="sobretitulo">● TREINO CONECTA</span>
+      <h1>Planos de treino</h1>
+    </div>
+    @if (podeCriar()) {
+      <a
+        class="botao principal"
+        routerLink="/core/plano-de-treino/inclusao"
+        [queryParams]="aluno() ? { aluno: aluno() } : {}"
+        >Novo plano</a
+      >
+    }
+  </header>
+  <section class="painel tabela">
+    <table>
+      <thead>
+        <tr>
+          <th>Plano</th>
+          <th>Aluno</th>
+          <th>Personal</th>
+          <th>Frequência</th>
+          <th>Versão</th>
+          <th>Situação</th>
+          <th>Criação</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (plano of planos(); track plano.identificador) {
+          <tr>
+            <td>{{ plano.nome }}</td>
+            <td>{{ plano.alunoNome }}</td>
+            <td>{{ plano.personalNome }}</td>
+            <td>{{ plano.frequenciaSemanal }}x por semana</td>
+            <td>{{ plano.versao }}</td>
+            <td>
+              <span class="etiqueta" [class.neutra]="plano.situacao !== 'ATIVO'">{{
+                rotulos[plano.situacao]
+              }}</span>
+            </td>
+            <td>{{ dataHora(plano.criacao) }}</td>
+            <td>
+              <a [routerLink]="['/core/plano-de-treino', plano.identificador, 'visualizacao']">Ver</a>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="8" class="vazio">Nenhum plano de treino encontrado.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+</main>

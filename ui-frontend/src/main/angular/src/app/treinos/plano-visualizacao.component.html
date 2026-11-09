@@ -1,0 +1,107 @@
+<main class="tela">
+  <header class="cabecalho-pagina">
+    <div>
+      <span class="sobretitulo">● TREINO CONECTA</span>
+      <h1>{{ plano().nome }}</h1>
+    </div>
+    <div class="atalhos"><a routerLink="/core/plano-de-treino/pesquisa">Planos de treino</a></div>
+  </header>
+
+  @if (aviso()) {
+    <div class="mensagem sucesso" role="status">{{ aviso() }}</div>
+  }
+  @if (erro()) {
+    <div class="mensagem erro" role="alert">{{ erro() }}</div>
+  }
+
+  <section class="painel">
+    <div class="linha">
+      <h2>{{ plano().alunoNome }}</h2>
+      <span class="etiqueta" [class.neutra]="plano().situacao !== 'ATIVO'">{{
+        rotulosSituacao[plano().situacao]
+      }}</span>
+    </div>
+    <div class="indicadores">
+      <div>
+        <span>Frequência semanal</span><strong>{{ plano().frequenciaSemanal }}x</strong>
+      </div>
+      <div>
+        <span>Versão</span><strong>{{ plano().versao }}</strong>
+      </div>
+      <div>
+        <span>Personal</span><strong>{{ plano().personalNome }}</strong>
+      </div>
+    </div>
+    <p>Criado em {{ dataHora(plano().criacao) }}.</p>
+    @if (plano().encerramento; as encerramento) {
+      <p>Finalizado em {{ dataHora(encerramento) }}.</p>
+    }
+    @if (detalhe().planoAnterior; as anterior) {
+      <p>
+        <a class="atalhos" [routerLink]="['/core/plano-de-treino', anterior, 'visualizacao']"
+          >Ver versão anterior</a
+        >
+      </p>
+    }
+    <div class="acoes">
+      @if (detalhe().gerenciavel && rascunho()) {
+        <button class="botao principal" [disabled]="ocupado()" (click)="executar('ativar')">
+          Ativar plano
+        </button>
+        <button class="botao secundario" [disabled]="ocupado()" (click)="executar('substituir')">
+          Ativar e substituir o plano atual
+        </button>
+      }
+      @if (editavel()) {
+        <a
+          class="botao secundario"
+          [routerLink]="['/core/plano-de-treino', plano().identificador, 'alteracao']"
+          >Alterar plano</a
+        >
+        <button class="botao perigo" [disabled]="ocupado()" (click)="executar('encerrar')">
+          Encerrar plano
+        </button>
+      }
+      @if (podeRegistrar()) {
+        <a class="botao principal" routerLink="/core/execucao-de-exercicio/inclusao"
+          >Registrar execução</a
+        >
+      }
+    </div>
+  </section>
+
+  @for (treino of detalhe().treinos; track treino.dia) {
+    <section class="painel tabela">
+      <h2>{{ rotulosDia[treino.dia] }} · {{ treino.nome }}</h2>
+      <p>Objetivo: {{ rotulosObjetivo[treino.objetivo] }}</p>
+      <table>
+        <thead>
+          <tr>
+            <th>Exercício</th>
+            <th>Séries</th>
+            <th>Repetições</th>
+            <th>Carga</th>
+            <th>Intervalo</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (serie of treino.series; track serie.exercicio) {
+            <tr>
+              <td>{{ serie.exercicioNome }}</td>
+              <td>{{ serie.quantidade }}</td>
+              <td>{{ serie.repeticoesMinimas }} a {{ serie.repeticoesMaximas }}</td>
+              <td>{{ numero(serie.carga) }} kg</td>
+              <td>{{ serie.intervaloSegundos }} s</td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="5" class="vazio">Nenhum exercício neste treino.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </section>
+  } @empty {
+    <section class="painel"><p class="vazio">Este plano ainda não possui treinos.</p></section>
+  }
+</main>

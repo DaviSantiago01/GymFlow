@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 import { guardaAutenticacao } from '../d5';
 import { resolverArmarios } from './armarios/armarios.service';
+import { rotasTreinos } from './treinos/treinos.rotas';
+import { rotasAvaliacoes } from './avaliacoes/avaliacoes.rotas';
 const tela = () => import('./armarios/armarios.component').then((m) => m.ArmariosComponent);
 export const routes: Routes = [
   {
@@ -60,5 +62,7 @@ export const routes: Routes = [
     resolve: { tela: resolverArmarios },
     data: { modo: 'reserva' },
   },
+  ...rotasTreinos,
+  ...rotasAvaliacoes,
   { path: '**', redirectTo: 'inicio' },
 ];

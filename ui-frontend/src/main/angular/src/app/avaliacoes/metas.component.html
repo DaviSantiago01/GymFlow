@@ -1,0 +1,63 @@
+<main class="tela">
+  <header class="cabecalho-pagina">
+    <div>
+      <span class="sobretitulo">● TREINO CONECTA</span>
+      <h1>Metas e cumprimento</h1>
+    </div>
+    @if (podeGerenciar()) {
+      <a
+        class="botao principal"
+        routerLink="/core/meta/inclusao"
+        [queryParams]="aluno() ? { aluno: aluno() } : {}"
+        >Nova meta</a
+      >
+    }
+  </header>
+  <section class="painel tabela">
+    <table>
+      <thead>
+        <tr>
+          <th>Aluno</th>
+          <th>Indicador</th>
+          <th>Início → desejado</th>
+          <th>Valor atual</th>
+          <th>Cumprimento</th>
+          <th>Status</th>
+          <th>Período</th>
+          <th>Situação</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (meta of metas(); track meta.identificador) {
+          <tr>
+            <td>{{ meta.alunoNome }}</td>
+            <td>{{ rotulosIndicador[meta.indicador] }}</td>
+            <td>{{ numero(meta.valorInicial) }} → {{ numero(meta.valorDesejado) }}</td>
+            <td>{{ numero(meta.valorAtual) }}</td>
+            <td>{{ numero(meta.percentualCumprimento) }}%</td>
+            <td>{{ meta.statusCumprimento ? rotulosStatus[meta.statusCumprimento] : '—' }}</td>
+            <td>{{ data(meta.inicio) }} a {{ data(meta.fim) }}</td>
+            <td>
+              <span class="etiqueta" [class.neutra]="meta.situacao !== 'ATIVA'">{{
+                rotulosSituacao[meta.situacao]
+              }}</span>
+              @if (meta.dataAtingida; as atingida) {
+                em {{ data(atingida) }}
+              }
+            </td>
+            <td>
+              @if (podeGerenciar() && meta.situacao === 'ATIVA') {
+                <a [routerLink]="['/core/meta', meta.identificador, 'alteracao']">Gerenciar</a>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="9" class="vazio">Nenhuma meta encontrada.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+</main>

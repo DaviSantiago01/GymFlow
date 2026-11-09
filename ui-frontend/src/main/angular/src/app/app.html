@@ -21,7 +21,7 @@
   @if (servicoAutenticacao.autenticado()) {
     <aside id="menu-aluno" class="menu-lateral" [class.aberto]="menuAberto()">
       <div class="titulo-menu">
-        <span>ÁREA DO ALUNO</span><strong>Seu treino começa aqui</strong>
+        <span>{{ servicoAutenticacao.autorizacoesDe('aluno')?.buscar ? 'ÁREA DO PERSONAL' : 'ÁREA DO ALUNO' }}</span><strong>Seu treino começa aqui</strong>
       </div>
       <nav aria-label="Menu do aluno">
         <a
@@ -97,6 +97,122 @@
               <path d="M3 11a9 9 0 1 1 2 7M3 5v6h6m3-5v6l4 2" />
             </svg>
             <span>Histórico de reservas</span>
+          </a>
+        }
+        @if (servicoAutenticacao.autorizacoesDe('aluno')?.buscar) {
+          <a
+            class="item-menu"
+            routerLink="/core/aluno/pesquisa"
+            routerLinkActive="ativo"
+            ariaCurrentWhenActive="page"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="8" r="4" />
+              <path d="M4 21v-1a8 8 0 0 1 16 0v1" />
+            </svg>
+            <span>Alunos</span>
+          </a>
+        }
+        @if (servicoAutenticacao.autorizacoesDe('planoDeTreino')?.buscar) {
+          <a
+            class="item-menu"
+            routerLink="/core/plano-de-treino/pesquisa"
+            routerLinkActive="ativo"
+            ariaCurrentWhenActive="page"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M6 7v10M3 9v6m15-8v10m3-8v6M6 12h12" />
+            </svg>
+            <span>Planos de treino</span>
+          </a>
+        }
+        @if (servicoAutenticacao.autorizacoesDe('execucaoDeExercicio')?.buscar) {
+          @if ($any(servicoAutenticacao.autorizacoesDe('execucaoDeExercicio')).registrar) {
+            <a
+              class="item-menu"
+              routerLink="/core/execucao-de-exercicio/inclusao"
+              routerLinkActive="ativo"
+              ariaCurrentWhenActive="page"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 12l5 5L20 7" />
+              </svg>
+              <span>Registrar execução</span>
+            </a>
+            <a
+              class="item-menu"
+              routerLink="/core/execucao-de-exercicio/evolucao"
+              routerLinkActive="ativo"
+              ariaCurrentWhenActive="page"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 20V4m0 16h16M8 16l4-5 3 3 5-7" />
+              </svg>
+              <span>Evolução</span>
+            </a>
+          }
+          <a
+            class="item-menu"
+            routerLink="/core/execucao-de-exercicio/pesquisa"
+            routerLinkActive="ativo"
+            ariaCurrentWhenActive="page"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 6h16M4 12h16M4 18h10" />
+            </svg>
+            <span>Histórico de cargas</span>
+          </a>
+        }
+        @if (servicoAutenticacao.autorizacoesDe('avaliacaoFisica')?.buscar) {
+          <a
+            class="item-menu"
+            routerLink="/core/avaliacao-fisica/pesquisa"
+            routerLinkActive="ativo"
+            ariaCurrentWhenActive="page"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M9 4h6v3H9zM6 6h3m6 0h3v15H6V6m4 7h4m-4 4h4" />
+            </svg>
+            <span>Avaliações físicas</span>
+          </a>
+          @if (!servicoAutenticacao.autorizacoesDe('aluno')?.buscar) {
+            <a
+              class="item-menu"
+              routerLink="/core/avaliacao-fisica/situacao"
+              routerLinkActive="ativo"
+              ariaCurrentWhenActive="page"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M12 7v5l3 2" />
+              </svg>
+              <span>Minha situação</span>
+            </a>
+            <a
+              class="item-menu"
+              routerLink="/core/avaliacao-fisica/evolucao"
+              routerLinkActive="ativo"
+              ariaCurrentWhenActive="page"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 20h16M7 20v-6m5 6V9m5 11V5" />
+              </svg>
+              <span>Indicadores</span>
+            </a>
+          }
+        }
+        @if (servicoAutenticacao.autorizacoesDe('meta')?.buscar) {
+          <a
+            class="item-menu"
+            routerLink="/core/meta/pesquisa"
+            routerLinkActive="ativo"
+            ariaCurrentWhenActive="page"
+          >
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" />
+              <circle cx="12" cy="12" r="4" />
+            </svg>
+            <span>Metas</span>
           </a>
         }
       </nav>

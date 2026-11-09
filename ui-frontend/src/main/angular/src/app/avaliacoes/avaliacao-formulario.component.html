@@ -1,0 +1,85 @@
+<main class="tela">
+  <header class="cabecalho-pagina">
+    <div>
+      <span class="sobretitulo">● TREINO CONECTA</span>
+      <h1>{{ correcao() ? 'Corrigir avaliação física' : 'Nova avaliação física' }}</h1>
+    </div>
+    <div class="atalhos"><a routerLink="/core/avaliacao-fisica/pesquisa">Avaliações</a></div>
+  </header>
+
+  @if (correcao()) {
+    <p class="mensagem sucesso" role="status">
+      A correção cria uma nova versão. Os dados anteriores ficam preservados.
+    </p>
+  }
+
+  <section class="painel" aria-labelledby="titulo-dados">
+    <h2 id="titulo-dados">Dados da avaliação</h2>
+    <div class="campos">
+      <label
+        >Aluno
+        <select [(ngModel)]="alunoEscolhido" [disabled]="correcao()">
+          <option value="">Selecione</option>
+          @for (aluno of formulario().alunos; track aluno.identificador) {
+            <option [value]="aluno.identificador">{{ aluno.nome }}</option>
+          }
+        </select>
+      </label>
+      <label
+        >Data
+        <input type="date" [(ngModel)]="data" />
+      </label>
+      <label
+        >Peso (kg)
+        <input
+          type="number"
+          step="0.1"
+          [min]="formulario().pesoMinimo"
+          [max]="formulario().pesoMaximo"
+          [(ngModel)]="peso"
+        />
+      </label>
+      <label
+        >Altura (cm)
+        <input
+          type="number"
+          step="0.1"
+          [min]="formulario().alturaMinima"
+          [max]="formulario().alturaMaxima"
+          [(ngModel)]="altura"
+        />
+      </label>
+    </div>
+  </section>
+
+  <section class="painel" aria-labelledby="titulo-medidas">
+    <h2 id="titulo-medidas">Medidas corporais (cm)</h2>
+    <p>
+      Preencha as medidas realizadas, de {{ formulario().medidaMinima }} a
+      {{ formulario().medidaMaxima }} cm.
+    </p>
+    <div class="campos">
+      @for (campo of medidas; track campo.indicador) {
+        <label
+          >{{ rotulos[campo.indicador] }}
+          <input
+            type="number"
+            step="0.1"
+            [min]="formulario().medidaMinima"
+            [max]="formulario().medidaMaxima"
+            [(ngModel)]="campo.valor"
+          />
+        </label>
+      }
+    </div>
+  </section>
+
+  @if (erro()) {
+    <div class="mensagem erro" role="alert">{{ erro() }}</div>
+  }
+  <div class="acoes">
+    <button type="button" class="botao principal" [disabled]="ocupado()" (click)="salvar()">
+      {{ correcao() ? 'Salvar correção' : 'Registrar avaliação' }}
+    </button>
+  </div>
+</main>

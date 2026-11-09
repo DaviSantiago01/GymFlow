@@ -29,3 +29,118 @@ Table RSV_RESERVA_ARMARIO {
     (ALU_ID, RSV_CONFIRMACAO)
   }
 }
+Table PER_PERSONAL {
+  PER_ID bigint [pk, increment]
+  PER_USUARIO varchar(100) [not null, unique]
+  PER_NOME varchar(100) [not null]
+}
+Table PCD_CREDENCIAL_PERSONAL {
+  PER_ID bigint [pk, ref: - PER_PERSONAL.PER_ID]
+  PCD_SENHA varchar(255) [not null, note: 'Hash compatível com DelegatingPasswordEncoder']
+  PCD_ATIVO boolean [not null, default: true]
+}
+Table EXE_EXERCICIO {
+  EXE_ID bigint [pk, increment]
+  EXE_NOME varchar(100) [not null, unique]
+  EXE_CATEGORIA varchar(20) [not null, note: 'PEITO, COSTAS, PERNAS, OMBROS, BRACOS, ABDOMEN']
+  EXE_CARGA_MAXIMA decimal(7,2) [not null]
+  EXE_INCREMENTO_CARGA decimal(7,2)
+}
+Table PLT_PLANO_TREINO {
+  PLT_ID bigint [pk, increment]
+  ALU_ID bigint [not null, ref: > ALU_ALUNO.ALU_ID]
+  PER_ID bigint [not null, ref: > PER_PERSONAL.PER_ID]
+  PLT_NOME varchar(100) [not null]
+  PLT_FREQUENCIA_SEMANAL int [not null]
+  PLT_SITUACAO varchar(20) [not null, note: 'RASCUNHO, ATIVO, ENCERRADO, SUBSTITUIDO']
+  PLT_VERSAO int [not null]
+  PLT_PLANO_ANTERIOR bigint [ref: > PLT_PLANO_TREINO.PLT_ID, note: 'Autorreferência: versão substituída por esta']
+  PLT_CRIACAO timestamptz [not null]
+  PLT_ENCERRAMENTO timestamptz
+  PLT_ALUNO_ATIVO bigint [unique, note: 'Gerada pelo H2: ALU_ID quando ATIVO, NULL nos demais estados']
+  indexes {
+    (ALU_ID, PLT_CRIACAO)
+  }
+}
+Table TRE_TREINO {
+  TRE_ID bigint [pk, increment]
+  PLT_ID bigint [not null, ref: > PLT_PLANO_TREINO.PLT_ID]
+  TRE_INDICE int [not null, note: 'Posição do treino na lista do plano']
+  TRE_NOME varchar(60) [not null]
+  TRE_DIA varchar(10) [not null, note: 'SEGUNDA a DOMINGO']
+  TRE_OBJETIVO varchar(20) [not null, note: 'FORCA, HIPERTROFIA, RESISTENCIA']
+  indexes {
+    (PLT_ID, TRE_DIA) [unique]
+  }
+}
+Table SRE_SERIE {
+  TRE_ID bigint [not null, ref: > TRE_TREINO.TRE_ID]
+  SRE_INDICE int [not null, note: 'Posição da série na lista do treino']
+  EXE_ID bigint [not null, ref: > EXE_EXERCICIO.EXE_ID]
+  SRE_QUANTIDADE int [not null]
+  SRE_REPETICOES_MINIMAS int [not null]
+  SRE_REPETICOES_MAXIMAS int [not null]
+  SRE_CARGA decimal(7,2) [not null]
+  SRE_INTERVALO_SEGUNDOS int [not null]
+  indexes {
+    (TRE_ID, SRE_INDICE) [pk]
+    (TRE_ID, EXE_ID) [unique]
+  }
+}
+Table EXC_EXECUCAO_EXERCICIO {
+  EXC_ID bigint [pk, increment]
+  ALU_ID bigint [not null, ref: > ALU_ALUNO.ALU_ID]
+  PLT_ID bigint [not null, ref: > PLT_PLANO_TREINO.PLT_ID]
+  EXE_ID bigint [not null, ref: > EXE_EXERCICIO.EXE_ID]
+  EXC_DIA varchar(10) [not null]
+  EXC_DATA timestamptz [not null]
+  EXC_SERIES int [not null]
+  EXC_REPETICOES int [not null]
+  EXC_CARGA decimal(7,2) [not null]
+  indexes {
+    (ALU_ID, EXE_ID, EXC_DATA)
+  }
+}
+Table AVF_AVALIACAO_FISICA {
+  AVF_ID bigint [pk, increment]
+  ALU_ID bigint [not null, ref: > ALU_ALUNO.ALU_ID]
+  PER_ID bigint [not null, ref: > PER_PERSONAL.PER_ID]
+  AVF_DATA date [not null]
+  AVF_PESO decimal(6,2) [not null]
+  AVF_ALTURA decimal(6,2) [not null]
+  AVF_IMC decimal(6,2) [not null]
+  AVF_SITUACAO varchar(20) [not null, note: 'VALIDA, SUBSTITUIDA, EXCLUIDA']
+  AVF_VERSAO int [not null]
+  AVF_AVALIACAO_ANTERIOR bigint [ref: > AVF_AVALIACAO_FISICA.AVF_ID, note: 'Autorreferência: versão corrigida por esta']
+  AVF_REGISTRO timestamptz [not null]
+  AVF_ALUNO_VALIDA bigint [note: 'Gerada pelo H2: ALU_ID quando VALIDA, NULL nos demais estados']
+  indexes {
+    (AVF_ALUNO_VALIDA, AVF_DATA) [unique]
+    (ALU_ID, AVF_DATA)
+  }
+}
+Table MDC_MEDIDA_CORPORAL {
+  AVF_ID bigint [not null, ref: > AVF_AVALIACAO_FISICA.AVF_ID]
+  MDC_INDICE int [not null, note: 'Posição da medida na lista da avaliação']
+  MDC_INDICADOR varchar(20) [not null]
+  MDC_VALOR decimal(6,2) [not null]
+  indexes {
+    (AVF_ID, MDC_INDICE) [pk]
+  }
+}
+Table MET_META {
+  MET_ID bigint [pk, increment]
+  ALU_ID bigint [not null, ref: > ALU_ALUNO.ALU_ID]
+  PER_ID bigint [not null, ref: > PER_PERSONAL.PER_ID]
+  MET_INDICADOR varchar(20) [not null]
+  MET_VALOR_INICIAL decimal(6,2) [not null]
+  MET_VALOR_DESEJADO decimal(6,2) [not null]
+  MET_INICIO date [not null]
+  MET_FIM date [not null]
+  AVF_ID bigint [not null, ref: > AVF_AVALIACAO_FISICA.AVF_ID]
+  MET_SITUACAO varchar(20) [not null, note: 'ATIVA, ATINGIDA, ENCERRADA, SUBSTITUIDA']
+  MET_DATA_ATINGIDA date
+  indexes {
+    (ALU_ID, MET_INDICADOR, MET_SITUACAO)
+  }
+}

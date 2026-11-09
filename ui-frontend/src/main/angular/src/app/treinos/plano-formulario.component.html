@@ -1,0 +1,195 @@
+<main class="tela">
+  <header class="cabecalho-pagina">
+    <div>
+      <span class="sobretitulo">● TREINO CONECTA</span>
+      <h1>{{ alteracao() ? 'Alterar plano de treino' : 'Novo plano de treino' }}</h1>
+    </div>
+    <div class="atalhos"><a routerLink="/core/plano-de-treino/pesquisa">Planos de treino</a></div>
+  </header>
+
+  @if (alteracao()) {
+    <p class="mensagem sucesso" role="status">
+      Salvar cria a versão {{ plano()!.versao + 1 }} do plano. A versão atual fica preservada e as
+      execuções registradas não mudam.
+    </p>
+  }
+
+  <section class="painel" aria-labelledby="titulo-dados">
+    <h2 id="titulo-dados">Dados do plano</h2>
+    <div class="campos">
+      <label
+        >Aluno
+        <select [(ngModel)]="alunoEscolhido" [disabled]="alteracao()">
+          <option value="">Selecione</option>
+          @for (aluno of formulario().alunos; track aluno.identificador) {
+            <option [value]="aluno.identificador">{{ aluno.nome }}</option>
+          }
+        </select>
+      </label>
+      <label
+        >Nome do plano
+        <input [(ngModel)]="nome" maxlength="100" />
+      </label>
+      <label
+        >Frequência semanal
+        <input type="number" min="1" max="7" [(ngModel)]="frequencia" />
+      </label>
+    </div>
+  </section>
+
+  <section class="painel" aria-labelledby="titulo-dias">
+    <h2 id="titulo-dias">Dias da semana</h2>
+    <p>Selecione um dia para cada treino. A frequência precisa ser igual aos dias escolhidos.</p>
+    <div class="dias" role="group" aria-labelledby="titulo-dias">
+      @for (dia of formulario().dias; track dia) {
+        <button
+          type="button"
+          [class.selecionado]="diaSelecionado(dia)"
+          [attr.aria-pressed]="diaSelecionado(dia)"
+          (click)="alternarDia(dia)"
+        >
+          {{ rotulosDia[dia] }}
+        </button>
+      }
+    </div>
+    <p>{{ treinos().length }} dia(s) selecionado(s) · frequência declarada: {{ frequencia }}</p>
+  </section>
+
+  @for (treino of treinos(); track treino.dia) {
+    <section class="painel" [attr.aria-label]="'Treino de ' + rotulosDia[treino.dia]">
+      <h2>{{ rotulosDia[treino.dia] }}</h2>
+      <div class="campos">
+        <label
+          >Nome do treino
+          <input [(ngModel)]="treino.nome" maxlength="60" />
+        </label>
+        <label
+          >Objetivo
+          <select [(ngModel)]="treino.objetivo">
+            @for (item of formulario().objetivos; track item.objetivo) {
+              <option [value]="item.objetivo">{{ rotulosObjetivo[item.objetivo] }}</option>
+            }
+          </select>
+        </label>
+        <label
+          >Exercício
+          <select [(ngModel)]="treino.exercicioEscolhido">
+            <option value="">Selecione</option>
+            @for (exercicio of exerciciosDisponiveis(treino); track exercicio.identificador) {
+              <option [value]="exercicio.identificador">{{ exercicio.nome }}</option>
+            }
+          </select>
+        </label>
+      </div>
+      <div class="acoes">
+        <button
+          type="button"
+          class="botao secundario"
+          [disabled]="!treino.exercicioEscolhido"
+          (click)="adicionarExercicio(treino)"
+        >
+          Adicionar exercício
+        </button>
+      </div>
+      <p>
+        Faixa de {{ rotulosObjetivo[treino.objetivo] }}: {{ faixa(treino.objetivo).seriesMinimas }} a
+        {{ faixa(treino.objetivo).seriesMaximas }} séries,
+        {{ faixa(treino.objetivo).repeticoesMinimas }} a
+        {{ faixa(treino.objetivo).repeticoesMaximas }} repetições. Intervalo de
+        {{ formulario().intervaloMinimoSegundos }} a {{ formulario().intervaloMaximoSegundos }}
+        segundos.
+      </p>
+      @if (treino.series.length) {
+        <div class="tabela">
+          <table>
+            <thead>
+              <tr>
+                <th>Exercício</th>
+                <th>Séries</th>
+                <th>Rep. mínimas</th>
+                <th>Rep. máximas</th>
+                <th>Carga (kg)</th>
+                <th>Intervalo (s)</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (serie of treino.series; track serie.exercicio) {
+                <tr>
+                  <td>{{ nomeExercicio(serie.exercicio) }}</td>
+                  <td>
+                    <input
+                      type="number"
+                      min="1"
+                      [(ngModel)]="serie.quantidade"
+                      [attr.aria-label]="'Séries de ' + nomeExercicio(serie.exercicio)"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      min="1"
+                      [(ngModel)]="serie.repeticoesMinimas"
+                      [attr.aria-label]="'Repetições mínimas de ' + nomeExercicio(serie.exercicio)"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      min="1"
+                      [(ngModel)]="serie.repeticoesMaximas"
+                      [attr.aria-label]="'Repetições máximas de ' + nomeExercicio(serie.exercicio)"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      min="0"
+                      step="0.5"
+                      [(ngModel)]="serie.carga"
+                      [attr.aria-label]="'Carga de ' + nomeExercicio(serie.exercicio)"
+                    />
+                  </td>
+                  <td>
+                    <input
+                      type="number"
+                      [min]="formulario().intervaloMinimoSegundos"
+                      [max]="formulario().intervaloMaximoSegundos"
+                      [(ngModel)]="serie.intervaloSegundos"
+                      [attr.aria-label]="'Intervalo de ' + nomeExercicio(serie.exercicio)"
+                    />
+                  </td>
+                  <td>
+                    <button
+                      type="button"
+                      class="botao perigo"
+                      (click)="removerExercicio(treino, serie.exercicio)"
+                    >
+                      Remover
+                    </button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      } @else {
+        <p class="vazio">Nenhum exercício neste treino.</p>
+      }
+    </section>
+  }
+
+  @if (erro()) {
+    <div class="mensagem erro" role="alert">{{ erro() }}</div>
+  }
+  <div class="acoes">
+    <button type="button" class="botao principal" [disabled]="ocupado()" (click)="salvar()">
+      {{ alteracao() ? 'Salvar nova versão' : 'Salvar rascunho' }}
+    </button>
+    @if (alteracao()) {
+      <button type="button" class="botao perigo" [disabled]="ocupado()" (click)="encerrar()">
+        Encerrar plano
+      </button>
+    }
+  </div>
+</main>

@@ -1,0 +1,71 @@
+<main class="tela">
+  <header class="cabecalho-pagina">
+    <div>
+      <span class="sobretitulo">● TREINO CONECTA</span>
+      <h1>{{ alteracao() ? 'Gerenciar meta' : 'Nova meta' }}</h1>
+    </div>
+    <div class="atalhos"><a routerLink="/core/meta/pesquisa">Metas</a></div>
+  </header>
+
+  <section class="painel">
+    <div class="campos">
+      <label
+        >Aluno
+        <select [(ngModel)]="alunoEscolhido" [disabled]="alteracao()">
+          <option value="">Selecione</option>
+          @for (aluno of formulario().alunos; track aluno.identificador) {
+            <option [value]="aluno.identificador">{{ aluno.nome }}</option>
+          }
+        </select>
+      </label>
+      <label
+        >Indicador
+        <select [(ngModel)]="indicador" [disabled]="alteracao()">
+          <option value="">Selecione</option>
+          @for (item of formulario().indicadores; track item) {
+            <option [value]="item">{{ rotulos[item] }}</option>
+          }
+        </select>
+      </label>
+      <label
+        >Valor desejado
+        <input type="number" step="0.1" min="0" [(ngModel)]="valorDesejado" />
+      </label>
+      <label
+        >Início
+        <input type="date" [(ngModel)]="inicio" />
+      </label>
+      <label
+        >Fim
+        <input type="date" [(ngModel)]="fim" />
+      </label>
+    </div>
+    <p>A meta parte do valor do indicador na avaliação válida mais recente do aluno.</p>
+  </section>
+
+  @if (erro()) {
+    <div class="mensagem erro" role="alert">{{ erro() }}</div>
+  }
+  <div class="acoes">
+    @if (alteracao()) {
+      <button type="button" class="botao principal" [disabled]="ocupado()" (click)="alterar('ajustar')">
+        Salvar alteração
+      </button>
+      <button
+        type="button"
+        class="botao secundario"
+        [disabled]="ocupado()"
+        (click)="alterar('substituir')"
+      >
+        Substituir por nova meta
+      </button>
+      <button type="button" class="botao perigo" [disabled]="ocupado()" (click)="encerrar()">
+        Encerrar meta
+      </button>
+    } @else {
+      <button type="button" class="botao principal" [disabled]="ocupado()" (click)="criar()">
+        Salvar meta
+      </button>
+    }
+  </div>
+</main>

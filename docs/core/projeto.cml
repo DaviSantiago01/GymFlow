@@ -72,5 +72,275 @@ BoundedContext ^core implements ^core {
 				@ReservaArmario encerrar(@ReservaArmarioIdentificador identificador);
 			}
 		}
+		Aggregate Personal {
+			Entity Personal {
+				aggregateRoot
+				-PersonalIdentificador identificador key
+				String usuario
+				String nome
+				Repository PersonalRepository {
+					@Personal incluir(@Personal agregado);
+					boolean existePorIdentificador(@PersonalIdentificador identificador);
+					@Personal buscarPorIdentificador(@PersonalIdentificador identificador);
+					void alterar(@Personal agregado);
+					void excluir(@PersonalIdentificador identificador);
+					@Personal buscarPorUsuario(String usuario);
+				}
+			}
+			ValueObject PersonalIdentificador { String valor }
+			Service PersonalServico {
+				@Personal buscar(@PersonalIdentificador identificador);
+			}
+		}
+		Aggregate Exercicio {
+			Entity Exercicio {
+				aggregateRoot
+				-ExercicioIdentificador identificador key
+				String nome
+				-CategoriaExercicio categoria
+				BigDecimal cargaMaxima
+				BigDecimal incrementoCarga nullable
+				def boolean cargaValida(BigDecimal carga);
+				def BigDecimal progredirCarga(BigDecimal cargaAtual);
+				Repository ExercicioRepository {
+					@Exercicio incluir(@Exercicio agregado);
+					boolean existePorIdentificador(@ExercicioIdentificador identificador);
+					@Exercicio buscarPorIdentificador(@ExercicioIdentificador identificador);
+					void alterar(@Exercicio agregado);
+					void excluir(@ExercicioIdentificador identificador);
+				}
+			}
+			ValueObject ExercicioIdentificador { String valor }
+			enum CategoriaExercicio { PEITO, COSTAS, PERNAS, OMBROS, BRACOS, ABDOMEN }
+			Service ExercicioServico {
+				@Exercicio buscar(@ExercicioIdentificador identificador);
+			}
+		}
+		Aggregate PlanoDeTreino {
+			Entity PlanoDeTreino {
+				aggregateRoot
+				-PlanoDeTreinoIdentificador identificador key
+				-AlunoIdentificador aluno
+				-PersonalIdentificador personal
+				String nome
+				int frequenciaSemanal
+				-List<Treino> treinos
+				-SituacaoPlano situacao
+				int versao
+				-PlanoDeTreinoIdentificador planoAnterior nullable
+				DateTime criacao
+				DateTime encerramento nullable
+				def @PlanoDeTreino ativar(@PersonalIdentificador responsavel);
+				def @PlanoDeTreino encerrar(@PersonalIdentificador responsavel, DateTime agora);
+				def @PlanoDeTreino substituir(@PersonalIdentificador responsavel, DateTime agora);
+				def @PlanoDeTreino revisar(@PersonalIdentificador responsavel, String nome, int frequenciaSemanal, List<@Treino> treinos, DateTime agora);
+				def void validarExecucao(@AlunoIdentificador executor, @DiaSemana dia, @ExercicioIdentificador exercicio, int series, int repeticoes);
+				def int limiteRepeticoes(@ExercicioIdentificador exercicio);
+				Repository PlanoDeTreinoRepository {
+					@PlanoDeTreino incluir(@PlanoDeTreino agregado);
+					boolean existePorIdentificador(@PlanoDeTreinoIdentificador identificador);
+					@PlanoDeTreino buscarPorIdentificador(@PlanoDeTreinoIdentificador identificador);
+					void alterar(@PlanoDeTreino agregado);
+					void excluir(@PlanoDeTreinoIdentificador identificador);
+					@PlanoDeTreino bloquear(@PlanoDeTreinoIdentificador identificador);
+					boolean existeAtivoPorAluno(@AlunoIdentificador aluno);
+					@PlanoDeTreino buscarAtivoPorAluno(@AlunoIdentificador aluno);
+				}
+			}
+			ValueObject PlanoDeTreinoIdentificador { String valor }
+			ValueObject Treino {
+				String nome
+				-DiaSemana dia
+				-ObjetivoTreino objetivo
+				-List<Serie> series
+			}
+			ValueObject Serie {
+				-ExercicioIdentificador exercicio
+				int quantidade
+				int repeticoesMinimas
+				int repeticoesMaximas
+				BigDecimal carga
+				int intervaloSegundos
+			}
+			enum DiaSemana { SEGUNDA, TERCA, QUARTA, QUINTA, SEXTA, SABADO, DOMINGO }
+			enum ObjetivoTreino { FORCA, HIPERTROFIA, RESISTENCIA }
+			enum SituacaoPlano { RASCUNHO, ATIVO, ENCERRADO, SUBSTITUIDO }
+			Service PlanoDeTreinoServico {
+				@PlanoDeTreino buscar(@PlanoDeTreinoIdentificador identificador);
+				@PlanoDeTreino criar(@AlunoIdentificador aluno, String nome, int frequenciaSemanal, List<@Treino> treinos);
+				@PlanoDeTreino ativar(@PlanoDeTreinoIdentificador identificador);
+				@PlanoDeTreino substituir(@PlanoDeTreinoIdentificador identificador);
+				@PlanoDeTreino revisar(@PlanoDeTreinoIdentificador identificador, String nome, int frequenciaSemanal, List<@Treino> treinos);
+				@PlanoDeTreino encerrar(@PlanoDeTreinoIdentificador identificador);
+				boolean podeGerenciar(@PlanoDeTreino plano);
+			}
+		}
+		Aggregate ExecucaoDeExercicio {
+			Entity ExecucaoDeExercicio {
+				aggregateRoot
+				-ExecucaoDeExercicioIdentificador identificador key
+				-AlunoIdentificador aluno
+				-PlanoDeTreinoIdentificador plano
+				-DiaSemana dia
+				-ExercicioIdentificador exercicio
+				DateTime data
+				int series
+				int repeticoes
+				BigDecimal carga
+				Repository ExecucaoDeExercicioRepository {
+					@ExecucaoDeExercicio incluir(@ExecucaoDeExercicio agregado);
+					boolean existePorIdentificador(@ExecucaoDeExercicioIdentificador identificador);
+					@ExecucaoDeExercicio buscarPorIdentificador(@ExecucaoDeExercicioIdentificador identificador);
+					void alterar(@ExecucaoDeExercicio agregado);
+					void excluir(@ExecucaoDeExercicioIdentificador identificador);
+					List<@ExecucaoDeExercicio> buscarPorAlunoEExercicio(@AlunoIdentificador aluno, @ExercicioIdentificador exercicio);
+				}
+			}
+			ValueObject ExecucaoDeExercicioIdentificador { String valor }
+			ValueObject HistoricoDeCarga {
+				-List<ExecucaoDeExercicio> execucoes
+				def BigDecimal maiorCargaValida(@Exercicio exercicio);
+				def BigDecimal ultimaCargaValida(@Exercicio exercicio);
+				def boolean atingiuLimiteConsecutivo(int limiteRepeticoes);
+				def @SugestaoProgressao sugerirProgressao(@Exercicio exercicio, int limiteRepeticoes);
+			}
+			ValueObject SugestaoProgressao {
+				BigDecimal cargaAtual
+				BigDecimal cargaSugerida
+				boolean progressaoMaximaAtingida
+			}
+			Service ExecucaoDeExercicioServico {
+				@ExecucaoDeExercicio buscar(@ExecucaoDeExercicioIdentificador identificador);
+				@ExecucaoDeExercicio registrar(@PlanoDeTreinoIdentificador plano, @DiaSemana dia, @ExercicioIdentificador exercicio, int series, int repeticoes, BigDecimal carga);
+				@HistoricoDeCarga consultarHistorico(@AlunoIdentificador aluno, @ExercicioIdentificador exercicio);
+				@SugestaoProgressao sugerirProgressao(@AlunoIdentificador aluno, @ExercicioIdentificador exercicio);
+				BigDecimal maiorCargaValida(@AlunoIdentificador aluno, @ExercicioIdentificador exercicio);
+				@PlanoDeTreino buscarPlanoAtivoDoAlunoAutenticado();
+				@AlunoIdentificador resolverAluno(@AlunoIdentificador informado);
+			}
+		}
+		Aggregate AvaliacaoFisica {
+			Entity AvaliacaoFisica {
+				aggregateRoot
+				-AvaliacaoFisicaIdentificador identificador key
+				-AlunoIdentificador aluno
+				-PersonalIdentificador personal
+				Date data
+				BigDecimal peso
+				BigDecimal altura
+				BigDecimal imc
+				-List<MedidaCorporal> medidas
+				-SituacaoAvaliacao situacao
+				int versao
+				-AvaliacaoFisicaIdentificador avaliacaoAnterior nullable
+				DateTime registro
+				def @AvaliacaoFisica corrigir(@PersonalIdentificador personal, Date data, BigDecimal peso, BigDecimal altura, List<@MedidaCorporal> medidas, Date hoje, DateTime agora);
+				def @AvaliacaoFisica substituir();
+				def @AvaliacaoFisica excluir();
+				def BigDecimal valorDe(@IndicadorFisico indicador);
+				def List<@ComparacaoIndicador> compararCom(@AvaliacaoFisica referencia);
+				Repository AvaliacaoFisicaRepository {
+					@AvaliacaoFisica incluir(@AvaliacaoFisica agregado);
+					boolean existePorIdentificador(@AvaliacaoFisicaIdentificador identificador);
+					@AvaliacaoFisica buscarPorIdentificador(@AvaliacaoFisicaIdentificador identificador);
+					void alterar(@AvaliacaoFisica agregado);
+					void excluir(@AvaliacaoFisicaIdentificador identificador);
+					@AvaliacaoFisica bloquear(@AvaliacaoFisicaIdentificador identificador);
+					List<@AvaliacaoFisica> buscarValidasPorAluno(@AlunoIdentificador aluno);
+				}
+			}
+			ValueObject AvaliacaoFisicaIdentificador { String valor }
+			ValueObject MedidaCorporal {
+				-IndicadorFisico indicador
+				BigDecimal valor
+			}
+			ValueObject ComparacaoIndicador {
+				-IndicadorFisico indicador
+				BigDecimal valorReferencia
+				BigDecimal valorAtual
+				BigDecimal diferencaAbsoluta
+				BigDecimal diferencaPercentual
+				BigDecimal evolucaoPercentual
+				-InterpretacaoEvolucao interpretacao
+			}
+			ValueObject PontoIndicador {
+				Date data
+				BigDecimal valor
+			}
+			ValueObject HistoricoDeAvaliacao {
+				-List<AvaliacaoFisica> avaliacoes
+				def @AvaliacaoFisica maisRecente();
+				def @AvaliacaoFisica maisRecenteCom(@IndicadorFisico indicador);
+				def boolean isMaisRecente(@AvaliacaoFisica avaliacao);
+				def @AvaliacaoFisica anteriorA(@AvaliacaoFisica atual);
+				def List<@PontoIndicador> pontos(@IndicadorFisico indicador);
+				def BigDecimal variacaoRecente(@IndicadorFisico indicador);
+				def @TendenciaIndicador tendencia(@IndicadorFisico indicador);
+				def @InterpretacaoEvolucao interpretacao(@IndicadorFisico indicador);
+				def void validarNovaData(Date data);
+				def void validarDataCorrigida(@AvaliacaoFisica original, Date novaData);
+			}
+			enum IndicadorFisico { PESO, IMC, CINTURA, ABDOMEN, QUADRIL, PEITORAL, BRACO, COXA, PANTURRILHA }
+			enum SentidoMelhora { MENOR, MAIOR, INDIFERENTE }
+			enum InterpretacaoEvolucao { MELHORA, PIORA, ESTAVEL, DEPENDE_DO_OBJETIVO }
+			enum TendenciaIndicador { AUMENTANDO, DIMINUINDO, ESTAVEL }
+			enum ClassificacaoImc { ABAIXO_DO_PESO, PESO_NORMAL, SOBREPESO, OBESIDADE_GRAU_I, OBESIDADE_GRAU_II, OBESIDADE_GRAU_III }
+			enum SituacaoAvaliacao { VALIDA, SUBSTITUIDA, EXCLUIDA }
+			Service AvaliacaoFisicaServico {
+				@AvaliacaoFisica buscar(@AvaliacaoFisicaIdentificador identificador);
+				@AvaliacaoFisica registrar(@AlunoIdentificador aluno, Date data, BigDecimal peso, BigDecimal altura, List<@MedidaCorporal> medidas);
+				@AvaliacaoFisica corrigir(@AvaliacaoFisicaIdentificador identificador, Date data, BigDecimal peso, BigDecimal altura, List<@MedidaCorporal> medidas);
+				void remover(@AvaliacaoFisicaIdentificador identificador);
+				@HistoricoDeAvaliacao consultarHistorico(@AlunoIdentificador aluno);
+				@AvaliacaoFisica buscarReferencia(@AvaliacaoFisica atual, @AvaliacaoFisicaIdentificador informada);
+				@AlunoIdentificador resolverAluno(@AlunoIdentificador informado);
+				boolean podeGerenciar();
+			}
+		}
+		Aggregate Meta {
+			Entity Meta {
+				aggregateRoot
+				-MetaIdentificador identificador key
+				-AlunoIdentificador aluno
+				-PersonalIdentificador personal
+				-IndicadorFisico indicador
+				BigDecimal valorInicial
+				BigDecimal valorDesejado
+				Date inicio
+				Date fim
+				-AvaliacaoFisicaIdentificador avaliacaoReferencia
+				-SituacaoMeta situacao
+				Date dataAtingida nullable
+				def BigDecimal percentualCumprimento(BigDecimal valorAtual);
+				def @StatusCumprimento statusCumprimento(BigDecimal valorAtual);
+				def boolean atingidaPor(BigDecimal valor, Date data);
+				def @Meta marcarAtingida(Date data);
+				def @Meta ajustar(BigDecimal valorDesejado, Date inicio, Date fim, Date hoje);
+				def @Meta encerrar();
+				def @Meta substituir();
+				Repository MetaRepository {
+					@Meta incluir(@Meta agregado);
+					boolean existePorIdentificador(@MetaIdentificador identificador);
+					@Meta buscarPorIdentificador(@MetaIdentificador identificador);
+					void alterar(@Meta agregado);
+					void excluir(@MetaIdentificador identificador);
+					@Meta bloquear(@MetaIdentificador identificador);
+					boolean existeAtivaNoPeriodo(@AlunoIdentificador aluno, @IndicadorFisico indicador, Date inicio, Date fim);
+					List<@Meta> buscarAtivasPorAluno(@AlunoIdentificador aluno);
+					boolean existePorAvaliacaoReferencia(@AvaliacaoFisicaIdentificador avaliacao);
+					void transferirReferencia(@AvaliacaoFisicaIdentificador antiga, @AvaliacaoFisicaIdentificador nova);
+				}
+			}
+			ValueObject MetaIdentificador { String valor }
+			enum SituacaoMeta { ATIVA, ATINGIDA, ENCERRADA, SUBSTITUIDA }
+			enum StatusCumprimento { DISTANTE, PROXIMA, ATINGIDA }
+			Service MetaServico {
+				@Meta buscar(@MetaIdentificador identificador);
+				@Meta criar(@AlunoIdentificador aluno, @IndicadorFisico indicador, BigDecimal valorDesejado, Date inicio, Date fim);
+				@Meta ajustar(@MetaIdentificador identificador, BigDecimal valorDesejado, Date inicio, Date fim);
+				@Meta substituir(@MetaIdentificador identificador, BigDecimal valorDesejado, Date inicio, Date fim);
+				@Meta encerrar(@MetaIdentificador identificador);
+			}
+		}
 	}
 }
