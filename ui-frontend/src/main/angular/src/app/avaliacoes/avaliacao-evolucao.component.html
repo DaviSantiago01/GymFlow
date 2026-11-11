@@ -1,0 +1,82 @@
+<main class="pagina">
+  <header class="pagina-cabecalho">
+    <div>
+      <span class="pagina-sobretitulo">Avaliação física</span>
+      <h1>Evolução dos indicadores</h1>
+    </div>
+    <div class="pagina-links">
+      <a routerLink="/core/avaliacao-fisica/situacao" [queryParams]="aluno() ? { aluno: aluno() } : {}"
+        >Situação atual</a
+      >
+    </div>
+  </header>
+
+  <section class="bloco">
+    <label
+      >Indicador
+      <select #seletor (change)="escolherIndicador(seletor.value)">
+        @for (indicador of evolucao().indicadores; track indicador) {
+          <option [value]="indicador" [selected]="indicador === evolucao().indicador">
+            {{ rotulosIndicador[indicador] }}
+          </option>
+        }
+      </select>
+    </label>
+  </section>
+
+  @if (evolucao().pontos.length) {
+    <section class="bloco">
+      <div class="indicadores">
+        <div>
+          <span>Tendência</span>
+          <strong>{{
+            evolucao().tendencia ? rotulosTendencia[evolucao().tendencia!] : 'Dados insuficientes'
+          }}</strong>
+        </div>
+        <div>
+          <span>Interpretação</span>
+          <strong>{{
+            evolucao().interpretacao
+              ? rotulosInterpretacao[evolucao().interpretacao!]
+              : 'Dados insuficientes'
+          }}</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="bloco" aria-labelledby="titulo-grafico">
+      <h2 id="titulo-grafico">{{ rotulosIndicador[evolucao().indicador] }} por avaliação</h2>
+      <div class="grafico" role="img" aria-label="Valor do indicador em cada avaliação, em ordem cronológica">
+        @for (ponto of evolucao().pontos; track ponto.data; let ultimo = $last) {
+          <div class="coluna" [attr.title]="data(ponto.data) + ': ' + numero(ponto.valor)">
+            @if (ultimo || ponto.valor === maiorValor()) {
+              <small>{{ numero(ponto.valor) }}</small>
+            }
+            <div class="barra" [style.height.%]="altura(ponto.valor)"></div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <section class="bloco tabela-dados" aria-label="Histórico do indicador">
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Valor</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (ponto of evolucao().pontos; track ponto.data) {
+            <tr>
+              <td>{{ data(ponto.data) }}</td>
+              <td>{{ numero(ponto.valor) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </section>
+  } @else {
+    <section class="bloco"><p class="estado-vazio">Nenhuma avaliação registrada para este indicador.</p></section>
+  }
+</main>

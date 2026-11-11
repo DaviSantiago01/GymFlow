@@ -4,9 +4,9 @@ export const senhaTeste = 'SenhaAgenda123!';
 export async function entrar(page: Page) {
   const usuario = `agenda_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
   await page.goto('/cadastro');
-  await page.request.get('/backend/cadastro');
+  await page.request.get('/backend/core/aluno/cadastro');
   const token = (await page.context().cookies()).find((c) => c.name === 'XSRF-TOKEN')!.value;
-  const cadastro = await page.request.post('/backend/cadastro', {
+  const cadastro = await page.request.post('/backend/core/aluno/cadastrar', {
     headers: { 'X-XSRF-TOKEN': decodeURIComponent(token) },
     data: {
       nome: 'Aluno de Teste Agenda',
@@ -50,7 +50,7 @@ export function horario(page: Page, hora: number) {
   });
 }
 export async function cancelarPendente(page: Page) {
-  const resposta = await page.request.get('/backend/core/reserva-armario/ativa');
+  const resposta = await page.request.get('/backend/core/reserva-armario/acompanhamento');
   const { dados } = await resposta.json();
   if (!dados) return;
   const token = (await page.context().cookies()).find((c) => c.name === 'XSRF-TOKEN')!.value;

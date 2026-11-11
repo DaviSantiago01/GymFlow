@@ -1,0 +1,91 @@
+/* Estilos específicos das telas de treinos e avaliações.
+   O padrão comum (página, blocos, botões, formulários, tabelas e mensagens) fica em styles.scss. */
+:host {
+  display: block;
+}
+.linha {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-3);
+}
+.linha h2 {
+  margin-bottom: 0;
+}
+.dias {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-2);
+  margin: var(--espaco-3) 0;
+}
+.dias button {
+  min-height: 36px;
+  padding: 6px 16px;
+  border: 1px solid var(--cor-borda-forte);
+  border-radius: var(--raio-pilula);
+  background: var(--cor-superficie-alta);
+  color: var(--cor-texto-suave);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.dias button:hover {
+  border-color: var(--cor-destaque);
+}
+.dias .selecionado {
+  border-color: var(--cor-destaque);
+  background: var(--cor-destaque);
+  color: var(--cor-destaque-texto);
+  font-weight: 700;
+}
+.indicadores {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--espaco-3);
+  margin-bottom: var(--espaco-4);
+}
+.indicadores div {
+  padding: var(--espaco-3) var(--espaco-4);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-pequeno);
+  background: var(--cor-campo);
+}
+.indicadores span {
+  display: block;
+  margin-bottom: var(--espaco-1);
+  color: var(--cor-texto-suave);
+  font-size: var(--texto-pequeno);
+}
+.indicadores strong {
+  font-size: 20px;
+  font-variant-numeric: tabular-nums;
+}
+.grafico {
+  display: flex;
+  align-items: flex-end;
+  gap: 3px;
+  height: 180px;
+  margin-top: var(--espaco-3);
+  overflow-x: auto;
+  border-bottom: 1px solid var(--cor-borda-forte);
+}
+.coluna {
+  display: flex;
+  flex: 1 0 34px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  max-width: 64px;
+  height: 100%;
+}
+.coluna small {
+  color: var(--cor-texto);
+  font-size: 10px;
+}
+.barra {
+  width: 100%;
+  min-height: 2px;
+  border-radius: 4px 4px 0 0;
+  background: #6aa62c;
+}

@@ -30,7 +30,7 @@ export class CadastroComponent {
   preparar() {
     this.erro.set('');
     this.http
-      .get('/backend/cadastro')
+      .get('/backend/core/aluno/cadastro')
       .pipe(takeUntilDestroyed(this.destroy))
       .subscribe({
         next: () => this.pronto.set(true),
@@ -53,7 +53,7 @@ export class CadastroComponent {
     }
     this.enviando.set(true);
     this.http
-      .post<{ usuario: string }>('/backend/cadastro', {
+      .post<{ usuario: string }>('/backend/core/aluno/cadastrar', {
         nome: this.nome,
         usuario: this.usuario,
         senha: this.senha,

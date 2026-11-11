@@ -1,0 +1,65 @@
+<main class="pagina">
+  <header class="pagina-cabecalho">
+    <div>
+      <span class="pagina-sobretitulo">Avaliação física</span>
+      <h1>Comparação entre avaliações</h1>
+    </div>
+    <div class="pagina-links">
+      <a [routerLink]="['/core/avaliacao-fisica', comparacao().atual.identificador, 'visualizacao']"
+        >Resultado</a
+      >
+    </div>
+  </header>
+
+  @if (comparacao().referencia; as referencia) {
+    <section class="bloco">
+      <h2>{{ comparacao().atual.alunoNome }}</h2>
+      <p>Avaliação de {{ data(comparacao().atual.data) }} comparada com a de {{ data(referencia.data) }}.</p>
+      <label
+        >Avaliação de referência
+        <select #seletor (change)="escolherReferencia(seletor.value)">
+          @for (opcao of comparacao().disponiveis; track opcao.identificador) {
+            <option
+              [value]="opcao.identificador"
+              [selected]="opcao.identificador === referencia.identificador"
+            >
+              {{ data(opcao.data) }}
+            </option>
+          }
+        </select>
+      </label>
+    </section>
+    <section class="bloco tabela-dados" aria-label="Comparação por indicador">
+      <table>
+        <thead>
+          <tr>
+            <th>Indicador</th>
+            <th>Referência</th>
+            <th>Atual</th>
+            <th>Diferença</th>
+            <th>Diferença %</th>
+            <th>Evolução %</th>
+            <th>Interpretação</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of comparacao().indicadores; track item.indicador) {
+            <tr>
+              <td>{{ rotulosIndicador[item.indicador] }}</td>
+              <td>{{ numero(item.valorReferencia) }}</td>
+              <td>{{ numero(item.valorAtual) }}</td>
+              <td>{{ numero(item.diferencaAbsoluta) }}</td>
+              <td>{{ numero(item.diferencaPercentual) }}%</td>
+              <td>{{ numero(item.evolucaoPercentual) }}%</td>
+              <td>{{ rotulosInterpretacao[item.interpretacao] }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </section>
+  } @else {
+    <section class="bloco">
+      <p class="estado-vazio">Esta é a primeira avaliação do aluno. Ainda não há referência para comparar.</p>
+    </section>
+  }
+</main>

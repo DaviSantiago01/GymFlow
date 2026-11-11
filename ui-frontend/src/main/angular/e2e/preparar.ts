@@ -5,7 +5,7 @@ export default async function preparar() {
   try {
     await expect.poll(async () => {
       try {
-        return (await cliente.get('/backend/cadastro', { timeout: 2000 })).status();
+        return (await cliente.get('/backend/core/aluno/cadastro', { timeout: 2000 })).status();
       } catch {
         return 0;
       }

@@ -1,8 +1,10 @@
-<main class="inicio">
-  <header>
-    <p class="sobretitulo">SEU ESPAÇO NA ACADEMIA</p>
-    <h1>Boas-vindas, {{ autenticacao.usuarioAtual() }}.</h1>
-    <p>Organize seu treino. Comece por aqui.</p>
+<main class="pagina">
+  <header class="pagina-cabecalho">
+    <div>
+      <span class="pagina-sobretitulo">Seu espaço na academia</span>
+      <h1>Boas-vindas, {{ autenticacao.usuarioAtual() }}.</h1>
+      <p class="pagina-descricao">Organize seu treino. Comece por um dos atalhos abaixo.</p>
+    </div>
   </header>
   <section aria-labelledby="titulo-atalhos">
     <h2 id="titulo-atalhos">Acesso rápido</h2>
@@ -16,7 +18,7 @@
         </a>
       }
       @if (autenticacao.autorizacoesDe('reservaArmario')?.buscar) {
-        <a routerLink="/core/reserva-armario/ativa">
+        <a routerLink="/core/reserva-armario/acompanhamento">
           <span class="icone" aria-hidden="true">◷</span>
           <strong>Minha reserva</strong>
           <span>Acompanhe o tempo e gerencie sua reserva ativa.</span>
@@ -29,7 +31,47 @@
           <span class="acessar">Ver histórico <span aria-hidden="true">↗</span></span>
         </a>
       }
+      @if (autenticacao.autorizacoesDe('aluno')?.buscar) {
+        <a routerLink="/core/aluno/pesquisa">
+          <span class="icone" aria-hidden="true">☰</span>
+          <strong>Alunos</strong>
+          <span>Selecione um aluno para montar planos e acompanhar a evolução.</span>
+          <span class="acessar">Ver alunos <span aria-hidden="true">↗</span></span>
+        </a>
+      }
+      @if (autenticacao.autorizacoesDe('planoDeTreino')?.buscar) {
+        <a routerLink="/core/plano-de-treino/pesquisa">
+          <span class="icone" aria-hidden="true">≡</span>
+          <strong>Planos de treino</strong>
+          <span>Consulte os planos ativos, em rascunho e encerrados.</span>
+          <span class="acessar">Ver planos <span aria-hidden="true">↗</span></span>
+        </a>
+      }
+      @if (autenticacao.autorizacoesDe('execucaoDeExercicio')?.buscar) {
+        <a routerLink="/core/execucao-de-exercicio/pesquisa">
+          <span class="icone" aria-hidden="true">↗</span>
+          <strong>Histórico de cargas</strong>
+          <span>Acompanhe as cargas e repetições registradas.</span>
+          <span class="acessar">Ver cargas <span aria-hidden="true">↗</span></span>
+        </a>
+      }
+      @if (autenticacao.autorizacoesDe('avaliacaoFisica')?.buscar) {
+        <a routerLink="/core/avaliacao-fisica/pesquisa">
+          <span class="icone" aria-hidden="true">✓</span>
+          <strong>Avaliações físicas</strong>
+          <span>Consulte os resultados, compare avaliações e veja o histórico.</span>
+          <span class="acessar">Ver avaliações <span aria-hidden="true">↗</span></span>
+        </a>
+      }
+      @if (autenticacao.autorizacoesDe('meta')?.buscar) {
+        <a routerLink="/core/meta/pesquisa">
+          <span class="icone" aria-hidden="true">◎</span>
+          <strong>Metas</strong>
+          <span>Acompanhe o percentual de cumprimento de cada meta.</span>
+          <span class="acessar">Ver metas <span aria-hidden="true">↗</span></span>
+        </a>
+      }
     </div>
   </section>
-  <p class="nota">Marcar aula e Grupos de treino são opções ilustrativas por enquanto.</p>
+  <p class="aviso nota">Marcar aula e Grupos de treino são opções ilustrativas por enquanto.</p>
 </main>

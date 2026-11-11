@@ -12,7 +12,7 @@ public class ReservaArmarioControlador extends AgregadoControladorAbstrato<Reser
     private final ReservaArmarioServico comandos;
     private final ReservaArmarioAplicacaoServico consultas;
     public ReservaArmarioControlador(ReservaArmarioServico comandos, ReservaArmarioAplicacaoServico consultas) { super(comandos,consultas); this.comandos=comandos; this.consultas=consultas; }
-    @GetMapping("ativa")
+    @GetMapping("acompanhamento")
     public RespostaTemporal<Optional<ReservaArmarioProjecao>> ativa() { return consultas.ativa(); }
     @GetMapping({"{identificador}/visualizacao","{identificador}/confirmacao"})
     public RespostaTemporal<ReservaArmarioProjecao> detalhe(@PathVariable ReservaArmarioIdentificador identificador) { return consultas.detalhe(identificador); }

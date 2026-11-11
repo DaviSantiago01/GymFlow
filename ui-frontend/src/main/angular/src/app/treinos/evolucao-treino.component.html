@@ -1,0 +1,104 @@
+<main class="pagina">
+  <header class="pagina-cabecalho">
+    <div>
+      <span class="pagina-sobretitulo">Treinos</span>
+      <h1>Acompanhamento da evolução</h1>
+    </div>
+    <div class="pagina-links">
+      <a
+        routerLink="/core/execucao-de-exercicio/pesquisa"
+        [queryParams]="aluno() ? { aluno: aluno() } : {}"
+        >Histórico de cargas</a
+      >
+    </div>
+  </header>
+
+  @if (evolucao().exercicios.length) {
+    <section class="bloco">
+      <label
+        >Exercício
+        <select #seletor (change)="escolherExercicio(seletor.value)">
+          @for (exercicio of evolucao().exercicios; track exercicio.identificador) {
+            <option
+              [value]="exercicio.identificador"
+              [selected]="exercicio.identificador === evolucao().exercicio"
+            >
+              {{ exercicio.nome }}
+            </option>
+          }
+        </select>
+      </label>
+    </section>
+
+    <section class="bloco">
+      <div class="indicadores">
+        <div>
+          <span>Maior carga válida</span><strong>{{ numero(evolucao().maiorCarga) }} kg</strong>
+        </div>
+        <div>
+          <span>Execuções registradas</span><strong>{{ evolucao().execucoes.length }}</strong>
+        </div>
+        <div>
+          <span>Carga sugerida</span>
+          <strong>{{
+            evolucao().sugestao ? numero(evolucao().sugestao!.cargaSugerida) + ' kg' : 'Sem sugestão'
+          }}</strong>
+        </div>
+      </div>
+      @if (evolucao().sugestao?.progressaoMaximaAtingida) {
+        <p>A progressão máxima deste exercício foi atingida.</p>
+      }
+    </section>
+
+    <section class="bloco" aria-labelledby="titulo-grafico">
+      <h2 id="titulo-grafico">Carga por execução (kg)</h2>
+      <div class="grafico" role="img" aria-label="Carga de cada execução, em ordem cronológica">
+        @for (execucao of evolucao().execucoes; track execucao.identificador; let ultima = $last) {
+          <div
+            class="coluna"
+            [attr.title]="
+              dataHora(execucao.data) +
+              ': ' +
+              numero(execucao.carga) +
+              ' kg, ' +
+              execucao.series +
+              ' séries, ' +
+              execucao.repeticoes +
+              ' repetições'
+            "
+          >
+            @if (rotuloVisivel(execucao, ultima)) {
+              <small>{{ numero(execucao.carga) }}</small>
+            }
+            <div class="barra" [style.height.%]="altura(execucao)"></div>
+          </div>
+        }
+      </div>
+    </section>
+
+    <section class="bloco tabela-dados" aria-label="Execuções em ordem cronológica">
+      <table>
+        <thead>
+          <tr>
+            <th>Data</th>
+            <th>Carga</th>
+            <th>Repetições</th>
+            <th>Séries</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (execucao of evolucao().execucoes; track execucao.identificador) {
+            <tr>
+              <td>{{ dataHora(execucao.data) }}</td>
+              <td>{{ numero(execucao.carga) }} kg</td>
+              <td>{{ execucao.repeticoes }}</td>
+              <td>{{ execucao.series }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </section>
+  } @else {
+    <section class="bloco"><p class="estado-vazio">Nenhuma execução registrada até o momento.</p></section>
+  }
+</main>

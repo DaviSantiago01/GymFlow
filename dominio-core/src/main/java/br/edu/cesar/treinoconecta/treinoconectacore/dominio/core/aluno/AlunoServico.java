@@ -5,6 +5,7 @@ import java.util.Optional;
 import java.util.Locale;
 import java.nio.charset.StandardCharsets;
 import org.apache.commons.lang3.Validate;
+import br.edu.cesar.treinoconecta.treinoconectacore.dominio.Autorizacao;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.aluno.spi.IAlunoRepositorio;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.aluno.spi.ICredencialRepositorio;
 import dev.sauloaraujo.d5.framework.dominio.impl.*;
@@ -41,6 +42,11 @@ public final class AlunoServico extends AgregadoServicoAbstrato<AlunoIdentificad
     }
     @Override public AgregadoAutorizacoes<Aluno> criarAutorizacoes(Optional<AlunoIdentificador> identificador) {
         Objects.requireNonNull(identificador);
-        return new AgregadoAutorizacoes<>(false, getSegurancaServico().possuiAutorizacao("USUARIO"), false, false);
+        boolean personal = getSegurancaServico().possuiAutorizacao(Autorizacao.PERSONAL.name());
+        return new AgregadoAutorizacoes<>(false, personal || proprioAluno(identificador), false, false);
+    }
+    private boolean proprioAluno(Optional<AlunoIdentificador> identificador) {
+        if (identificador.isEmpty() || !getSegurancaServico().possuiAutorizacao(Autorizacao.USUARIO.name())) return false;
+        return alunos.buscarPorUsuario(getSegurancaServico().getUsuario()).getIdentificador().equals(identificador);
     }
 }

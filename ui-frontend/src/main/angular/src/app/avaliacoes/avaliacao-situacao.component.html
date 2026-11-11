@@ -1,0 +1,94 @@
+<main class="pagina">
+  <header class="pagina-cabecalho">
+    <div>
+      <span class="pagina-sobretitulo">Avaliação física</span>
+      <h1>Situação atual do aluno</h1>
+    </div>
+    <div class="pagina-links">
+      <a routerLink="/core/avaliacao-fisica/pesquisa" [queryParams]="aluno() ? { aluno: aluno() } : {}"
+        >Avaliações</a
+      >
+      <a routerLink="/core/avaliacao-fisica/evolucao" [queryParams]="aluno() ? { aluno: aluno() } : {}"
+        >Indicadores</a
+      >
+      <a routerLink="/core/meta/pesquisa" [queryParams]="aluno() ? { aluno: aluno() } : {}">Metas</a>
+    </div>
+  </header>
+
+  @if (situacao().avaliacao; as avaliacao) {
+    <section class="bloco">
+      <h2>{{ avaliacao.alunoNome }}</h2>
+      <p>Baseada na avaliação válida mais recente, de {{ data(avaliacao.data) }}.</p>
+      <div class="indicadores">
+        <div>
+          <span>IMC</span><strong>{{ numero(avaliacao.imc) }}</strong>
+        </div>
+        <div>
+          <span>Classificação</span
+          ><strong>{{ rotulosClassificacao[avaliacao.classificacaoImc] }}</strong>
+        </div>
+        <div>
+          <span>Altura</span><strong>{{ numero(avaliacao.altura) }} cm</strong>
+        </div>
+      </div>
+    </section>
+
+    <section class="bloco tabela-dados" aria-labelledby="titulo-indicadores">
+      <h2 id="titulo-indicadores">Indicadores</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Indicador</th>
+            <th>Valor</th>
+            <th>Tendência</th>
+            <th>Interpretação</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of situacao().indicadores; track item.indicador) {
+            <tr>
+              <td>{{ rotulosIndicador[item.indicador] }}</td>
+              <td>{{ numero(item.valor) }}</td>
+              <td>{{ item.tendencia ? rotulosTendencia[item.tendencia] : 'Dados insuficientes' }}</td>
+              <td>
+                {{ item.interpretacao ? rotulosInterpretacao[item.interpretacao] : 'Dados insuficientes' }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </section>
+  } @else {
+    <section class="bloco"><p class="estado-vazio">Nenhuma avaliação válida registrada.</p></section>
+  }
+
+  <section class="bloco tabela-dados" aria-labelledby="titulo-metas">
+    <h2 id="titulo-metas">Metas</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Indicador</th>
+          <th>Valor desejado</th>
+          <th>Cumprimento</th>
+          <th>Status</th>
+          <th>Situação</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (meta of situacao().metas; track meta.identificador) {
+          <tr>
+            <td>{{ rotulosIndicador[meta.indicador] }}</td>
+            <td>{{ numero(meta.valorDesejado) }}</td>
+            <td>{{ numero(meta.percentualCumprimento) }}%</td>
+            <td>{{ meta.statusCumprimento ? rotulosStatus[meta.statusCumprimento] : '—' }}</td>
+            <td>{{ rotulosSituacaoMeta[meta.situacao] }}</td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="estado-vazio">Nenhuma meta cadastrada.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+</main>

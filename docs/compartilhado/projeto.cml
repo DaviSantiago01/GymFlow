@@ -11,7 +11,7 @@ BoundedContext compartilhado {
 	Module compartilhado {
 		Aggregate compartilhado {
 			enum Autorizacao {
-				ADMINISTRADOR, USUARIO
+				ADMINISTRADOR, USUARIO, PERSONAL
 			}
 		}
 	}

@@ -1,0 +1,67 @@
+<main class="pagina">
+  <header class="pagina-cabecalho">
+    <div>
+      <span class="pagina-sobretitulo">Avaliação física</span>
+      <h1>Histórico de avaliações</h1>
+    </div>
+    <div class="pagina-links">
+      <a routerLink="/core/meta/pesquisa" [queryParams]="aluno() ? { aluno: aluno() } : {}">Metas</a>
+      @if (podeRegistrar()) {
+        <a
+          class="acao acao-principal"
+          routerLink="/core/avaliacao-fisica/inclusao"
+          [queryParams]="aluno() ? { aluno: aluno() } : {}"
+          >Nova avaliação</a
+        >
+      }
+    </div>
+  </header>
+  <div class="grupo-acoes">
+    <button type="button" class="acao acao-secundaria" (click)="alternarTodas()">
+      {{ todas() ? 'Mostrar só as válidas' : 'Mostrar versões corrigidas e excluídas' }}
+    </button>
+  </div>
+  <section class="bloco tabela-dados">
+    <table>
+      <thead>
+        <tr>
+          <th>Data</th>
+          <th>Aluno</th>
+          <th>Peso</th>
+          <th>IMC</th>
+          <th>Classificação</th>
+          <th>Situação</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (avaliacao of avaliacoes(); track avaliacao.identificador) {
+          <tr>
+            <td>{{ data(avaliacao.data) }}</td>
+            <td>{{ avaliacao.alunoNome }}</td>
+            <td>{{ numero(avaliacao.peso) }} kg</td>
+            <td>{{ numero(avaliacao.imc) }}</td>
+            <td>{{ rotulosClassificacao[avaliacao.classificacaoImc] }}</td>
+            <td>
+              <span class="marcador" [class.marcador-neutro]="avaliacao.situacao !== 'VALIDA'">{{
+                rotulosSituacao[avaliacao.situacao]
+              }}</span>
+            </td>
+            <td>
+              <a [routerLink]="['/core/avaliacao-fisica', avaliacao.identificador, 'visualizacao']"
+                >Ver</a
+              >
+              <a [routerLink]="['/core/avaliacao-fisica', avaliacao.identificador, 'comparacao']"
+                >Comparar</a
+              >
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7" class="estado-vazio">Nenhuma avaliação encontrada.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+</main>

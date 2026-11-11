@@ -1,12 +1,16 @@
 import { Routes } from '@angular/router';
 import { guardaAutenticacao } from '../d5';
 import { resolverArmarios } from './armarios/armarios.service';
+import { rotasTreinos } from './treinos/treinos.rotas';
+import { rotasAvaliacoes } from './avaliacoes/avaliacoes.rotas';
 const tela = () => import('./armarios/armarios.component').then((m) => m.ArmariosComponent);
 export const routes: Routes = [
   {
-    path: 'cadastro',
+    path: 'core/aluno/cadastro',
     loadComponent: () => import('./cadastro/cadastro.component').then((m) => m.CadastroComponent),
   },
+  // endereço antigo do cadastro, mantido para os links já divulgados
+  { path: 'cadastro', redirectTo: 'core/aluno/cadastro', pathMatch: 'full' },
   {
     path: 'login',
     loadComponent: () => import('./login/login.component').then((m) => m.LoginComponent),
@@ -32,7 +36,7 @@ export const routes: Routes = [
     data: { modo: 'detalhe' },
   },
   {
-    path: 'core/reserva-armario/ativa',
+    path: 'core/reserva-armario/acompanhamento',
     canActivate: [guardaAutenticacao],
     loadComponent: tela,
     resolve: { tela: resolverArmarios },
@@ -60,5 +64,7 @@ export const routes: Routes = [
     resolve: { tela: resolverArmarios },
     data: { modo: 'reserva' },
   },
+  ...rotasTreinos,
+  ...rotasAvaliacoes,
   { path: '**', redirectTo: 'inicio' },
 ];

@@ -1,42 +1,48 @@
-<div class="d-flex justify-content-center align-items-center" style="min-height: 80vh">
-  <div class="card shadow-sm" style="width: 24rem">
-    <div class="card-body">
-      <h1 class="h4 mb-3 text-center">Entrar</h1>
-      <form #formulario="ngForm" (ngSubmit)="entrar()">
-        <div class="mb-3">
-          <label class="form-label" for="usuario">Usuário</label>
-          <input
-            class="form-control"
-            id="usuario"
-            name="usuario"
-            [(ngModel)]="usuario"
-            required
-            autofocus
-          />
-        </div>
-        <div class="mb-3">
-          <label class="form-label" for="senha">Senha</label>
-          <input
-            class="form-control"
-            id="senha"
-            name="senha"
-            type="password"
-            [(ngModel)]="senha"
-            required
-          />
-        </div>
-        <button
-          class="btn btn-primary w-100"
-          type="submit"
-          [disabled]="formulario.invalid || entrando()"
-        >
-          Entrar
-        </button>
-      </form>
-      <p class="mt-4 mb-0 text-center">
-        Ainda não tem uma conta?
-        <a routerLink="/cadastro" style="color: #c5ff78">Criar minha conta</a>
-      </p>
+<main class="pagina acesso">
+  <section class="bloco acesso-cartao" aria-labelledby="titulo-entrar">
+    <div class="acesso-marca">
+      <span class="acesso-logo" aria-hidden="true">▥</span>
+      <div>
+        <strong>Treino Conecta</strong>
+        <span>Treinos, avaliações e armários da academia</span>
+      </div>
     </div>
-  </div>
-</div>
+    <h1 id="titulo-entrar">Entrar</h1>
+    <p>Use o usuário e a senha da sua conta.</p>
+    <form #formulario="ngForm" (ngSubmit)="entrar()">
+      <div class="campo">
+        <label for="usuario">Usuário</label>
+        <input
+          id="usuario"
+          name="usuario"
+          autocomplete="username"
+          [(ngModel)]="usuario"
+          required
+          autofocus
+        />
+      </div>
+      <div class="campo">
+        <label for="senha">Senha</label>
+        <input
+          id="senha"
+          name="senha"
+          type="password"
+          autocomplete="current-password"
+          [(ngModel)]="senha"
+          required
+        />
+      </div>
+      <button
+        class="acao acao-principal acao-larga"
+        type="submit"
+        [disabled]="formulario.invalid || entrando()"
+      >
+        Entrar
+      </button>
+    </form>
+    <p class="acesso-rodape">
+      Ainda não tem uma conta?
+      <a routerLink="/core/aluno/cadastro">Criar minha conta</a>
+    </p>
+  </section>
+</main>
