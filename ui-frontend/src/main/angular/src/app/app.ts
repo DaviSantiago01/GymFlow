@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import {
   NavigationEnd,
   NavigationError,
@@ -10,6 +10,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NotificacoesComponent } from '../d5/bootstrap/notificacoes.component';
 import { ServicoAutenticacao, ServicoNotificacao } from '../d5';
+import { AutorizacoesExecucao } from './treinos/treinos.service';
 
 @Component({
   selector: 'app-root',
@@ -22,6 +23,11 @@ export class App {
   private readonly router = inject(Router);
   private readonly notificacoes = inject(ServicoNotificacao);
   protected readonly menuAberto = signal(false);
+  protected readonly podeRegistrarExecucao = computed(
+    () =>
+      this.servicoAutenticacao.autorizacoesDe<AutorizacoesExecucao>('execucaoDeExercicio')
+        ?.registrar ?? false,
+  );
 
   constructor() {
     this.router.events.pipe(takeUntilDestroyed()).subscribe((evento) => {

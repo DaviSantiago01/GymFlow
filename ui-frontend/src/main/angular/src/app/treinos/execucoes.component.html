@@ -1,10 +1,10 @@
-<main class="tela">
-  <header class="cabecalho-pagina">
+<main class="pagina">
+  <header class="pagina-cabecalho">
     <div>
-      <span class="sobretitulo">● TREINO CONECTA</span>
+      <span class="pagina-sobretitulo">Treinos</span>
       <h1>Histórico de cargas e repetições</h1>
     </div>
-    <div class="atalhos">
+    <div class="pagina-links">
       <a
         routerLink="/core/execucao-de-exercicio/evolucao"
         [queryParams]="aluno() ? { aluno: aluno() } : {}"
@@ -12,7 +12,7 @@
       >
     </div>
   </header>
-  <section class="painel">
+  <section class="bloco">
     <label for="busca-exercicio">Filtrar por exercício</label>
     <input
       id="busca-exercicio"
@@ -21,7 +21,7 @@
       autocomplete="off"
     />
   </section>
-  <section class="painel tabela">
+  <section class="bloco tabela-dados">
     <table>
       <thead>
         <tr>
@@ -49,7 +49,7 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="8" class="vazio">Nenhuma execução encontrada.</td>
+            <td colspan="8" class="estado-vazio">Nenhuma execução encontrada.</td>
           </tr>
         }
       </tbody>

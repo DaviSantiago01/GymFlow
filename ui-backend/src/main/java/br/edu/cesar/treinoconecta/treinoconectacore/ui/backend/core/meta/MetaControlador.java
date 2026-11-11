@@ -16,6 +16,7 @@ import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.meta.MetaIdenti
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.meta.MetaServico;
 import dev.sauloaraujo.d5.framework.ui.AgregadoControladorAbstrato;
 import dev.sauloaraujo.d5.framework.ui.Backend;
+import dev.sauloaraujo.d5.framework.ui.IAgregadoRecurso;
 
 @RestController
 @RequestMapping(Backend.PREFIXO + "core/meta")
@@ -33,6 +34,12 @@ public class MetaControlador
     @Override
     public MetaFormulario inclusao() {
         return consultas.formulario();
+    }
+
+    /** A rota de alteração recebe também os dados do formulário, em uma única operação. */
+    @Override
+    protected IAgregadoRecurso<Meta, MetaAutorizacoes> alteracao(Meta agregado, MetaAutorizacoes autorizacoes) {
+        return new MetaAlteracaoRecurso(agregado, autorizacoes, consultas.formulario());
     }
 
     @PostMapping("criar")

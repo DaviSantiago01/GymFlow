@@ -51,7 +51,10 @@ public final class AvaliacaoFisicaAplicacaoServico extends
 
     public AvaliacaoFisicaDetalhe detalhe(AvaliacaoFisicaIdentificador identificador) {
         var avaliacao = servico.buscar(identificador);
-        var referencia = servico.buscarReferencia(avaliacao, Optional.empty()).flatMap(AvaliacaoFisica::getIdentificador);
+        Optional<AvaliacaoFisicaIdentificador> referencia = Optional.empty();
+        if (servico.existeReferencia(avaliacao, Optional.empty())) {
+            referencia = servico.buscarReferencia(avaliacao, Optional.empty()).getIdentificador();
+        }
         return new AvaliacaoFisicaDetalhe(repositorio.projetar(identificador), avaliacao.getMedidas(), referencia,
                 avaliacao.getAvaliacaoAnterior(), servico.podeGerenciar());
     }
@@ -61,12 +64,12 @@ public final class AvaliacaoFisicaAplicacaoServico extends
         var atual = servico.buscar(identificador);
         var projecao = repositorio.projetar(identificador);
         var disponiveis = listarAnteriores(atual);
-        var referencia = servico.buscarReferencia(atual, referenciaInformada);
-        if (referencia.isEmpty()) {
+        if (!servico.existeReferencia(atual, referenciaInformada)) {
             return new ComparacaoAvaliacoes(projecao, Optional.empty(), List.of(), disponiveis);
         }
-        var referenciaProjetada = repositorio.projetar(referencia.get().getIdentificador().orElseThrow());
-        return new ComparacaoAvaliacoes(projecao, Optional.of(referenciaProjetada), atual.compararCom(referencia.get()),
+        var referencia = servico.buscarReferencia(atual, referenciaInformada);
+        var referenciaProjetada = repositorio.projetar(referencia.getIdentificador().orElseThrow());
+        return new ComparacaoAvaliacoes(projecao, Optional.of(referenciaProjetada), atual.compararCom(referencia),
                 disponiveis);
     }
 
@@ -93,19 +96,18 @@ public final class AvaliacaoFisicaAplicacaoServico extends
         var aluno = servico.resolverAluno(alunoInformado);
         var historico = servico.consultarHistorico(aluno);
         var metasDoAluno = metas.listarDoAluno(aluno);
-        var recente = historico.maisRecente();
-        if (recente.isEmpty()) {
+        if (!historico.existeAvaliacao()) {
             return new SituacaoAtualAluno(aluno, Optional.empty(), List.of(), metasDoAluno);
         }
+        var recente = historico.buscarMaisRecente();
         var indicadores = new ArrayList<SituacaoIndicador>();
         for (var indicador : IndicadorFisico.values()) {
-            var valor = recente.get().valorDe(indicador);
-            if (valor.isPresent()) {
-                indicadores.add(new SituacaoIndicador(indicador, valor.get(), historico.tendencia(indicador),
-                        historico.interpretacao(indicador)));
+            if (recente.existeValor(indicador)) {
+                indicadores.add(new SituacaoIndicador(indicador, recente.buscarValor(indicador),
+                        historico.tendencia(indicador), historico.interpretacao(indicador)));
             }
         }
-        var projecao = repositorio.projetar(recente.get().getIdentificador().orElseThrow());
+        var projecao = repositorio.projetar(recente.getIdentificador().orElseThrow());
         return new SituacaoAtualAluno(aluno, Optional.of(projecao), indicadores, metasDoAluno);
     }
 }

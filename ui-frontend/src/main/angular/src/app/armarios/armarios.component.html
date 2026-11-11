@@ -6,7 +6,7 @@
     </div>
     <div class="atalhos">
       <a routerLink="/core/armario/pesquisa">Armários</a
-      ><a routerLink="/core/reserva-armario/ativa">Minha reserva</a
+      ><a routerLink="/core/reserva-armario/acompanhamento">Minha reserva</a
       ><a routerLink="/core/reserva-armario/pesquisa">Histórico ↗</a>
     </div>
   </header>
@@ -43,7 +43,7 @@
           </div>
         </div>
         <progress [value]="progresso()" max="100" aria-label="Tempo de uso decorrido"></progress>
-        <a class="botao principal" routerLink="/core/reserva-armario/ativa"
+        <a class="botao principal" routerLink="/core/reserva-armario/acompanhamento"
           >Acessar minha reserva →</a
         >
       } @else {
@@ -188,7 +188,7 @@
     @if (vigente()) {
       <p class="mensagem">
         Você já possui uma reserva em uso ou agendada.
-        <a routerLink="/core/reserva-armario/ativa">Acessar minha reserva</a>
+        <a routerLink="/core/reserva-armario/acompanhamento">Acessar minha reserva</a>
       </p>
     }
     <button class="botao principal largo" (click)="reservar()" [disabled]="!podeReservar()">
@@ -261,7 +261,7 @@
       </section>
       @if (vigente()) {
         @if (modo() === 'confirmacao') {
-          <a class="botao principal largo" routerLink="/core/reserva-armario/ativa"
+          <a class="botao principal largo" routerLink="/core/reserva-armario/acompanhamento"
             >Acessar minha reserva ativa →</a
           >
         } @else {

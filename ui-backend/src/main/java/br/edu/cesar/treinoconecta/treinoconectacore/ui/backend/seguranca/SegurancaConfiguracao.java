@@ -10,8 +10,8 @@ import dev.sauloaraujo.d5.framework.ui.seguranca.SegurancaConfiguracaoAbstrata;
 @Configuration
 public class SegurancaConfiguracao extends SegurancaConfiguracaoAbstrata {
     @Override protected void autorizar(AuthorizeHttpRequestsConfigurer<HttpSecurity>.AuthorizationManagerRequestMatcherRegistry autorizacao) {
-        autorizacao.requestMatchers(org.springframework.http.HttpMethod.GET, "/backend/cadastro").permitAll();
-        autorizacao.requestMatchers(org.springframework.http.HttpMethod.POST, "/backend/cadastro").permitAll();
+        autorizacao.requestMatchers(org.springframework.http.HttpMethod.GET, "/backend/core/aluno/cadastro").permitAll();
+        autorizacao.requestMatchers(org.springframework.http.HttpMethod.POST, "/backend/core/aluno/cadastrar").permitAll();
         autorizacao.requestMatchers(BACKEND).authenticated();
     }
     @Bean UserDetailsService usuarios(JdbcTemplate banco) {

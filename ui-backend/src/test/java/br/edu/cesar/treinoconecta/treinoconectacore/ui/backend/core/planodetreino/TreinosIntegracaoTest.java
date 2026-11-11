@@ -166,7 +166,16 @@ class TreinosIntegracaoTest {
         var resultado = enviar(PLANOS + "criar", personal("p"),
                 "{\"aluno\":\"%d\",\"nome\":\"X\",\"frequenciaSemanal\":1,\"treinos\":%s}".formatted(alunoId, repetido));
         assertEquals(422, resultado.getResponse().getStatus());
-        assertEquals(PlanoDeTreinoServico.EXERCICIO_REPETIDO_MODELO.formatted(exercicioId, "A"), mensagem(resultado));
+        assertEquals(PlanoDeTreinoServico.EXERCICIO_REPETIDO_MODELO.formatted("Supino", "A"), mensagem(resultado));
+    }
+
+    @Test
+    void alteracaoRespondeOFormularioNaMesmaOperacao() throws Exception {
+        var plano = criarPlanoAtivo();
+        var recurso = sucesso(consultar(PLANOS + plano + "/alteracao", personal("p")));
+        assertEquals(plano, recurso.path("agregado").path("identificador").asString());
+        assertTrue(recurso.path("autorizacoes").path("revisar").asBoolean());
+        assertEquals(String.valueOf(exercicioId), recurso.path("formulario").path("exercicios").get(0).path("identificador").asString());
     }
 
     @Test

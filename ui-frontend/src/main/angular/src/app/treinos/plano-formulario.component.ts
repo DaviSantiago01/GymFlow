@@ -42,6 +42,8 @@ export class PlanoFormularioComponent {
   readonly treinos = signal<TreinoEdicao[]>([]);
   readonly ocupado = signal(false);
   readonly erro = signal('');
+  /** Motivo da RN003 exibido em cada treino, indexado pelo dia. */
+  readonly repeticoes = signal<Record<string, string>>({});
   readonly alteracao = computed(() => this.plano() !== null);
   alunoEscolhido = '';
   nome = '';
@@ -86,11 +88,6 @@ export class PlanoFormularioComponent {
     return this.formulario().objetivos.find((item) => item.objetivo === objetivo)!;
   }
 
-  exerciciosDisponiveis(treino: TreinoEdicao) {
-    return this.formulario().exercicios.filter(
-      (exercicio) => !treino.series.some((serie) => serie.exercicio === exercicio.identificador),
-    );
-  }
 
   nomeExercicio(identificador: string) {
     return (
@@ -101,6 +98,13 @@ export class PlanoFormularioComponent {
 
   adicionarExercicio(treino: TreinoEdicao) {
     if (!treino.exercicioEscolhido) return;
+    // RN003: o mesmo exercício não pode se repetir no treino
+    const repetido = treino.series.some((serie) => serie.exercicio === treino.exercicioEscolhido);
+    const motivo = repetido
+      ? `O exercício ${this.nomeExercicio(treino.exercicioEscolhido)} já faz parte do treino ${treino.nome}`
+      : '';
+    this.repeticoes.set({ ...this.repeticoes(), [treino.dia]: motivo });
+    if (repetido) return;
     const faixa = this.faixa(treino.objetivo);
     treino.series.push({
       exercicio: treino.exercicioEscolhido,

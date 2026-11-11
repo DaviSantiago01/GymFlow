@@ -30,6 +30,8 @@ import br.edu.cesar.treinoconecta.treinoconectacore.dominio.Autorizacao;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.aluno.Aluno;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.aluno.AlunoIdentificador;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.aluno.spi.IAlunoRepositorio;
+import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.exercicio.CategoriaExercicio;
+import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.exercicio.Exercicio;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.exercicio.ExercicioIdentificador;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.exercicio.spi.IExercicioRepositorio;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.personal.Personal;
@@ -56,7 +58,7 @@ public final class PlanoDeTreinoStepDefinitions {
 
     private final Map<String, PlanoDeTreino> planos = new HashMap<>();
     private final Set<String> alunosCadastrados = new HashSet<>();
-    private final Set<String> exerciciosCadastrados = new HashSet<>();
+    private final Map<String, String> nomesDosExercicios = new HashMap<>();
     private final Map<String, RascunhoTreino> rascunhos = new LinkedHashMap<>();
     private int proximoIdentificador = 1;
     private PlanoDeTreino plano;
@@ -84,7 +86,12 @@ public final class PlanoDeTreinoStepDefinitions {
             return new Aluno(Optional.of(identificador), "aluno" + identificador, "Aluno");
         });
         when(exercicios.existePorIdentificador(any())).thenAnswer(
-                chamada -> exerciciosCadastrados.contains(chamada.getArgument(0).toString()));
+                chamada -> nomesDosExercicios.containsKey(chamada.getArgument(0).toString()));
+        when(exercicios.buscarPorIdentificador(any())).thenAnswer(chamada -> {
+            ExercicioIdentificador identificador = chamada.getArgument(0);
+            return new Exercicio(Optional.of(identificador), nomesDosExercicios.get(identificador.toString()),
+                    CategoriaExercicio.PEITO, new BigDecimal("200"), Optional.empty());
+        });
         when(repositorio.existePorIdentificador(any())).thenAnswer(
                 chamada -> planos.containsKey(chamada.getArgument(0).toString()));
         when(repositorio.buscarPorIdentificador(any())).thenAnswer(chamada -> planos.get(chamada.getArgument(0).toString()));
@@ -171,9 +178,9 @@ public final class PlanoDeTreinoStepDefinitions {
         alunosCadastrados.add(aluno);
     }
 
-    @Dado("que existe o exercício {string}")
-    public void cadastrarExercicio(String exercicio) {
-        exerciciosCadastrados.add(exercicio);
+    @Dado("que existe o exercício {string} chamado {string}")
+    public void cadastrarExercicio(String exercicio, String nome) {
+        nomesDosExercicios.put(exercicio, nome);
     }
 
     @Dado("um treino {string} na {string} com objetivo {string}")
@@ -221,7 +228,7 @@ public final class PlanoDeTreinoStepDefinitions {
             int intervalo) {
         executar(() -> {
             rascunhos.get(treino).series.add(serie(exercicio, series, minimo, maximo, carga, intervalo));
-            treinosDosRascunhos();
+            servico.criar(new AlunoIdentificador("1"), "Plano", 1, treinosDosRascunhos());
         });
     }
 

@@ -211,7 +211,10 @@ public final class AvaliacaoFisicaStepDefinitions {
 
     @Quando("eu consultar a referência da avaliação de {string}")
     public void consultarReferencia(String data) {
-        referencia = servico.buscarReferencia(avaliacaoDe(data), Optional.empty());
+        var atual = avaliacaoDe(data);
+        referencia = servico.existeReferencia(atual, Optional.empty())
+                ? Optional.of(servico.buscarReferencia(atual, Optional.empty()))
+                : Optional.empty();
     }
 
     @Quando("eu consultar a tendência de {string} do aluno {string}")
@@ -226,7 +229,8 @@ public final class AvaliacaoFisicaStepDefinitions {
 
     @Quando("eu consultar a situação atual do aluno {string}")
     public void consultarSituacao(String aluno) {
-        situacaoAtual = servico.consultarHistorico(new AlunoIdentificador(aluno)).maisRecente();
+        var historico = servico.consultarHistorico(new AlunoIdentificador(aluno));
+        situacaoAtual = historico.existeAvaliacao() ? Optional.of(historico.buscarMaisRecente()) : Optional.empty();
     }
 
     private void corrigir(AvaliacaoFisica avaliacao, LocalDate data, String peso) {

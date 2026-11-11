@@ -1,21 +1,21 @@
-<main class="tela">
-  <header class="cabecalho-pagina">
+<main class="pagina">
+  <header class="pagina-cabecalho">
     <div>
-      <span class="sobretitulo">● TREINO CONECTA</span>
+      <span class="pagina-sobretitulo">Avaliação física</span>
       <h1>{{ correcao() ? 'Corrigir avaliação física' : 'Nova avaliação física' }}</h1>
     </div>
-    <div class="atalhos"><a routerLink="/core/avaliacao-fisica/pesquisa">Avaliações</a></div>
+    <div class="pagina-links"><a routerLink="/core/avaliacao-fisica/pesquisa">Avaliações</a></div>
   </header>
 
   @if (correcao()) {
-    <p class="mensagem sucesso" role="status">
+    <p class="aviso">
       A correção cria uma nova versão. Os dados anteriores ficam preservados.
     </p>
   }
 
-  <section class="painel" aria-labelledby="titulo-dados">
+  <section class="bloco" aria-labelledby="titulo-dados">
     <h2 id="titulo-dados">Dados da avaliação</h2>
-    <div class="campos">
+    <div class="formulario-grade">
       <label
         >Aluno
         <select [(ngModel)]="alunoEscolhido" [disabled]="correcao()">
@@ -52,13 +52,13 @@
     </div>
   </section>
 
-  <section class="painel" aria-labelledby="titulo-medidas">
+  <section class="bloco" aria-labelledby="titulo-medidas">
     <h2 id="titulo-medidas">Medidas corporais (cm)</h2>
     <p>
       Preencha as medidas realizadas, de {{ formulario().medidaMinima }} a
       {{ formulario().medidaMaxima }} cm.
     </p>
-    <div class="campos">
+    <div class="formulario-grade">
       @for (campo of medidas; track campo.indicador) {
         <label
           >{{ rotulos[campo.indicador] }}
@@ -75,10 +75,10 @@
   </section>
 
   @if (erro()) {
-    <div class="mensagem erro" role="alert">{{ erro() }}</div>
+    <div class="aviso aviso-erro" role="alert">{{ erro() }}</div>
   }
-  <div class="acoes">
-    <button type="button" class="botao principal" [disabled]="ocupado()" (click)="salvar()">
+  <div class="grupo-acoes">
+    <button type="button" class="acao acao-principal" [disabled]="ocupado()" (click)="salvar()">
       {{ correcao() ? 'Salvar correção' : 'Registrar avaliação' }}
     </button>
   </div>

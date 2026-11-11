@@ -1,248 +1,91 @@
+/* Estilos específicos das telas de treinos e avaliações.
+   O padrão comum (página, blocos, botões, formulários, tabelas e mensagens) fica em styles.scss. */
 :host {
   display: block;
-  color: #e5e8ef;
 }
-.tela {
-  max-width: 1080px;
-  margin: auto;
-  padding: 28px 24px 42px;
-}
-h1 {
-  font-size: 24px;
-  margin: 4px 0 0;
-  font-weight: 750;
-}
-h2 {
-  font-size: 18px;
-  font-weight: 700;
-  margin: 0 0 10px;
-}
-h3 {
-  font-size: 14px;
-  font-weight: 700;
-  margin: 16px 0 8px;
-}
-p {
-  color: #aab3a3;
-  font-size: 13px;
-  margin: 7px 0;
-}
-a {
-  color: inherit;
-  text-decoration: none;
-}
-.cabecalho-pagina,
 .linha {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 12px;
   flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-3);
 }
-.cabecalho-pagina {
-  margin-bottom: 24px;
+.linha h2 {
+  margin-bottom: 0;
 }
-.sobretitulo {
-  display: block;
-  color: #c7fa73;
-  font-size: 10px;
-  font-weight: 750;
-  letter-spacing: 1px;
-}
-.atalhos,
-.acoes,
 .dias {
   display: flex;
-  gap: 10px;
   flex-wrap: wrap;
-  font-size: 12px;
-}
-.acoes {
-  margin-top: 16px;
-}
-.atalhos a,
-td a {
-  color: #c5fa77;
-}
-.atalhos a:hover,
-td a:hover {
-  text-decoration: underline;
-}
-td a {
-  margin-right: 12px;
-  white-space: nowrap;
-}
-.painel {
-  background: #191e27;
-  border: 1px solid #252c33;
-  border-radius: 12px;
-  padding: 20px;
-  margin-bottom: 14px;
-}
-.etiqueta {
-  display: inline-block;
-  border-radius: 20px;
-  padding: 3px 9px;
-  background: #293622;
-  color: #c4f078;
-  font-size: 10px;
-  font-weight: 700;
-}
-.etiqueta.neutra {
-  background: #343039;
-  color: #d6b3ba;
-}
-.botao {
-  display: inline-flex;
-  justify-content: center;
-  align-items: center;
-  border: 0;
-  border-radius: 7px;
-  min-height: 40px;
-  padding: 9px 16px;
-  font-size: 13px;
-  font-weight: 700;
-  cursor: pointer;
-}
-.principal {
-  background: #c5ff78;
-  color: #17200e;
-}
-.secundario {
-  background: #292e38;
-  color: #d6dbe3;
-}
-.perigo {
-  background: #3e1420;
-  color: #ffbfc9;
-}
-button:disabled {
-  opacity: 0.45;
-  cursor: not-allowed;
-}
-.mensagem {
-  padding: 12px 16px;
-  border-radius: 8px;
-  margin-bottom: 14px;
-  font-size: 13px;
-}
-.erro {
-  background: #431d26;
-  color: #ffd7de;
-}
-.sucesso {
-  background: #253927;
-  color: #d0fbb5;
-}
-.vazio {
-  text-align: center;
-  padding: 36px 18px;
-  color: #aab3a3;
-  font-size: 13px;
-}
-.campos {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 12px;
-}
-label {
-  display: block;
-  font-size: 12px;
-  color: #b7bfac;
-}
-input,
-select {
-  display: block;
-  width: 100%;
-  margin-top: 5px;
-  background: #101720;
-  border: 1px solid #3d473b;
-  border-radius: 7px;
-  color: #f3f6ed;
-  padding: 9px 11px;
-  font-size: 13px;
-}
-input:focus,
-select:focus {
-  outline: 2px solid #c4f078;
+  gap: var(--espaco-2);
+  margin: var(--espaco-3) 0;
 }
 .dias button {
-  border: 1px solid #3d473b;
-  border-radius: 20px;
-  padding: 7px 14px;
-  background: #232a32;
-  color: #b2bca7;
+  min-height: 36px;
+  padding: 6px 16px;
+  border: 1px solid var(--cor-borda-forte);
+  border-radius: var(--raio-pilula);
+  background: var(--cor-superficie-alta);
+  color: var(--cor-texto-suave);
+  font-family: inherit;
+  font-size: 13px;
   cursor: pointer;
 }
+.dias button:hover {
+  border-color: var(--cor-destaque);
+}
 .dias .selecionado {
-  background: #c6fb7b;
-  color: #243016;
-}
-.tabela {
-  overflow-x: auto;
-}
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-}
-th,
-td {
-  padding: 9px 8px;
-  border-bottom: 1px solid #252c33;
-  text-align: left;
-}
-th {
-  color: #aeb6a7;
-  font-weight: 500;
-}
-td input,
-td select {
-  min-width: 72px;
-  margin: 0;
+  border-color: var(--cor-destaque);
+  background: var(--cor-destaque);
+  color: var(--cor-destaque-texto);
+  font-weight: 700;
 }
 .indicadores {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 12px;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: var(--espaco-3);
+  margin-bottom: var(--espaco-4);
 }
 .indicadores div {
-  background: #111820;
-  border-radius: 9px;
-  padding: 12px 14px;
+  padding: var(--espaco-3) var(--espaco-4);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio-pequeno);
+  background: var(--cor-campo);
 }
 .indicadores span {
   display: block;
-  font-size: 11px;
-  color: #aeb6a7;
+  margin-bottom: var(--espaco-1);
+  color: var(--cor-texto-suave);
+  font-size: var(--texto-pequeno);
 }
 .indicadores strong {
   font-size: 20px;
+  font-variant-numeric: tabular-nums;
 }
 .grafico {
   display: flex;
   align-items: flex-end;
-  gap: 2px;
+  gap: 3px;
   height: 180px;
+  margin-top: var(--espaco-3);
   overflow-x: auto;
-  border-bottom: 1px solid #3d473b;
+  border-bottom: 1px solid var(--cor-borda-forte);
 }
 .coluna {
   display: flex;
   flex: 1 0 34px;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
   max-width: 64px;
   height: 100%;
-  flex-direction: column;
-  justify-content: flex-end;
-  align-items: center;
 }
 .coluna small {
+  color: var(--cor-texto);
   font-size: 10px;
-  color: #d6dbe3;
 }
 .barra {
   width: 100%;
   min-height: 2px;
-  background: #6aa62c;
   border-radius: 4px 4px 0 0;
+  background: #6aa62c;
 }

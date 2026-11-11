@@ -107,12 +107,13 @@ public final class MetaServico extends AgregadoServicoAbstrato<MetaIdentificador
 
     private Meta montarMeta(AlunoIdentificador aluno, IndicadorFisico indicador, BigDecimal valorDesejado, LocalDate inicio,
             LocalDate fim) {
+        Meta.validarDados(valorDesejado, inicio, fim, hoje());
         var historico = new HistoricoDeAvaliacao(avaliacoes.buscarValidasPorAluno(aluno));
-        var referencia = historico.maisRecenteCom(indicador);
-        Validate.validState(referencia.isPresent(), SEM_AVALIACAO_DO_INDICADOR);
+        Validate.validState(historico.existeAvaliacaoCom(indicador), SEM_AVALIACAO_DO_INDICADOR);
+        var referencia = historico.buscarMaisRecenteCom(indicador);
         var personal = personais.buscarPorUsuario(getSegurancaServico().getUsuario()).getIdentificador().orElseThrow();
-        return Meta.criar(aluno, personal, indicador, referencia.get().valorDe(indicador).orElseThrow(), valorDesejado,
-                inicio, fim, referencia.get().getIdentificador().orElseThrow(), hoje());
+        return Meta.criar(aluno, personal, indicador, referencia.buscarValor(indicador), valorDesejado, inicio, fim,
+                referencia.getIdentificador().orElseThrow(), hoje());
     }
 
     private void validarPeriodoLivre(Meta meta, Optional<MetaIdentificador> ignorada) {

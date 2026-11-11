@@ -1,10 +1,10 @@
-<main class="tela">
-  <header class="cabecalho-pagina">
+<main class="pagina">
+  <header class="pagina-cabecalho">
     <div>
-      <span class="sobretitulo">● TREINO CONECTA</span>
+      <span class="pagina-sobretitulo">Avaliação física</span>
       <h1>Resultado da avaliação</h1>
     </div>
-    <div class="atalhos">
+    <div class="pagina-links">
       <a routerLink="/core/avaliacao-fisica/pesquisa" [queryParams]="{ aluno: avaliacao().aluno }"
         >Avaliações</a
       >
@@ -15,13 +15,13 @@
   </header>
 
   @if (erro()) {
-    <div class="mensagem erro" role="alert">{{ erro() }}</div>
+    <div class="aviso aviso-erro" role="alert">{{ erro() }}</div>
   }
 
-  <section class="painel">
+  <section class="bloco">
     <div class="linha">
       <h2>{{ avaliacao().alunoNome }}</h2>
-      <span class="etiqueta" [class.neutra]="!valida()">{{
+      <span class="marcador" [class.marcador-neutro]="!valida()">{{
         rotulosSituacao[avaliacao().situacao]
       }}</span>
     </div>
@@ -44,31 +44,31 @@
         ><strong>{{ rotulosClassificacao[avaliacao().classificacaoImc] }}</strong>
       </div>
     </div>
-    <div class="acoes">
+    <div class="grupo-acoes">
       @if (detalhe().referencia) {
         <a
-          class="botao secundario"
+          class="acao acao-secundaria"
           [routerLink]="['/core/avaliacao-fisica', avaliacao().identificador, 'comparacao']"
           >Comparar com a anterior</a
         >
       }
       @if (detalhe().versaoAnterior; as versao) {
-        <a class="botao secundario" [routerLink]="['/core/avaliacao-fisica', versao, 'visualizacao']"
+        <a class="acao acao-secundaria" [routerLink]="['/core/avaliacao-fisica', versao, 'visualizacao']"
           >Ver versão anterior</a
         >
       }
       @if (detalhe().gerenciavel && valida()) {
         <a
-          class="botao secundario"
+          class="acao acao-secundaria"
           [routerLink]="['/core/avaliacao-fisica', avaliacao().identificador, 'alteracao']"
           >Corrigir</a
         >
-        <button class="botao perigo" [disabled]="ocupado()" (click)="remover()">Excluir</button>
+        <button class="acao acao-perigo" [disabled]="ocupado()" (click)="remover()">Excluir</button>
       }
     </div>
   </section>
 
-  <section class="painel tabela" aria-labelledby="titulo-medidas">
+  <section class="bloco tabela-dados" aria-labelledby="titulo-medidas">
     <h2 id="titulo-medidas">Medidas corporais</h2>
     <table>
       <thead>
@@ -85,7 +85,7 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="2" class="vazio">Nenhuma medida registrada.</td>
+            <td colspan="2" class="estado-vazio">Nenhuma medida registrada.</td>
           </tr>
         }
       </tbody>

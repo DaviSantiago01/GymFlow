@@ -43,6 +43,10 @@ public final class AvaliacaoFisicaServico
     public static final String REFERENCIA_INVALIDA = "A referência deve ser uma avaliação válida, anterior e do mesmo aluno";
     public static final String ALUNO_OBRIGATORIO = "Informe o aluno";
     public static final String DADOS_DE_OUTRO_ALUNO = "O aluno só consulta os próprios dados";
+    public static final String SEM_AVALIACAO = "O aluno não possui avaliação válida";
+    public static final String SEM_AVALIACAO_ANTERIOR = "Não existe avaliação anterior a esta";
+    public static final String SEM_AVALIACAO_DO_INDICADOR_MODELO = "O aluno não possui avaliação com o indicador %s";
+    public static final String VALOR_INEXISTENTE_MODELO = "A avaliação não possui o indicador %s";
 
     private final IAvaliacaoFisicaRepositorio repositorio;
     private final IAlunoRepositorio alunos;
@@ -95,6 +99,7 @@ public final class AvaliacaoFisicaServico
         var original = repositorio.bloquear(identificador);
         var agora = relogio.instant();
         var corrigida = original.corrigir(personalAutenticado(), data, peso, altura, medidas, hoje(agora), agora);
+        // a ordem cronológica só pode ser conferida depois de saber que a avaliação ainda é válida
         historicoDoAluno(original.getAluno()).validarDataCorrigida(original, data);
         repositorio.alterar(original.substituir());
         var salva = repositorio.incluir(corrigida);
@@ -121,19 +126,24 @@ public final class AvaliacaoFisicaServico
         return historicoDoAluno(aluno);
     }
 
-    /** Sem referência informada, usa a avaliação imediatamente anterior. */
-    public Optional<AvaliacaoFisica> buscarReferencia(AvaliacaoFisica atual,
-            Optional<AvaliacaoFisicaIdentificador> informada) {
+    /** Sem referência informada, a referência é a avaliação imediatamente anterior, se houver. */
+    public boolean existeReferencia(AvaliacaoFisica atual, Optional<AvaliacaoFisicaIdentificador> informada) {
+        Objects.requireNonNull(atual);
+        Objects.requireNonNull(informada);
+        return informada.isPresent() || consultarHistorico(atual.getAluno()).existeAnteriorA(atual);
+    }
+
+    public AvaliacaoFisica buscarReferencia(AvaliacaoFisica atual, Optional<AvaliacaoFisicaIdentificador> informada) {
         Objects.requireNonNull(atual);
         Objects.requireNonNull(informada);
         var historico = consultarHistorico(atual.getAluno());
         if (informada.isEmpty()) {
-            return historico.anteriorA(atual);
+            return historico.buscarAnteriorA(atual);
         }
         var referencia = repositorio.buscarPorIdentificador(informada.get());
         Validate.isTrue(referencia.isValida() && referencia.getAluno().equals(atual.getAluno())
                 && referencia.getData().isBefore(atual.getData()), REFERENCIA_INVALIDA);
-        return Optional.of(referencia);
+        return referencia;
     }
 
     /** O personal escolhe o aluno. O aluno só pode consultar a si mesmo. */
@@ -156,8 +166,8 @@ public final class AvaliacaoFisicaServico
 
     private void marcarMetasAtingidas(AvaliacaoFisica avaliacao) {
         for (var meta : metas.buscarAtivasPorAluno(avaliacao.getAluno())) {
-            var valor = avaliacao.valorDe(meta.getIndicador());
-            if (valor.isPresent() && meta.atingidaPor(valor.get(), avaliacao.getData())) {
+            var indicador = meta.getIndicador();
+            if (avaliacao.existeValor(indicador) && meta.atingidaPor(avaliacao.buscarValor(indicador), avaliacao.getData())) {
                 metas.alterar(meta.marcarAtingida(avaliacao.getData()));
             }
         }

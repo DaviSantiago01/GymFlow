@@ -97,7 +97,7 @@ class ReservasIntegracaoTest {
     @Test void consultasRespeitamVencimentoAntesDoAgendador() throws Exception {
         var id=identificador(reservar("u","A-01"));relogio.agora.set(INICIO.plusSeconds(10800));
         mvc.perform(get(ARM+"A-01/visualizacao").with(aluno("v"))).andExpect(jsonPath("$.dados.disponivel").value(true));
-        mvc.perform(get(RSV+"ativa").with(aluno("u"))).andExpect(jsonPath("$.dados").isEmpty());
+        mvc.perform(get(RSV+"acompanhamento").with(aluno("u"))).andExpect(jsonPath("$.dados").isEmpty());
         mvc.perform(get(RSV+id+"/visualizacao").with(aluno("u"))).andExpect(jsonPath("$.dados.situacao").value("VENCIDA"));
         identificador(reservar("v","A-01"));assertEquals(2,total());
     }
@@ -141,7 +141,7 @@ class ReservasIntegracaoTest {
     @Test void loginRealMantemSessao() throws Exception {
         var login=mvc.perform(get("/backend/autenticacao").with(httpBasic("u","u"))).andExpect(status().isOk()).andReturn();
         var sessao=(MockHttpSession)login.getRequest().getSession(false);assertNotNull(sessao);
-        mvc.perform(get(RSV+"ativa").session(sessao)).andExpect(status().isOk());
+        mvc.perform(get(RSV+"acompanhamento").session(sessao)).andExpect(status().isOk());
         mvc.perform(get("/backend/autenticacao").with(httpBasic("u","incorreta"))).andExpect(status().isUnauthorized());
     }
     @Test void identificadorDoCorpoNaoTrocaProprietario() throws Exception {
@@ -205,7 +205,7 @@ class ReservasIntegracaoTest {
     @Test void agendadaPodeCancelarMasSoEncerraAposInicio() throws Exception {
         var id=identificador(reservar("u","A-01","2026-11-05",6,1));
         mvc.perform(get(ARM+"A-01/visualizacao").with(aluno("v"))).andExpect(jsonPath("$.dados.disponivel").value(true));
-        mvc.perform(get(RSV+"ativa").with(aluno("u"))).andExpect(jsonPath("$.dados.identificador").value(id));
+        mvc.perform(get(RSV+"acompanhamento").with(aluno("u"))).andExpect(jsonPath("$.dados.identificador").value(id));
         mvc.perform(post(RSV+id+"/encerrar").with(aluno("u")).with(csrf())).andExpect(status().isConflict());
         relogio.agora.set(Instant.parse("2026-11-05T09:00:00Z"));
         mvc.perform(get(ARM+"A-01/visualizacao").with(aluno("v"))).andExpect(jsonPath("$.dados.disponivel").value(false));

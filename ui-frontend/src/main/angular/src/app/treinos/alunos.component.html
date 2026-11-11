@@ -1,11 +1,11 @@
-<main class="tela">
-  <header class="cabecalho-pagina">
+<main class="pagina">
+  <header class="pagina-cabecalho">
     <div>
-      <span class="sobretitulo">● TREINO CONECTA</span>
+      <span class="pagina-sobretitulo">Treinos</span>
       <h1>Alunos</h1>
     </div>
   </header>
-  <section class="painel">
+  <section class="bloco">
     <label for="busca-aluno">Buscar por nome ou usuário</label>
     <input
       id="busca-aluno"
@@ -14,7 +14,7 @@
       autocomplete="off"
     />
   </section>
-  <section class="painel tabela">
+  <section class="bloco tabela-dados">
     <table>
       <thead>
         <tr>
@@ -65,7 +65,7 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="4" class="vazio">Nenhum aluno encontrado.</td>
+            <td colspan="4" class="estado-vazio">Nenhum aluno encontrado.</td>
           </tr>
         }
       </tbody>

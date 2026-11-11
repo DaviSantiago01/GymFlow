@@ -57,6 +57,17 @@ public final class Meta implements IAgregado<MetaIdentificador> {
         return meta;
     }
 
+    /** Valida os dados informados antes de consultar a avaliação de referência. */
+    public static void validarDados(BigDecimal valorDesejado, LocalDate inicio, LocalDate fim, LocalDate hoje) {
+        Validate.notNull(valorDesejado, MetaServico.VALOR_DESEJADO_INVALIDO);
+        Validate.notNull(inicio, MetaServico.PERIODO_OBRIGATORIO);
+        Validate.notNull(fim, MetaServico.PERIODO_OBRIGATORIO);
+        Objects.requireNonNull(hoje);
+        Validate.isTrue(valorDesejado.signum() > 0, MetaServico.VALOR_DESEJADO_INVALIDO);
+        Validate.isTrue(!inicio.isAfter(fim), MetaServico.PERIODO_INVERTIDO);
+        validarFimDoPeriodo(fim, hoje);
+    }
+
     private static void validarFimDoPeriodo(LocalDate fim, LocalDate hoje) {
         Validate.isTrue(!fim.isBefore(hoje), MetaServico.PERIODO_ENCERRADO);
     }

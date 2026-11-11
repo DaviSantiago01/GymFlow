@@ -1,10 +1,10 @@
-<main class="tela">
-  <header class="cabecalho-pagina">
+<main class="pagina">
+  <header class="pagina-cabecalho">
     <div>
-      <span class="sobretitulo">● TREINO CONECTA</span>
+      <span class="pagina-sobretitulo">Treinos</span>
       <h1>Acompanhamento da evolução</h1>
     </div>
-    <div class="atalhos">
+    <div class="pagina-links">
       <a
         routerLink="/core/execucao-de-exercicio/pesquisa"
         [queryParams]="aluno() ? { aluno: aluno() } : {}"
@@ -14,10 +14,10 @@
   </header>
 
   @if (evolucao().exercicios.length) {
-    <section class="painel">
+    <section class="bloco">
       <label
         >Exercício
-        <select (change)="escolherExercicio($any($event.target).value)">
+        <select #seletor (change)="escolherExercicio(seletor.value)">
           @for (exercicio of evolucao().exercicios; track exercicio.identificador) {
             <option
               [value]="exercicio.identificador"
@@ -30,7 +30,7 @@
       </label>
     </section>
 
-    <section class="painel">
+    <section class="bloco">
       <div class="indicadores">
         <div>
           <span>Maior carga válida</span><strong>{{ numero(evolucao().maiorCarga) }} kg</strong>
@@ -50,7 +50,7 @@
       }
     </section>
 
-    <section class="painel" aria-labelledby="titulo-grafico">
+    <section class="bloco" aria-labelledby="titulo-grafico">
       <h2 id="titulo-grafico">Carga por execução (kg)</h2>
       <div class="grafico" role="img" aria-label="Carga de cada execução, em ordem cronológica">
         @for (execucao of evolucao().execucoes; track execucao.identificador; let ultima = $last) {
@@ -76,7 +76,7 @@
       </div>
     </section>
 
-    <section class="painel tabela" aria-label="Execuções em ordem cronológica">
+    <section class="bloco tabela-dados" aria-label="Execuções em ordem cronológica">
       <table>
         <thead>
           <tr>
@@ -99,6 +99,6 @@
       </table>
     </section>
   } @else {
-    <section class="painel"><p class="vazio">Nenhuma execução registrada até o momento.</p></section>
+    <section class="bloco"><p class="estado-vazio">Nenhuma execução registrada até o momento.</p></section>
   }
 </main>

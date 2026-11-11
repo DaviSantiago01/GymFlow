@@ -7,8 +7,8 @@ Funcionalidade: Prescrição de planos de treino
   Contexto:
     Dado que estou autenticado como o personal "1"
     E que existe o aluno "1"
-    E que existe o exercício "1"
-    E que existe o exercício "2"
+    E que existe o exercício "1" chamado "Supino reto"
+    E que existe o exercício "2" chamado "Agachamento"
 
   Cenário: RN001 - Plano criado pertence a um único aluno
     Dado um treino "A" na "SEGUNDA" com objetivo "HIPERTROFIA"
@@ -40,7 +40,7 @@ Funcionalidade: Prescrição de planos de treino
     Dado um treino "A" na "SEGUNDA" com objetivo "HIPERTROFIA"
     E no treino "A" o exercício "1" com 4 séries, de 8 a 12 repetições, carga "40" e intervalo 60
     Quando eu incluir no treino "A" o exercício "1" com 3 séries, de 8 a 12 repetições, carga "30" e intervalo 60
-    Então o plano é rejeitado com a mensagem de exercício "1" repetido no treino "A"
+    Então o plano é rejeitado com a mensagem de exercício "Supino reto" repetido no treino "A"
 
   Cenário: RN003 - O mesmo exercício pode estar em treinos diferentes
     Dado um treino "A" na "SEGUNDA" com objetivo "HIPERTROFIA"

@@ -1,7 +1,7 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { ResolveFn } from '@angular/router';
-import { forkJoin, map } from 'rxjs';
+import { map } from 'rxjs';
 
 export type Indicador =
   | 'PESO'
@@ -218,7 +218,9 @@ export class AvaliacoesService {
     return this.http.get<FormularioAvaliacao>(`${this.avaliacoes}/inclusao`);
   }
   alteracao(id: string) {
-    return this.http.get<{ agregado: AvaliacaoAgregado }>(`${this.avaliacoes}/${id}/alteracao`);
+    return this.http.get<{ agregado: AvaliacaoAgregado; formulario: FormularioAvaliacao }>(
+      `${this.avaliacoes}/${id}/alteracao`,
+    );
   }
   registrar(aluno: string, avaliacao: AvaliacaoEnvio) {
     return this.http.post<DetalheAvaliacao>(`${this.avaliacoes}/registrar`, { aluno, ...avaliacao });
@@ -256,7 +258,9 @@ export class AvaliacoesService {
     return this.http.get<FormularioMeta>(`${this.metas}/inclusao`);
   }
   alteracaoMeta(id: string) {
-    return this.http.get<{ agregado: MetaAgregado }>(`${this.metas}/${id}/alteracao`);
+    return this.http.get<{ agregado: MetaAgregado; formulario: FormularioMeta }>(
+      `${this.metas}/${id}/alteracao`,
+    );
   }
   listarMetas(aluno: string | null) {
     return this.http.get<Pesquisa<Meta>>(`${this.metas}/pesquisa`, {
@@ -279,13 +283,10 @@ export const resolverInclusaoAvaliacao: ResolveFn<TelaFormularioAvaliacao> = () 
     .formulario()
     .pipe(map((formulario) => ({ formulario, avaliacao: null })));
 
-export const resolverAlteracaoAvaliacao: ResolveFn<TelaFormularioAvaliacao> = (rota) => {
-  const api = inject(AvaliacoesService);
-  return forkJoin({
-    formulario: api.formulario(),
-    recurso: api.alteracao(rota.paramMap.get('id')!),
-  }).pipe(map(({ formulario, recurso }) => ({ formulario, avaliacao: recurso.agregado })));
-};
+export const resolverAlteracaoAvaliacao: ResolveFn<TelaFormularioAvaliacao> = (rota) =>
+  inject(AvaliacoesService)
+    .alteracao(rota.paramMap.get('id')!)
+    .pipe(map((recurso) => ({ formulario: recurso.formulario, avaliacao: recurso.agregado })));
 
 export const resolverVisualizacaoAvaliacao: ResolveFn<DetalheAvaliacao> = (rota) =>
   inject(AvaliacoesService).visualizar(rota.paramMap.get('id')!);
@@ -319,10 +320,7 @@ export const resolverInclusaoMeta: ResolveFn<TelaFormularioMeta> = () =>
     .formularioMeta()
     .pipe(map((formulario) => ({ formulario, meta: null })));
 
-export const resolverAlteracaoMeta: ResolveFn<TelaFormularioMeta> = (rota) => {
-  const api = inject(AvaliacoesService);
-  return forkJoin({
-    formulario: api.formularioMeta(),
-    recurso: api.alteracaoMeta(rota.paramMap.get('id')!),
-  }).pipe(map(({ formulario, recurso }) => ({ formulario, meta: recurso.agregado })));
-};
+export const resolverAlteracaoMeta: ResolveFn<TelaFormularioMeta> = (rota) =>
+  inject(AvaliacoesService)
+    .alteracaoMeta(rota.paramMap.get('id')!)
+    .pipe(map((recurso) => ({ formulario: recurso.formulario, meta: recurso.agregado })));

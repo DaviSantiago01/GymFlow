@@ -31,6 +31,7 @@ public final class ExecucaoDeExercicioServico extends
     public static final String ALUNO_OBRIGATORIO = "Informe o aluno";
     public static final String DADOS_DE_OUTRO_ALUNO = "O aluno só consulta os próprios dados";
     public static final String SEM_PLANO_ATIVO = "Você não possui um plano de treino ativo";
+    public static final String SEM_CARGA_VALIDA = "Não há carga válida registrada para este exercício";
 
     private final IExecucaoDeExercicioRepositorio repositorio;
     private final IPlanoDeTreinoRepositorio planos;
@@ -85,16 +86,22 @@ public final class ExecucaoDeExercicioServico extends
         if (!planos.existeAtivoPorAluno(aluno)) {
             return Optional.empty();
         }
-        var limite = planos.buscarAtivoPorAluno(aluno).limiteRepeticoes(exercicio);
-        if (limite.isEmpty()) {
+        var plano = planos.buscarAtivoPorAluno(aluno);
+        if (!plano.existeLimiteRepeticoes(exercicio)) {
             return Optional.empty();
         }
-        return historico.sugerirProgressao(exercicios.buscarPorIdentificador(exercicio), limite.get());
+        return historico.sugerirProgressao(exercicios.buscarPorIdentificador(exercicio),
+                plano.buscarLimiteRepeticoes(exercicio));
     }
 
-    public Optional<BigDecimal> maiorCargaValida(AlunoIdentificador aluno, ExercicioIdentificador exercicio) {
+    public boolean existeCargaValida(AlunoIdentificador aluno, ExercicioIdentificador exercicio) {
         var historico = consultarHistorico(aluno, exercicio);
-        return historico.maiorCargaValida(exercicios.buscarPorIdentificador(exercicio));
+        return historico.existeCargaValida(exercicios.buscarPorIdentificador(exercicio));
+    }
+
+    public BigDecimal buscarMaiorCargaValida(AlunoIdentificador aluno, ExercicioIdentificador exercicio) {
+        var historico = consultarHistorico(aluno, exercicio);
+        return historico.buscarMaiorCargaValida(exercicios.buscarPorIdentificador(exercicio));
     }
 
     public PlanoDeTreino buscarPlanoAtivoDoAlunoAutenticado() {

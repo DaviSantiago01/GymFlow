@@ -18,6 +18,7 @@ import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.planodetreino.P
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.planodetreino.PlanoDeTreinoServico;
 import dev.sauloaraujo.d5.framework.ui.AgregadoControladorAbstrato;
 import dev.sauloaraujo.d5.framework.ui.Backend;
+import dev.sauloaraujo.d5.framework.ui.IAgregadoRecurso;
 
 @RestController
 @RequestMapping(Backend.PREFIXO + "core/plano-de-treino")
@@ -35,6 +36,13 @@ public class PlanoDeTreinoControlador extends
     @Override
     public PlanoDeTreinoFormulario inclusao() {
         return consultas.formulario();
+    }
+
+    /** A rota de alteração recebe também os dados do formulário, em uma única operação. */
+    @Override
+    protected IAgregadoRecurso<PlanoDeTreino, PlanoDeTreinoAutorizacoes> alteracao(PlanoDeTreino agregado,
+            PlanoDeTreinoAutorizacoes autorizacoes) {
+        return new PlanoDeTreinoAlteracaoRecurso(agregado, autorizacoes, consultas.formulario());
     }
 
     @GetMapping("{identificador}/visualizacao")

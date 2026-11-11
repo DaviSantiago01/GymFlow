@@ -27,6 +27,9 @@ public final class PlanoDeTreinoServico
     public static final String VERSAO_INVALIDA = "A versão do plano deve ser maior que zero";
     public static final String DIA_REPETIDO_MODELO = "O plano já possui um treino em %s";
     public static final String EXERCICIO_REPETIDO_MODELO = "O exercício %s já faz parte do treino %s";
+    public static final String SEM_EXERCICIO_REPETIDO_MODELO = "O treino %s não possui exercício repetido";
+    public static final String SERIE_INEXISTENTE_MODELO = "O exercício %s não faz parte do treino %s";
+    public static final String EXERCICIO_FORA_DO_PLANO_MODELO = "O exercício %s não faz parte do plano";
     public static final String SERIES_INVALIDAS = "A quantidade de séries deve ser maior que zero";
     public static final String REPETICOES_INVALIDAS = "As repetições devem ser maiores que zero";
     public static final String FAIXA_REPETICOES_INVALIDA = "O limite superior de repetições não pode ser menor que o inferior";
@@ -145,10 +148,15 @@ public final class PlanoDeTreinoServico
         return plano.getPersonal().equals(personalAutenticado());
     }
 
+    /** Valida os exercícios informados e, pela RN003, informa o nome do exercício repetido. */
     private void validarExercicios(List<Treino> treinos) {
         for (var treino : treinos) {
             for (var serie : treino.series()) {
                 validarExistencia(exercicios::existePorIdentificador, serie.exercicio(), EXERCICIO_INEXISTENTE_MODELO);
+            }
+            if (treino.existeExercicioRepetido()) {
+                var nomeExercicio = exercicios.buscarPorIdentificador(treino.buscarExercicioRepetido()).getNome();
+                throw new IllegalArgumentException(String.format(EXERCICIO_REPETIDO_MODELO, nomeExercicio, treino.nome()));
             }
         }
     }

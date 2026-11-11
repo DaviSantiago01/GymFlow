@@ -7,6 +7,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import org.apache.commons.lang3.Validate;
@@ -117,30 +118,43 @@ public final class AvaliacaoFisica implements IAgregado<AvaliacaoFisicaIdentific
         return ClassificacaoImc.classificar(getImc());
     }
 
-    public Optional<BigDecimal> valorDe(IndicadorFisico indicador) {
+    /** Peso e IMC sempre existem; as medidas dependem do que foi informado. */
+    public boolean existeValor(IndicadorFisico indicador) {
         Objects.requireNonNull(indicador);
-        if (indicador == IndicadorFisico.PESO) {
-            return Optional.of(peso);
-        }
-        if (indicador == IndicadorFisico.IMC) {
-            return Optional.of(getImc());
+        if (indicador == IndicadorFisico.PESO || indicador == IndicadorFisico.IMC) {
+            return true;
         }
         for (var medida : medidas) {
             if (medida.indicador() == indicador) {
-                return Optional.of(medida.valor());
+                return true;
             }
         }
-        return Optional.empty();
+        return false;
+    }
+
+    public BigDecimal buscarValor(IndicadorFisico indicador) {
+        Objects.requireNonNull(indicador);
+        if (indicador == IndicadorFisico.PESO) {
+            return peso;
+        }
+        if (indicador == IndicadorFisico.IMC) {
+            return getImc();
+        }
+        for (var medida : medidas) {
+            if (medida.indicador() == indicador) {
+                return medida.valor();
+            }
+        }
+        throw new NoSuchElementException(String.format(AvaliacaoFisicaServico.VALOR_INEXISTENTE_MODELO, indicador));
     }
 
     public List<ComparacaoIndicador> compararCom(AvaliacaoFisica referencia) {
         Objects.requireNonNull(referencia);
         var comparacoes = new ArrayList<ComparacaoIndicador>();
         for (var indicador : IndicadorFisico.values()) {
-            var valorReferencia = referencia.valorDe(indicador);
-            var valorAtual = valorDe(indicador);
-            if (valorReferencia.isPresent() && valorAtual.isPresent()) {
-                comparacoes.add(ComparacaoIndicador.comparar(indicador, valorReferencia.get(), valorAtual.get()));
+            if (referencia.existeValor(indicador) && existeValor(indicador)) {
+                comparacoes.add(ComparacaoIndicador.comparar(indicador, referencia.buscarValor(indicador),
+                        buscarValor(indicador)));
             }
         }
         return comparacoes;

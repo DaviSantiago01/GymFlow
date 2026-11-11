@@ -135,7 +135,8 @@ BoundedContext ^core implements ^core {
 				def @PlanoDeTreino substituir(@PersonalIdentificador responsavel, DateTime agora);
 				def @PlanoDeTreino revisar(@PersonalIdentificador responsavel, String nome, int frequenciaSemanal, List<@Treino> treinos, DateTime agora);
 				def void validarExecucao(@AlunoIdentificador executor, @DiaSemana dia, @ExercicioIdentificador exercicio, int series, int repeticoes);
-				def int limiteRepeticoes(@ExercicioIdentificador exercicio);
+				def boolean existeLimiteRepeticoes(@ExercicioIdentificador exercicio);
+				def int buscarLimiteRepeticoes(@ExercicioIdentificador exercicio);
 				Repository PlanoDeTreinoRepository {
 					@PlanoDeTreino incluir(@PlanoDeTreino agregado);
 					boolean existePorIdentificador(@PlanoDeTreinoIdentificador identificador);
@@ -153,6 +154,10 @@ BoundedContext ^core implements ^core {
 				-DiaSemana dia
 				-ObjetivoTreino objetivo
 				-List<Serie> series
+				def boolean existeExercicioRepetido();
+				def @ExercicioIdentificador buscarExercicioRepetido();
+				def boolean existeSerie(@ExercicioIdentificador exercicio);
+				def @Serie buscarSerie(@ExercicioIdentificador exercicio);
 			}
 			ValueObject Serie {
 				-ExercicioIdentificador exercicio
@@ -199,8 +204,9 @@ BoundedContext ^core implements ^core {
 			ValueObject ExecucaoDeExercicioIdentificador { String valor }
 			ValueObject HistoricoDeCarga {
 				-List<ExecucaoDeExercicio> execucoes
-				def BigDecimal maiorCargaValida(@Exercicio exercicio);
-				def BigDecimal ultimaCargaValida(@Exercicio exercicio);
+				def boolean existeCargaValida(@Exercicio exercicio);
+				def BigDecimal buscarMaiorCargaValida(@Exercicio exercicio);
+				def BigDecimal buscarUltimaCargaValida(@Exercicio exercicio);
 				def boolean atingiuLimiteConsecutivo(int limiteRepeticoes);
 				def @SugestaoProgressao sugerirProgressao(@Exercicio exercicio, int limiteRepeticoes);
 			}
@@ -214,7 +220,8 @@ BoundedContext ^core implements ^core {
 				@ExecucaoDeExercicio registrar(@PlanoDeTreinoIdentificador plano, @DiaSemana dia, @ExercicioIdentificador exercicio, int series, int repeticoes, BigDecimal carga);
 				@HistoricoDeCarga consultarHistorico(@AlunoIdentificador aluno, @ExercicioIdentificador exercicio);
 				@SugestaoProgressao sugerirProgressao(@AlunoIdentificador aluno, @ExercicioIdentificador exercicio);
-				BigDecimal maiorCargaValida(@AlunoIdentificador aluno, @ExercicioIdentificador exercicio);
+				boolean existeCargaValida(@AlunoIdentificador aluno, @ExercicioIdentificador exercicio);
+				BigDecimal buscarMaiorCargaValida(@AlunoIdentificador aluno, @ExercicioIdentificador exercicio);
 				@PlanoDeTreino buscarPlanoAtivoDoAlunoAutenticado();
 				@AlunoIdentificador resolverAluno(@AlunoIdentificador informado);
 			}
@@ -237,7 +244,8 @@ BoundedContext ^core implements ^core {
 				def @AvaliacaoFisica corrigir(@PersonalIdentificador personal, Date data, BigDecimal peso, BigDecimal altura, List<@MedidaCorporal> medidas, Date hoje, DateTime agora);
 				def @AvaliacaoFisica substituir();
 				def @AvaliacaoFisica excluir();
-				def BigDecimal valorDe(@IndicadorFisico indicador);
+				def boolean existeValor(@IndicadorFisico indicador);
+				def BigDecimal buscarValor(@IndicadorFisico indicador);
 				def List<@ComparacaoIndicador> compararCom(@AvaliacaoFisica referencia);
 				Repository AvaliacaoFisicaRepository {
 					@AvaliacaoFisica incluir(@AvaliacaoFisica agregado);
@@ -269,10 +277,13 @@ BoundedContext ^core implements ^core {
 			}
 			ValueObject HistoricoDeAvaliacao {
 				-List<AvaliacaoFisica> avaliacoes
-				def @AvaliacaoFisica maisRecente();
-				def @AvaliacaoFisica maisRecenteCom(@IndicadorFisico indicador);
+				def boolean existeAvaliacao();
+				def @AvaliacaoFisica buscarMaisRecente();
+				def boolean existeAvaliacaoCom(@IndicadorFisico indicador);
+				def @AvaliacaoFisica buscarMaisRecenteCom(@IndicadorFisico indicador);
 				def boolean isMaisRecente(@AvaliacaoFisica avaliacao);
-				def @AvaliacaoFisica anteriorA(@AvaliacaoFisica atual);
+				def boolean existeAnteriorA(@AvaliacaoFisica atual);
+				def @AvaliacaoFisica buscarAnteriorA(@AvaliacaoFisica atual);
 				def List<@PontoIndicador> pontos(@IndicadorFisico indicador);
 				def BigDecimal variacaoRecente(@IndicadorFisico indicador);
 				def @TendenciaIndicador tendencia(@IndicadorFisico indicador);
@@ -292,6 +303,7 @@ BoundedContext ^core implements ^core {
 				@AvaliacaoFisica corrigir(@AvaliacaoFisicaIdentificador identificador, Date data, BigDecimal peso, BigDecimal altura, List<@MedidaCorporal> medidas);
 				void remover(@AvaliacaoFisicaIdentificador identificador);
 				@HistoricoDeAvaliacao consultarHistorico(@AlunoIdentificador aluno);
+				boolean existeReferencia(@AvaliacaoFisica atual, @AvaliacaoFisicaIdentificador informada);
 				@AvaliacaoFisica buscarReferencia(@AvaliacaoFisica atual, @AvaliacaoFisicaIdentificador informada);
 				@AlunoIdentificador resolverAluno(@AlunoIdentificador informado);
 				boolean podeGerenciar();
@@ -315,6 +327,7 @@ BoundedContext ^core implements ^core {
 				def @StatusCumprimento statusCumprimento(BigDecimal valorAtual);
 				def boolean atingidaPor(BigDecimal valor, Date data);
 				def @Meta marcarAtingida(Date data);
+				def void validarDados(BigDecimal valorDesejado, Date inicio, Date fim, Date hoje);
 				def @Meta ajustar(BigDecimal valorDesejado, Date inicio, Date fim, Date hoje);
 				def @Meta encerrar();
 				def @Meta substituir();
@@ -325,7 +338,7 @@ BoundedContext ^core implements ^core {
 					void alterar(@Meta agregado);
 					void excluir(@MetaIdentificador identificador);
 					@Meta bloquear(@MetaIdentificador identificador);
-					boolean existeAtivaNoPeriodo(@AlunoIdentificador aluno, @IndicadorFisico indicador, Date inicio, Date fim);
+					boolean existeAtivaNoPeriodo(@AlunoIdentificador aluno, @IndicadorFisico indicador, Date inicio, Date fim, @MetaIdentificador identificadorIgnorado);
 					List<@Meta> buscarAtivasPorAluno(@AlunoIdentificador aluno);
 					boolean existePorAvaliacaoReferencia(@AvaliacaoFisicaIdentificador avaliacao);
 					void transferirReferencia(@AvaliacaoFisicaIdentificador antiga, @AvaliacaoFisicaIdentificador nova);

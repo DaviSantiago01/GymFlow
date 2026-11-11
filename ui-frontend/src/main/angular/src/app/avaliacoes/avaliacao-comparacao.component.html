@@ -1,10 +1,10 @@
-<main class="tela">
-  <header class="cabecalho-pagina">
+<main class="pagina">
+  <header class="pagina-cabecalho">
     <div>
-      <span class="sobretitulo">● TREINO CONECTA</span>
+      <span class="pagina-sobretitulo">Avaliação física</span>
       <h1>Comparação entre avaliações</h1>
     </div>
-    <div class="atalhos">
+    <div class="pagina-links">
       <a [routerLink]="['/core/avaliacao-fisica', comparacao().atual.identificador, 'visualizacao']"
         >Resultado</a
       >
@@ -12,12 +12,12 @@
   </header>
 
   @if (comparacao().referencia; as referencia) {
-    <section class="painel">
+    <section class="bloco">
       <h2>{{ comparacao().atual.alunoNome }}</h2>
       <p>Avaliação de {{ data(comparacao().atual.data) }} comparada com a de {{ data(referencia.data) }}.</p>
       <label
         >Avaliação de referência
-        <select (change)="escolherReferencia($any($event.target).value)">
+        <select #seletor (change)="escolherReferencia(seletor.value)">
           @for (opcao of comparacao().disponiveis; track opcao.identificador) {
             <option
               [value]="opcao.identificador"
@@ -29,7 +29,7 @@
         </select>
       </label>
     </section>
-    <section class="painel tabela" aria-label="Comparação por indicador">
+    <section class="bloco tabela-dados" aria-label="Comparação por indicador">
       <table>
         <thead>
           <tr>
@@ -58,8 +58,8 @@
       </table>
     </section>
   } @else {
-    <section class="painel">
-      <p class="vazio">Esta é a primeira avaliação do aluno. Ainda não há referência para comparar.</p>
+    <section class="bloco">
+      <p class="estado-vazio">Esta é a primeira avaliação do aluno. Ainda não há referência para comparar.</p>
     </section>
   }
 </main>

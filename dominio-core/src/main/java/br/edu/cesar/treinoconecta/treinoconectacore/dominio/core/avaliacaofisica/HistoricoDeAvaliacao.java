@@ -5,6 +5,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import org.apache.commons.lang3.Validate;
@@ -24,35 +25,62 @@ public record HistoricoDeAvaliacao(List<AvaliacaoFisica> avaliacoes) implements 
         avaliacoes = List.copyOf(validas);
     }
 
-    public Optional<AvaliacaoFisica> maisRecente() {
-        if (avaliacoes.isEmpty()) {
-            return Optional.empty();
-        }
-        return Optional.of(avaliacoes.get(avaliacoes.size() - 1));
+    public boolean existeAvaliacao() {
+        return !avaliacoes.isEmpty();
     }
 
-    public Optional<AvaliacaoFisica> maisRecenteCom(IndicadorFisico indicador) {
+    public AvaliacaoFisica buscarMaisRecente() {
+        if (avaliacoes.isEmpty()) {
+            throw new NoSuchElementException(AvaliacaoFisicaServico.SEM_AVALIACAO);
+        }
+        return avaliacoes.get(avaliacoes.size() - 1);
+    }
+
+    public boolean existeAvaliacaoCom(IndicadorFisico indicador) {
         Objects.requireNonNull(indicador);
-        for (int indice = avaliacoes.size() - 1; indice >= 0; indice--) {
-            if (avaliacoes.get(indice).valorDe(indicador).isPresent()) {
-                return Optional.of(avaliacoes.get(indice));
+        for (var avaliacao : avaliacoes) {
+            if (avaliacao.existeValor(indicador)) {
+                return true;
             }
         }
-        return Optional.empty();
+        return false;
+    }
+
+    public AvaliacaoFisica buscarMaisRecenteCom(IndicadorFisico indicador) {
+        Objects.requireNonNull(indicador);
+        for (int indice = avaliacoes.size() - 1; indice >= 0; indice--) {
+            if (avaliacoes.get(indice).existeValor(indicador)) {
+                return avaliacoes.get(indice);
+            }
+        }
+        throw new NoSuchElementException(String.format(AvaliacaoFisicaServico.SEM_AVALIACAO_DO_INDICADOR_MODELO, indicador));
     }
 
     public boolean isMaisRecente(AvaliacaoFisica avaliacao) {
         Objects.requireNonNull(avaliacao);
-        var recente = maisRecente();
-        return recente.isPresent() && recente.get().getIdentificador().equals(avaliacao.getIdentificador());
+        return existeAvaliacao() && buscarMaisRecente().getIdentificador().equals(avaliacao.getIdentificador());
     }
 
-    public Optional<AvaliacaoFisica> anteriorA(AvaliacaoFisica atual) {
+    public boolean existeAnteriorA(AvaliacaoFisica atual) {
         Objects.requireNonNull(atual);
-        Optional<AvaliacaoFisica> anterior = Optional.empty();
         for (var avaliacao : avaliacoes) {
             if (avaliacao.getData().isBefore(atual.getData())) {
-                anterior = Optional.of(avaliacao);
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** A lista está em ordem cronológica: a última antes da data é a imediatamente anterior. */
+    public AvaliacaoFisica buscarAnteriorA(AvaliacaoFisica atual) {
+        Objects.requireNonNull(atual);
+        if (!existeAnteriorA(atual)) {
+            throw new NoSuchElementException(AvaliacaoFisicaServico.SEM_AVALIACAO_ANTERIOR);
+        }
+        var anterior = avaliacoes.get(0);
+        for (var avaliacao : avaliacoes) {
+            if (avaliacao.getData().isBefore(atual.getData())) {
+                anterior = avaliacao;
             }
         }
         return anterior;
@@ -62,9 +90,8 @@ public record HistoricoDeAvaliacao(List<AvaliacaoFisica> avaliacoes) implements 
         Objects.requireNonNull(indicador);
         var pontos = new ArrayList<PontoIndicador>();
         for (var avaliacao : avaliacoes) {
-            var valor = avaliacao.valorDe(indicador);
-            if (valor.isPresent()) {
-                pontos.add(new PontoIndicador(avaliacao.getData(), valor.get()));
+            if (avaliacao.existeValor(indicador)) {
+                pontos.add(new PontoIndicador(avaliacao.getData(), avaliacao.buscarValor(indicador)));
             }
         }
         return pontos;
@@ -103,10 +130,10 @@ public record HistoricoDeAvaliacao(List<AvaliacaoFisica> avaliacoes) implements 
 
     public void validarNovaData(LocalDate data) {
         Objects.requireNonNull(data);
-        var recente = maisRecente();
-        if (recente.isPresent()) {
-            Validate.isTrue(data.isAfter(recente.get().getData()), AvaliacaoFisicaServico.DATA_FORA_DE_ORDEM_MODELO,
-                    recente.get().getData());
+        if (existeAvaliacao()) {
+            var recente = buscarMaisRecente();
+            Validate.isTrue(data.isAfter(recente.getData()), AvaliacaoFisicaServico.DATA_FORA_DE_ORDEM_MODELO,
+                    recente.getData());
         }
     }
 

@@ -1,14 +1,14 @@
-<main class="tela">
-  <header class="cabecalho-pagina">
+<main class="pagina">
+  <header class="pagina-cabecalho">
     <div>
-      <span class="sobretitulo">● TREINO CONECTA</span>
+      <span class="pagina-sobretitulo">Avaliação física</span>
       <h1>Histórico de avaliações</h1>
     </div>
-    <div class="atalhos">
+    <div class="pagina-links">
       <a routerLink="/core/meta/pesquisa" [queryParams]="aluno() ? { aluno: aluno() } : {}">Metas</a>
       @if (podeRegistrar()) {
         <a
-          class="botao principal"
+          class="acao acao-principal"
           routerLink="/core/avaliacao-fisica/inclusao"
           [queryParams]="aluno() ? { aluno: aluno() } : {}"
           >Nova avaliação</a
@@ -16,12 +16,12 @@
       }
     </div>
   </header>
-  <div class="acoes">
-    <button type="button" class="botao secundario" (click)="alternarTodas()">
+  <div class="grupo-acoes">
+    <button type="button" class="acao acao-secundaria" (click)="alternarTodas()">
       {{ todas() ? 'Mostrar só as válidas' : 'Mostrar versões corrigidas e excluídas' }}
     </button>
   </div>
-  <section class="painel tabela">
+  <section class="bloco tabela-dados">
     <table>
       <thead>
         <tr>
@@ -43,7 +43,7 @@
             <td>{{ numero(avaliacao.imc) }}</td>
             <td>{{ rotulosClassificacao[avaliacao.classificacaoImc] }}</td>
             <td>
-              <span class="etiqueta" [class.neutra]="avaliacao.situacao !== 'VALIDA'">{{
+              <span class="marcador" [class.marcador-neutro]="avaliacao.situacao !== 'VALIDA'">{{
                 rotulosSituacao[avaliacao.situacao]
               }}</span>
             </td>
@@ -58,7 +58,7 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="7" class="vazio">Nenhuma avaliação encontrada.</td>
+            <td colspan="7" class="estado-vazio">Nenhuma avaliação encontrada.</td>
           </tr>
         }
       </tbody>

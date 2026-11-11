@@ -1,5 +1,6 @@
 package br.edu.cesar.treinoconecta.treinoconectacore.aplicacao.core.execucaodeexercicio;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -44,20 +45,17 @@ public final class ExecucaoDeExercicioAplicacaoServico extends
         Objects.requireNonNull(exercicioInformado);
         var aluno = servico.resolverAluno(alunoInformado);
         var exercicios = repositorio.exerciciosExecutados(aluno);
-        var exercicio = escolherExercicio(exercicioInformado, exercicios);
-        if (exercicio.isEmpty()) {
-            return new EvolucaoExercicio(aluno, exercicio, exercicios, List.of(), Optional.empty(), Optional.empty());
+        if (exercicioInformado.isEmpty() && exercicios.isEmpty()) {
+            return new EvolucaoExercicio(aluno, Optional.empty(), exercicios, List.of(), Optional.empty(), Optional.empty());
         }
-        return new EvolucaoExercicio(aluno, exercicio, exercicios,
-                repositorio.listarCronologicamente(aluno, exercicio.get()),
-                servico.maiorCargaValida(aluno, exercicio.get()), servico.sugerirProgressao(aluno, exercicio.get()));
-    }
-
-    private static Optional<ExercicioIdentificador> escolherExercicio(Optional<ExercicioIdentificador> informado,
-            List<ExercicioExecutado> exercicios) {
-        if (informado.isPresent() || exercicios.isEmpty()) {
-            return informado;
+        // sem exercício informado, mostra o primeiro exercício executado
+        var exercicio = exercicioInformado.orElseGet(() -> exercicios.get(0).identificador());
+        Optional<BigDecimal> maiorCarga = Optional.empty();
+        if (servico.existeCargaValida(aluno, exercicio)) {
+            maiorCarga = Optional.of(servico.buscarMaiorCargaValida(aluno, exercicio));
         }
-        return Optional.of(exercicios.get(0).identificador());
+        return new EvolucaoExercicio(aluno, Optional.of(exercicio), exercicios,
+                repositorio.listarCronologicamente(aluno, exercicio), maiorCarga,
+                servico.sugerirProgressao(aluno, exercicio));
     }
 }

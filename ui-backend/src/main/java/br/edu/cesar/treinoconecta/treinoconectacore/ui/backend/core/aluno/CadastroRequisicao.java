@@ -1,4 +1,4 @@
-package br.edu.cesar.treinoconecta.treinoconectacore.ui.backend.seguranca;
+package br.edu.cesar.treinoconecta.treinoconectacore.ui.backend.core.aluno;
 
 import java.util.Objects;
 

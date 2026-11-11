@@ -25,6 +25,7 @@ import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.avaliacaofisica
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.avaliacaofisica.IndicadorFisico;
 import dev.sauloaraujo.d5.framework.ui.AgregadoControladorAbstrato;
 import dev.sauloaraujo.d5.framework.ui.Backend;
+import dev.sauloaraujo.d5.framework.ui.IAgregadoRecurso;
 
 @RestController
 @RequestMapping(Backend.PREFIXO + "core/avaliacao-fisica")
@@ -42,6 +43,13 @@ public class AvaliacaoFisicaControlador extends
     @Override
     public AvaliacaoFisicaFormulario inclusao() {
         return consultas.formulario();
+    }
+
+    /** A rota de alteração recebe também os dados do formulário, em uma única operação. */
+    @Override
+    protected IAgregadoRecurso<AvaliacaoFisica, AvaliacaoFisicaAutorizacoes> alteracao(AvaliacaoFisica agregado,
+            AvaliacaoFisicaAutorizacoes autorizacoes) {
+        return new AvaliacaoFisicaAlteracaoRecurso(agregado, autorizacoes, consultas.formulario());
     }
 
     @PostMapping("registrar")

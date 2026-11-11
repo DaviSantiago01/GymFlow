@@ -8,6 +8,7 @@ import { ServicoAutenticacao } from '../../d5';
   standalone: true,
   imports: [FormsModule, RouterLink],
   templateUrl: './login.component.html',
+  styleUrl: './login.component.scss',
 })
 export class LoginComponent {
   private readonly servicoAutenticacao = inject(ServicoAutenticacao);

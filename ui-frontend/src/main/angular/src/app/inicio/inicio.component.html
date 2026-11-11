@@ -1,8 +1,10 @@
-<main class="inicio">
-  <header>
-    <p class="sobretitulo">SEU ESPAÇO NA ACADEMIA</p>
-    <h1>Boas-vindas, {{ autenticacao.usuarioAtual() }}.</h1>
-    <p>Organize seu treino. Comece por aqui.</p>
+<main class="pagina">
+  <header class="pagina-cabecalho">
+    <div>
+      <span class="pagina-sobretitulo">Seu espaço na academia</span>
+      <h1>Boas-vindas, {{ autenticacao.usuarioAtual() }}.</h1>
+      <p class="pagina-descricao">Organize seu treino. Comece por um dos atalhos abaixo.</p>
+    </div>
   </header>
   <section aria-labelledby="titulo-atalhos">
     <h2 id="titulo-atalhos">Acesso rápido</h2>
@@ -16,7 +18,7 @@
         </a>
       }
       @if (autenticacao.autorizacoesDe('reservaArmario')?.buscar) {
-        <a routerLink="/core/reserva-armario/ativa">
+        <a routerLink="/core/reserva-armario/acompanhamento">
           <span class="icone" aria-hidden="true">◷</span>
           <strong>Minha reserva</strong>
           <span>Acompanhe o tempo e gerencie sua reserva ativa.</span>
@@ -71,5 +73,5 @@
       }
     </div>
   </section>
-  <p class="nota">Marcar aula e Grupos de treino são opções ilustrativas por enquanto.</p>
+  <p class="aviso nota">Marcar aula e Grupos de treino são opções ilustrativas por enquanto.</p>
 </main>

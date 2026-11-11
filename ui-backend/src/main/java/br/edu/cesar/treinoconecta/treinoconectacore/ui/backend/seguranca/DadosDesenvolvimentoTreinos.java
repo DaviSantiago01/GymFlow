@@ -9,7 +9,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
-@Configuration @Profile("desenvolvimento & !producao")
+/** Personais e catálogo de exercícios. Carregados fora de produção, também sem perfil ativo,
+ *  para que o personal consiga entrar ao executar com mvn spring-boot:test-run. */
+@Configuration @Profile("!producao")
 public class DadosDesenvolvimentoTreinos {
     private static final String[][] PERSONAIS = {
         {"p", "Rafael Souza"},

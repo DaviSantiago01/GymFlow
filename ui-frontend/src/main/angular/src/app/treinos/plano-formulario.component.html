@@ -1,22 +1,22 @@
-<main class="tela">
-  <header class="cabecalho-pagina">
+<main class="pagina">
+  <header class="pagina-cabecalho">
     <div>
-      <span class="sobretitulo">● TREINO CONECTA</span>
+      <span class="pagina-sobretitulo">Treinos</span>
       <h1>{{ alteracao() ? 'Alterar plano de treino' : 'Novo plano de treino' }}</h1>
     </div>
-    <div class="atalhos"><a routerLink="/core/plano-de-treino/pesquisa">Planos de treino</a></div>
+    <div class="pagina-links"><a routerLink="/core/plano-de-treino/pesquisa">Planos de treino</a></div>
   </header>
 
   @if (alteracao()) {
-    <p class="mensagem sucesso" role="status">
+    <p class="aviso">
       Salvar cria a versão {{ plano()!.versao + 1 }} do plano. A versão atual fica preservada e as
       execuções registradas não mudam.
     </p>
   }
 
-  <section class="painel" aria-labelledby="titulo-dados">
+  <section class="bloco" aria-labelledby="titulo-dados">
     <h2 id="titulo-dados">Dados do plano</h2>
-    <div class="campos">
+    <div class="formulario-grade">
       <label
         >Aluno
         <select [(ngModel)]="alunoEscolhido" [disabled]="alteracao()">
@@ -37,7 +37,7 @@
     </div>
   </section>
 
-  <section class="painel" aria-labelledby="titulo-dias">
+  <section class="bloco" aria-labelledby="titulo-dias">
     <h2 id="titulo-dias">Dias da semana</h2>
     <p>Selecione um dia para cada treino. A frequência precisa ser igual aos dias escolhidos.</p>
     <div class="dias" role="group" aria-labelledby="titulo-dias">
@@ -56,9 +56,9 @@
   </section>
 
   @for (treino of treinos(); track treino.dia) {
-    <section class="painel" [attr.aria-label]="'Treino de ' + rotulosDia[treino.dia]">
+    <section class="bloco" [attr.aria-label]="'Treino de ' + rotulosDia[treino.dia]">
       <h2>{{ rotulosDia[treino.dia] }}</h2>
-      <div class="campos">
+      <div class="formulario-grade">
         <label
           >Nome do treino
           <input [(ngModel)]="treino.nome" maxlength="60" />
@@ -75,22 +75,25 @@
           >Exercício
           <select [(ngModel)]="treino.exercicioEscolhido">
             <option value="">Selecione</option>
-            @for (exercicio of exerciciosDisponiveis(treino); track exercicio.identificador) {
+            @for (exercicio of formulario().exercicios; track exercicio.identificador) {
               <option [value]="exercicio.identificador">{{ exercicio.nome }}</option>
             }
           </select>
         </label>
       </div>
-      <div class="acoes">
+      <div class="grupo-acoes">
         <button
           type="button"
-          class="botao secundario"
+          class="acao acao-secundaria"
           [disabled]="!treino.exercicioEscolhido"
           (click)="adicionarExercicio(treino)"
         >
           Adicionar exercício
         </button>
       </div>
+      @if (repeticoes()[treino.dia]) {
+        <p class="aviso aviso-erro" role="alert">{{ repeticoes()[treino.dia] }}</p>
+      }
       <p>
         Faixa de {{ rotulosObjetivo[treino.objetivo] }}: {{ faixa(treino.objetivo).seriesMinimas }} a
         {{ faixa(treino.objetivo).seriesMaximas }} séries,
@@ -100,7 +103,7 @@
         segundos.
       </p>
       @if (treino.series.length) {
-        <div class="tabela">
+        <div class="tabela-dados">
           <table>
             <thead>
               <tr>
@@ -162,7 +165,7 @@
                   <td>
                     <button
                       type="button"
-                      class="botao perigo"
+                      class="acao acao-perigo"
                       (click)="removerExercicio(treino, serie.exercicio)"
                     >
                       Remover
@@ -174,20 +177,20 @@
           </table>
         </div>
       } @else {
-        <p class="vazio">Nenhum exercício neste treino.</p>
+        <p class="estado-vazio">Nenhum exercício neste treino.</p>
       }
     </section>
   }
 
   @if (erro()) {
-    <div class="mensagem erro" role="alert">{{ erro() }}</div>
+    <div class="aviso aviso-erro" role="alert">{{ erro() }}</div>
   }
-  <div class="acoes">
-    <button type="button" class="botao principal" [disabled]="ocupado()" (click)="salvar()">
+  <div class="grupo-acoes">
+    <button type="button" class="acao acao-principal" [disabled]="ocupado()" (click)="salvar()">
       {{ alteracao() ? 'Salvar nova versão' : 'Salvar rascunho' }}
     </button>
     @if (alteracao()) {
-      <button type="button" class="botao perigo" [disabled]="ocupado()" (click)="encerrar()">
+      <button type="button" class="acao acao-perigo" [disabled]="ocupado()" (click)="encerrar()">
         Encerrar plano
       </button>
     }

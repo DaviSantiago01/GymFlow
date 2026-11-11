@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -21,6 +22,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.Autorizacao;
@@ -327,13 +329,15 @@ public final class ExecucaoDeExercicioStepDefinitions {
 
     @Então("a maior carga válida é {string}")
     public void conferirMaiorCarga(String carga) {
-        var maior = historico.maiorCargaValida(exercicioDoHistorico());
-        assertTrue(maior.isPresent());
-        assertEquals(0, new BigDecimal(carga).compareTo(maior.get()));
+        var exercicio = exercicioDoHistorico();
+        assertTrue(historico.existeCargaValida(exercicio));
+        assertEquals(0, new BigDecimal(carga).compareTo(historico.buscarMaiorCargaValida(exercicio)));
     }
 
     @Então("não há maior carga válida")
     public void conferirSemMaiorCarga() {
-        assertTrue(historico.maiorCargaValida(exercicioDoHistorico()).isEmpty());
+        var exercicio = exercicioDoHistorico();
+        assertFalse(historico.existeCargaValida(exercicio));
+        assertThrows(NoSuchElementException.class, () -> historico.buscarMaiorCargaValida(exercicio));
     }
 }

@@ -47,7 +47,8 @@ class AvaliacoesIntegracaoTest {
     @BeforeEach
     void preparar() {
         mvc = MockMvcBuilders.webAppContextSetup(contexto).apply(springSecurity()).build();
-        for (var tabela : new String[] {"MET_META", "MDC_MEDIDA_CORPORAL", "AVF_AVALIACAO_FISICA", "PER_PERSONAL", "ALU_ALUNO"}) {
+        for (var tabela : new String[] {"MET_META", "MDC_MEDIDA_CORPORAL", "AVF_AVALIACAO_FISICA", "EXC_EXECUCAO_EXERCICIO",
+                "SRE_SERIE", "TRE_TREINO", "PLT_PLANO_TREINO", "PCD_CREDENCIAL_PERSONAL", "PER_PERSONAL", "ALU_ALUNO"}) {
             banco.update("delete from " + tabela);
         }
         banco.update("insert into ALU_ALUNO(ALU_USUARIO,ALU_NOME) values ('u','Mariana'),('v','Pedro')");
@@ -240,9 +241,19 @@ class AvaliacoesIntegracaoTest {
 
         registrar(hoje.minusDays(1), "84");
 
-        var meta = sucesso(consultar(METAS + metaId + "/alteracao", personal())).path("agregado");
+        var recurso = sucesso(consultar(METAS + metaId + "/alteracao", personal()));
+        assertTrue(recurso.path("formulario").path("indicadores").size() > 0);
+        var meta = recurso.path("agregado");
         assertEquals("ATINGIDA", meta.path("situacao").asString());
         assertEquals(hoje.minusDays(1).toString(), meta.path("dataAtingida").asString());
+    }
+
+    @Test
+    void alteracaoDaAvaliacaoRespondeOFormularioNaMesmaOperacao() throws Exception {
+        var avaliacaoId = registrar(hoje.minusDays(3), "90");
+        var recurso = sucesso(consultar(AVALIACOES + avaliacaoId + "/alteracao", personal()));
+        assertEquals(avaliacaoId, recurso.path("agregado").path("identificador").asString());
+        assertTrue(recurso.path("formulario").path("medidas").size() > 0);
     }
 
     @Test

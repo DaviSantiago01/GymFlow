@@ -24,7 +24,7 @@ test('escolher data, reservar três horas, consultar agendada, cancelar e ver hi
   await page.screenshot({ path: '../../../../docs/validacao/10-agenda.png', fullPage: true });
   await page.getByRole('button', { name: 'Reservar armário A-01', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Reserva confirmada!' })).toBeVisible();
-  const { dados } = await (await page.request.get('/backend/core/reserva-armario/ativa')).json();
+  const { dados } = await (await page.request.get('/backend/core/reserva-armario/acompanhamento')).json();
   expect(dados.inicio).toBe(`${data}T09:00:00Z`);
   expect(dados.termino).toBe(`${data}T12:00:00Z`);
   await page.getByRole('link', { name: 'Acessar minha reserva ativa →' }).click();
@@ -93,7 +93,7 @@ test('fechamento às 22h limita duração e mudança de data limpa seleção', a
   await expect(page.getByRole('button', { name: '2 horas', exact: true })).toBeDisabled();
   await page.getByRole('button', { name: 'Reservar armário A-03', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Reserva confirmada!' })).toBeVisible();
-  const { dados } = await (await page.request.get('/backend/core/reserva-armario/ativa')).json();
+  const { dados } = await (await page.request.get('/backend/core/reserva-armario/acompanhamento')).json();
   expect(Date.parse(dados.termino) - Date.parse(dados.inicio)).toBe(3600000);
   await cancelarPendente(page);
   await page.goto('/core/armario/A-03/visualizacao');

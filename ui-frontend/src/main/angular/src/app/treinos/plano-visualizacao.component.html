@@ -1,23 +1,23 @@
-<main class="tela">
-  <header class="cabecalho-pagina">
+<main class="pagina">
+  <header class="pagina-cabecalho">
     <div>
-      <span class="sobretitulo">● TREINO CONECTA</span>
+      <span class="pagina-sobretitulo">Treinos</span>
       <h1>{{ plano().nome }}</h1>
     </div>
-    <div class="atalhos"><a routerLink="/core/plano-de-treino/pesquisa">Planos de treino</a></div>
+    <div class="pagina-links"><a routerLink="/core/plano-de-treino/pesquisa">Planos de treino</a></div>
   </header>
 
   @if (aviso()) {
-    <div class="mensagem sucesso" role="status">{{ aviso() }}</div>
+    <div class="aviso aviso-sucesso" role="status">{{ aviso() }}</div>
   }
   @if (erro()) {
-    <div class="mensagem erro" role="alert">{{ erro() }}</div>
+    <div class="aviso aviso-erro" role="alert">{{ erro() }}</div>
   }
 
-  <section class="painel">
+  <section class="bloco">
     <div class="linha">
       <h2>{{ plano().alunoNome }}</h2>
-      <span class="etiqueta" [class.neutra]="plano().situacao !== 'ATIVO'">{{
+      <span class="marcador" [class.marcador-neutro]="plano().situacao !== 'ATIVO'">{{
         rotulosSituacao[plano().situacao]
       }}</span>
     </div>
@@ -38,32 +38,32 @@
     }
     @if (detalhe().planoAnterior; as anterior) {
       <p>
-        <a class="atalhos" [routerLink]="['/core/plano-de-treino', anterior, 'visualizacao']"
+        <a class="pagina-links" [routerLink]="['/core/plano-de-treino', anterior, 'visualizacao']"
           >Ver versão anterior</a
         >
       </p>
     }
-    <div class="acoes">
+    <div class="grupo-acoes">
       @if (detalhe().gerenciavel && rascunho()) {
-        <button class="botao principal" [disabled]="ocupado()" (click)="executar('ativar')">
+        <button class="acao acao-principal" [disabled]="ocupado()" (click)="executar('ativar')">
           Ativar plano
         </button>
-        <button class="botao secundario" [disabled]="ocupado()" (click)="executar('substituir')">
+        <button class="acao acao-secundaria" [disabled]="ocupado()" (click)="executar('substituir')">
           Ativar e substituir o plano atual
         </button>
       }
       @if (editavel()) {
         <a
-          class="botao secundario"
+          class="acao acao-secundaria"
           [routerLink]="['/core/plano-de-treino', plano().identificador, 'alteracao']"
           >Alterar plano</a
         >
-        <button class="botao perigo" [disabled]="ocupado()" (click)="executar('encerrar')">
+        <button class="acao acao-perigo" [disabled]="ocupado()" (click)="executar('encerrar')">
           Encerrar plano
         </button>
       }
       @if (podeRegistrar()) {
-        <a class="botao principal" routerLink="/core/execucao-de-exercicio/inclusao"
+        <a class="acao acao-principal" routerLink="/core/execucao-de-exercicio/inclusao"
           >Registrar execução</a
         >
       }
@@ -71,7 +71,7 @@
   </section>
 
   @for (treino of detalhe().treinos; track treino.dia) {
-    <section class="painel tabela">
+    <section class="bloco tabela-dados">
       <h2>{{ rotulosDia[treino.dia] }} · {{ treino.nome }}</h2>
       <p>Objetivo: {{ rotulosObjetivo[treino.objetivo] }}</p>
       <table>
@@ -95,13 +95,13 @@
             </tr>
           } @empty {
             <tr>
-              <td colspan="5" class="vazio">Nenhum exercício neste treino.</td>
+              <td colspan="5" class="estado-vazio">Nenhum exercício neste treino.</td>
             </tr>
           }
         </tbody>
       </table>
     </section>
   } @empty {
-    <section class="painel"><p class="vazio">Este plano ainda não possui treinos.</p></section>
+    <section class="bloco"><p class="estado-vazio">Este plano ainda não possui treinos.</p></section>
   }
 </main>

@@ -3,6 +3,7 @@ package br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.planodetreino;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
 import org.apache.commons.lang3.Validate;
@@ -112,14 +113,27 @@ public final class PlanoDeTreino implements IAgregado<PlanoDeTreinoIdentificador
         Validate.validState(situacao == SituacaoPlano.ATIVO, PlanoDeTreinoServico.PLANO_NAO_ATIVO);
     }
 
-    /** Maior limite de repetições prescrito para o exercício neste plano. */
-    public Optional<Integer> limiteRepeticoes(ExercicioIdentificador exercicio) {
+    /** Indica se o exercício está prescrito em algum treino deste plano. */
+    public boolean existeLimiteRepeticoes(ExercicioIdentificador exercicio) {
         Objects.requireNonNull(exercicio);
-        Optional<Integer> limite = Optional.empty();
         for (var treino : treinos) {
-            var serie = treino.buscarSerie(exercicio);
-            if (serie.isPresent() && (limite.isEmpty() || serie.get().repeticoesMaximas() > limite.get())) {
-                limite = Optional.of(serie.get().repeticoesMaximas());
+            if (treino.existeSerie(exercicio)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Maior limite de repetições prescrito para o exercício neste plano. */
+    public int buscarLimiteRepeticoes(ExercicioIdentificador exercicio) {
+        Objects.requireNonNull(exercicio);
+        if (!existeLimiteRepeticoes(exercicio)) {
+            throw new NoSuchElementException(String.format(PlanoDeTreinoServico.EXERCICIO_FORA_DO_PLANO_MODELO, exercicio));
+        }
+        int limite = 0;
+        for (var treino : treinos) {
+            if (treino.existeSerie(exercicio)) {
+                limite = Math.max(limite, treino.buscarSerie(exercicio).repeticoesMaximas());
             }
         }
         return limite;
@@ -129,8 +143,8 @@ public final class PlanoDeTreino implements IAgregado<PlanoDeTreinoIdentificador
         Objects.requireNonNull(dia);
         Objects.requireNonNull(exercicio);
         for (var treino : treinos) {
-            if (treino.dia() == dia && treino.buscarSerie(exercicio).isPresent()) {
-                return treino.buscarSerie(exercicio).get();
+            if (treino.dia() == dia && treino.existeSerie(exercicio)) {
+                return treino.buscarSerie(exercicio);
             }
         }
         throw new IllegalArgumentException(

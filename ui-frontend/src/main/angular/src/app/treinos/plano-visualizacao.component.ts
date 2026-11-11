@@ -2,19 +2,16 @@ import { Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { finalize } from 'rxjs';
-import { ServicoAutenticacao, IAgregadoAutorizacoes } from '../../d5';
+import { ServicoAutenticacao } from '../../d5';
 import { dataHora, mensagemDeErro, numero } from '../formatacao';
 import {
+  AutorizacoesExecucao,
   DetalhePlano,
   ROTULOS_DIA,
   ROTULOS_OBJETIVO,
   ROTULOS_SITUACAO,
   TreinosService,
 } from './treinos.service';
-
-interface AutorizacoesExecucao extends IAgregadoAutorizacoes {
-  registrar: boolean;
-}
 
 @Component({
   selector: 'app-plano-visualizacao',

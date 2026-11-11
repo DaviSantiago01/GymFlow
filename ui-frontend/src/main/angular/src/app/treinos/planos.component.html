@@ -1,19 +1,19 @@
-<main class="tela">
-  <header class="cabecalho-pagina">
+<main class="pagina">
+  <header class="pagina-cabecalho">
     <div>
-      <span class="sobretitulo">● TREINO CONECTA</span>
+      <span class="pagina-sobretitulo">Treinos</span>
       <h1>Planos de treino</h1>
     </div>
     @if (podeCriar()) {
       <a
-        class="botao principal"
+        class="acao acao-principal"
         routerLink="/core/plano-de-treino/inclusao"
         [queryParams]="aluno() ? { aluno: aluno() } : {}"
         >Novo plano</a
       >
     }
   </header>
-  <section class="painel tabela">
+  <section class="bloco tabela-dados">
     <table>
       <thead>
         <tr>
@@ -36,7 +36,7 @@
             <td>{{ plano.frequenciaSemanal }}x por semana</td>
             <td>{{ plano.versao }}</td>
             <td>
-              <span class="etiqueta" [class.neutra]="plano.situacao !== 'ATIVO'">{{
+              <span class="marcador" [class.marcador-neutro]="plano.situacao !== 'ATIVO'">{{
                 rotulos[plano.situacao]
               }}</span>
             </td>
@@ -47,7 +47,7 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="8" class="vazio">Nenhum plano de treino encontrado.</td>
+            <td colspan="8" class="estado-vazio">Nenhum plano de treino encontrado.</td>
           </tr>
         }
       </tbody>

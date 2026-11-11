@@ -57,7 +57,7 @@ export class ArmariosService {
   private readonly http = inject(HttpClient);
   private readonly base = '/backend/core';
   carregar(modo: Modo, id = '', pagina = 0, data = ''): Observable<DadosTela> {
-    const ativa = this.http.get<Temporal<Reserva | null>>(`${this.base}/reserva-armario/ativa`);
+    const ativa = this.http.get<Temporal<Reserva | null>>(`${this.base}/reserva-armario/acompanhamento`);
     if (modo === 'lista')
       return forkJoin({
         lista: this.http.get<Pesquisa<Armario>>(`${this.base}/armario/pesquisa?tamanhoPagina=1000`),

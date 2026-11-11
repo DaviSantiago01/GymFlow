@@ -1,7 +1,13 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { ResolveFn } from '@angular/router';
-import { forkJoin, map } from 'rxjs';
+import { map } from 'rxjs';
+import { IAgregadoAutorizacoes } from '../../d5';
+
+/** Autorizações da execução de exercício, com a ação adicional registrar. */
+export interface AutorizacoesExecucao extends IAgregadoAutorizacoes {
+  registrar: boolean;
+}
 
 export type DiaSemana =
   | 'SEGUNDA'
@@ -190,7 +196,9 @@ export class TreinosService {
     return this.http.get<FormularioPlano>(`${this.planos}/inclusao`);
   }
   alteracao(id: string) {
-    return this.http.get<{ agregado: PlanoAgregado }>(`${this.planos}/${id}/alteracao`);
+    return this.http.get<{ agregado: PlanoAgregado; formulario: FormularioPlano }>(
+      `${this.planos}/${id}/alteracao`,
+    );
   }
   visualizar(id: string) {
     return this.http.get<DetalhePlano>(`${this.planos}/${id}/visualizacao`);
@@ -232,13 +240,10 @@ export const resolverInclusaoPlano: ResolveFn<TelaFormularioPlano> = () =>
     .formulario()
     .pipe(map((formulario) => ({ formulario, plano: null })));
 
-export const resolverAlteracaoPlano: ResolveFn<TelaFormularioPlano> = (rota) => {
-  const api = inject(TreinosService);
-  return forkJoin({
-    formulario: api.formulario(),
-    recurso: api.alteracao(rota.paramMap.get('id')!),
-  }).pipe(map(({ formulario, recurso }) => ({ formulario, plano: recurso.agregado })));
-};
+export const resolverAlteracaoPlano: ResolveFn<TelaFormularioPlano> = (rota) =>
+  inject(TreinosService)
+    .alteracao(rota.paramMap.get('id')!)
+    .pipe(map((recurso) => ({ formulario: recurso.formulario, plano: recurso.agregado })));
 
 export const resolverVisualizacaoPlano: ResolveFn<DetalhePlano> = (rota) =>
   inject(TreinosService).visualizar(rota.paramMap.get('id')!);

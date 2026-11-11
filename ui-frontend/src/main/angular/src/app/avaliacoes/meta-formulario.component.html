@@ -1,14 +1,14 @@
-<main class="tela">
-  <header class="cabecalho-pagina">
+<main class="pagina">
+  <header class="pagina-cabecalho">
     <div>
-      <span class="sobretitulo">● TREINO CONECTA</span>
+      <span class="pagina-sobretitulo">Avaliação física</span>
       <h1>{{ alteracao() ? 'Gerenciar meta' : 'Nova meta' }}</h1>
     </div>
-    <div class="atalhos"><a routerLink="/core/meta/pesquisa">Metas</a></div>
+    <div class="pagina-links"><a routerLink="/core/meta/pesquisa">Metas</a></div>
   </header>
 
-  <section class="painel">
-    <div class="campos">
+  <section class="bloco">
+    <div class="formulario-grade">
       <label
         >Aluno
         <select [(ngModel)]="alunoEscolhido" [disabled]="alteracao()">
@@ -44,26 +44,26 @@
   </section>
 
   @if (erro()) {
-    <div class="mensagem erro" role="alert">{{ erro() }}</div>
+    <div class="aviso aviso-erro" role="alert">{{ erro() }}</div>
   }
-  <div class="acoes">
+  <div class="grupo-acoes">
     @if (alteracao()) {
-      <button type="button" class="botao principal" [disabled]="ocupado()" (click)="alterar('ajustar')">
+      <button type="button" class="acao acao-principal" [disabled]="ocupado()" (click)="alterar('ajustar')">
         Salvar alteração
       </button>
       <button
         type="button"
-        class="botao secundario"
+        class="acao acao-secundaria"
         [disabled]="ocupado()"
         (click)="alterar('substituir')"
       >
         Substituir por nova meta
       </button>
-      <button type="button" class="botao perigo" [disabled]="ocupado()" (click)="encerrar()">
+      <button type="button" class="acao acao-perigo" [disabled]="ocupado()" (click)="encerrar()">
         Encerrar meta
       </button>
     } @else {
-      <button type="button" class="botao principal" [disabled]="ocupado()" (click)="criar()">
+      <button type="button" class="acao acao-principal" [disabled]="ocupado()" (click)="criar()">
         Salvar meta
       </button>
     }

@@ -46,15 +46,15 @@ class CadastroIntegracaoTest {
         return json.writeValueAsString(Map.of("nome",nome,"usuario",usuario,"senha",senha,"confirmacaoSenha",confirmacao));
     }
     int cadastrar(String usuario) throws Exception {
-        return mvc.perform(post("/backend/cadastro").with(csrf()).contentType("application/json")
+        return mvc.perform(post("/backend/core/aluno/cadastrar").with(csrf()).contentType("application/json")
             .content(corpo("Aluno Novo",usuario,SENHA,SENHA))).andReturn().getResponse().getStatus();
     }
     // csrf() dos demais testes instala um repositório de teste no filtro compartilhado.
     // Recriar o contexto permite verificar o CookieCsrfTokenRepository de produção.
     @org.springframework.test.annotation.DirtiesContext(methodMode=org.springframework.test.annotation.DirtiesContext.MethodMode.BEFORE_METHOD)
     @Test void visitanteObtemTokenMasNaoCadastraSemCsrf() throws Exception {
-        mvc.perform(get("/backend/cadastro")).andExpect(status().isOk()).andExpect(cookie().exists("XSRF-TOKEN"));
-        mvc.perform(post("/backend/cadastro").contentType("application/json")
+        mvc.perform(get("/backend/core/aluno/cadastro")).andExpect(status().isOk()).andExpect(cookie().exists("XSRF-TOKEN"));
+        mvc.perform(post("/backend/core/aluno/cadastrar").contentType("application/json")
             .content(corpo("Aluno","novo",SENHA,SENHA))).andExpect(status().isForbidden());
         assertEquals(0L,banco.queryForObject("select count(*) from ALU_ALUNO",Long.class));
     }
@@ -86,7 +86,7 @@ class CadastroIntegracaoTest {
             List.of("Aluno","aluno","123","123"),
             List.of("Aluno","aluno",SENHA,"outraSenha"),
             List.of("Aluno","aluno","á".repeat(40),"á".repeat(40)))) {
-            mvc.perform(post("/backend/cadastro").with(csrf()).contentType("application/json")
+            mvc.perform(post("/backend/core/aluno/cadastrar").with(csrf()).contentType("application/json")
                 .content(corpo(dados.get(0),dados.get(1),dados.get(2),dados.get(3)))).andExpect(status().isUnprocessableEntity());
         }
         assertEquals(0L,banco.queryForObject("select count(*) from ALU_ALUNO",Long.class));

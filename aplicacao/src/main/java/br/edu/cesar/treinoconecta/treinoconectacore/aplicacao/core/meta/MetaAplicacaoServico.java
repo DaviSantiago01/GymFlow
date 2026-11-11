@@ -65,11 +65,10 @@ public final class MetaAplicacaoServico
 
     private MetaProjecao comCumprimento(MetaProjecao projecao) {
         var historico = avaliacoes.consultarHistorico(projecao.aluno());
-        var recente = historico.maisRecenteCom(projecao.indicador());
-        if (recente.isEmpty()) {
+        if (!historico.existeAvaliacaoCom(projecao.indicador())) {
             return projecao;
         }
-        var valor = recente.get().valorDe(projecao.indicador()).orElseThrow();
+        var valor = historico.buscarMaisRecenteCom(projecao.indicador()).buscarValor(projecao.indicador());
         var meta = servico.buscar(projecao.identificador());
         return projecao.comCumprimento(valor, meta.percentualCumprimento(valor), meta.statusCumprimento(valor));
     }
