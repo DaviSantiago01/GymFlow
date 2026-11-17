@@ -1,0 +1,22 @@
+FORMAFIT ACADEMIA — CÓDIGO ORIGINAL
+
+Como abrir:
+1. Extraia este ZIP.
+2. Abra a pasta dist.
+3. Dê dois cliques em index.html para abrir o site no navegador.
+
+Como editar:
+Abra a pasta FormaFit_Academia no VS Code.
+- dist/index.html: estrutura das telas e JavaScript, dentro da tag <script>.
+- dist/theme.css: cores, fontes, estilos e adaptação para celular.
+- .openai/hosting.json: configuração original de hospedagem.
+
+Não precisa instalar Node.js, npm ou bibliotecas para abrir este projeto.
+
+Este é o protótipo navegável original, com dados de demonstração.
+O cadastro e várias ações simulam resultados na interface; não há backend,
+banco de dados nem gravação permanente dos cadastros.
+
+Origem: https://formafit-academia.ph06correa.chatgpt.site/
+Código recuperado do repositório original em 16/11/2026.
+Commit: 5df0731b84133e6551b425ac21e67ee201db4845
