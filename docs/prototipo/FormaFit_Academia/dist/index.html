@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>FormaFit Academia</title>
+  <meta name="description" content="Protótipo do sistema de gerenciamento de academia">
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%23c1ff32'/%3E%3Cpath d='M14 26h7v12h-7zm29 0h7v12h-7zM8 29h6v6H8zm42 0h6v6h-6zM21 30h22v4H21z' fill='%23161910'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="./theme.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-mark" aria-hidden="true">−</div><strong>Forma<span>Fit</span></strong></div>
+    <nav class="nav" aria-label="Menu principal">
+      <div class="nav-label">Alunos</div>
+      <button class="active" data-view="alunos"><span class="ico">◉</span><span>Lista de alunos</span></button>
+      <button data-view="cadastro"><span class="ico">＋</span><span>Novo aluno</span></button>
+      <button data-view="detalhes"><span class="ico">▣</span><span>Detalhes do aluno</span></button>
+      <button data-view="plano"><span class="ico">◇</span><span>Planos e matrícula</span></button>
+      <div class="nav-label">Acesso</div>
+      <button data-view="acesso"><span class="ico">⇥</span><span>Entrada e saída</span></button>
+      <button data-view="presentes"><span class="ico">●</span><span>Alunos presentes</span></button>
+      <button data-view="frequencia"><span class="ico">▥</span><span>Frequência</span></button>
+    </nav>
+    <div class="sidebar-footer"><div class="avatar" aria-hidden="true">PM</div><div><strong>Pedro Martins</strong><div class="small">Administrador</div></div></div>
+  </aside>
+  <main class="main">
+    <div class="content">
+      <header class="topbar"><span>Administração /</span><span id="pageTitle">Lista de alunos</span></header>
+      <section class="view active" id="alunos">
+        <div class="heading"><div><h1>Alunos</h1></div><div class="heading-tools"><input class="search" id="studentSearch" aria-label="Buscar aluno por nome, CPF ou matrícula" placeholder="Buscar por nome, CPF ou matrícula..."><select class="search" aria-label="Filtrar alunos por status"><option>Todos os status</option><option>Ativo</option><option>Bloqueado</option></select><button class="btn btn-primary" onclick="openView('cadastro')">+ Cadastrar aluno</button></div></div>
+        <div class="grid grid-3" style="margin-bottom:20px"><div class="stat"><span>Total de alunos</span><strong>428</strong></div><div class="stat"><span>Matrículas ativas</span><strong>391</strong></div><div class="stat"><span>Cadastros bloqueados</span><strong>7</strong></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Aluno</th><th>CPF</th><th>Plano</th><th>Matrícula</th><th>Status</th><th>Ações</th></tr></thead><tbody id="studentRows">
+          <tr><td><div class="student-cell"><div class="avatar" aria-hidden="true">MS</div><div><div class="name">Mariana Souza</div><div class="small">mariana@email.com</div></div></div></td><td>***.542.***-10</td><td><span class="badge neutral">Plano Gold</span></td><td>MAT-2026-0184</td><td><span class="badge ok">Ativo</span></td><td><button class="link" onclick="openView('detalhes')">Ver detalhes</button></td></tr>
+          <tr><td><div class="student-cell"><div class="avatar" aria-hidden="true">LF</div><div><div class="name">Lucas Ferreira</div><div class="small">lucas@email.com</div></div></div></td><td>***.114.***-42</td><td><span class="badge neutral">Plano Fit</span></td><td>MAT-2026-0201</td><td><span class="badge ok">Ativo</span></td><td><button class="link" onclick="openView('detalhes')">Ver detalhes</button></td></tr>
+          <tr><td><div class="student-cell"><div class="avatar" aria-hidden="true">AB</div><div><div class="name">Ana Beatriz Lima</div><div class="small">ana@email.com</div></div></div></td><td>***.908.***-05</td><td><span class="badge neutral">Plano Basic</span></td><td>MAT-2025-0932</td><td><span class="badge warn">Vence em breve</span></td><td><button class="link" onclick="openView('detalhes')">Ver detalhes</button></td></tr>
+          <tr><td><div class="student-cell"><div class="avatar" aria-hidden="true">RA</div><div><div class="name">Rafael Alves</div><div class="small">rafael@email.com</div></div></div></td><td>***.676.***-87</td><td><span class="badge neutral">Plano Gold</span></td><td>MAT-2025-0817</td><td><span class="badge off">Bloqueado</span></td><td><button class="link" onclick="openView('detalhes')">Ver detalhes</button></td></tr>
+        </tbody></table></div>
+        <div class="table-note"><span class="note-icon" aria-hidden="true">i</span><span>Selecione <strong>Ver detalhes</strong> para consultar o cadastro, o plano e a matrícula do aluno.</span></div>
+      </section>
+
+      <section class="view" id="cadastro">
+        <div class="heading"><div><h1>Cadastrar aluno</h1><p>Preencha os dados obrigatórios para criar o cadastro.</p></div></div>
+        <form class="card" onsubmit="saveStudent(event)"><h3>Dados pessoais</h3><div class="form-grid">
+          <div class="field span-2"><label for="field-1">Nome completo *</label><input id="field-1" required placeholder="Digite o nome completo"></div>
+          <div class="field"><label for="field-2">CPF *</label><input id="field-2" required placeholder="000.000.000-00"></div><div class="field"><label for="field-3">Data de nascimento *</label><input id="field-3" required type="date"></div>
+          <div class="field"><label for="field-4">E-mail</label><input id="field-4" type="email" placeholder="aluno@email.com"></div><div class="field"><label for="field-5">Telefone *</label><input id="field-5" required placeholder="(81) 99999-9999"></div>
+          <div class="field span-2"><label for="field-6">Endereço</label><input id="field-6" placeholder="Rua, número, bairro e cidade"></div>
+          <div class="field"><label for="field-7">Contato de emergência</label><input id="field-7" placeholder="Nome do contato"></div><div class="field"><label for="field-8">Telefone de emergência</label><input id="field-8" placeholder="(81) 99999-9999"></div>
+        </div><div class="actions"><button type="button" class="btn btn-light" onclick="openView('alunos')">Cancelar</button><button class="btn btn-primary">Salvar e continuar</button></div></form>
+      </section>
+
+      <section class="view" id="detalhes">
+        <div class="heading"><div><h1>Detalhes do aluno</h1><p>Cadastro, matrícula e histórico de alterações.</p></div><div><button class="btn btn-light" onclick="toast('Cadastro liberado para edição')">Editar cadastro</button> <button class="btn btn-danger" onclick="toast('Cadastro bloqueado com sucesso')">Bloquear</button></div></div>
+        <div class="card"><div class="profile"><div class="avatar">MS</div><div><h3>Mariana Souza</h3><span class="badge ok">Matrícula ativa</span><div class="small">MAT-2026-0184 • Cadastrada em 12/02/2026</div></div></div>
+          <dl class="details"><div><dt>CPF</dt><dd>***.542.***-10</dd></div><div><dt>Data de nascimento</dt><dd>18/07/1999</dd></div><div><dt>Telefone</dt><dd>(81) 99942-1820</dd></div><div><dt>E-mail</dt><dd>mariana@email.com</dd></div><div><dt>Plano</dt><dd>Plano Gold</dd></div><div><dt>Validade</dt><dd>12/02/2027</dd></div></dl>
+        </div>
+        <div class="grid grid-2" style="margin-top:20px"><div class="card"><h3>Situação da matrícula</h3><div class="muted-box"><strong>Plano Gold</strong><br>Todos os dias, das 05h às 23h<br><span class="small">Renovação prevista: 12/02/2027</span></div><div class="actions"><button class="btn btn-primary" onclick="openView('plano')">Gerenciar plano</button></div></div>
+        <div class="card"><h3>Histórico de alterações</h3><div class="timeline"><div class="event"><strong>Matrícula renovada</strong><span>10/08/2026 às 14:35 • Administrador</span></div><div class="event"><strong>Telefone atualizado</strong><span>02/06/2026 às 09:12 • Recepção</span></div><div class="event"><strong>Aluno cadastrado</strong><span>12/02/2026 às 16:40 • Administrador</span></div></div></div></div>
+      </section>
+
+      <section class="view" id="plano">
+        <div class="heading"><div><h1>Plano e matrícula</h1><p>Associe um plano ativo e confira a validade calculada.</p></div></div>
+        <div class="grid grid-2"><div class="card"><h3>Aluno selecionado</h3><div class="profile"><div class="avatar">MS</div><div><strong>Mariana Souza</strong><div class="small">CPF: ***.542.***-10</div></div></div></div><div class="card"><h3>Resumo atual</h3><p><span class="badge ok">Ativa</span></p><p><strong>Plano Gold</strong><br><span class="small">Válido até 12/02/2027</span></p></div></div>
+        <form class="card" style="margin-top:20px" onsubmit="event.preventDefault();toast('Plano associado e matrícula atualizada')"><h3>Alterar plano</h3><div class="form-grid"><div class="field"><label for="field-9">Plano *</label><select id="field-9" required><option>Plano Gold — R$ 149,90/mês</option><option>Plano Fit — R$ 109,90/mês</option><option>Plano Basic — R$ 79,90/mês</option></select></div><div class="field"><label for="field-10">Duração *</label><select id="field-10"><option>12 meses</option><option>6 meses</option><option>1 mês</option></select></div><div class="field"><label for="field-11">Data de início *</label><input id="field-11" type="date" value="2026-09-14"></div><div class="field"><label for="field-12">Validade calculada</label><input id="field-12" value="14/09/2027" disabled></div></div><div class="actions"><button class="btn btn-light" type="button">Suspender matrícula</button><button class="btn btn-primary">Confirmar alteração</button></div></form>
+      </section>
+
+      <section class="view" id="acesso">
+        <div class="heading"><div><h1>Entrada e saída</h1><p>Valide a matrícula antes de liberar o acesso.</p></div></div>
+        <div class="card access-panel"><div class="access-icon">⇥</div><h2>Registrar acesso</h2><p style="color:var(--muted)">Digite o CPF ou número da matrícula do aluno.</p><div class="access-input"><input aria-label="CPF ou matrícula do aluno" id="accessCode" placeholder="CPF ou matrícula"><button class="btn btn-primary" onclick="checkAccess()">Verificar acesso</button></div><div class="result" id="accessResult"><strong id="resultTitle"></strong><p id="resultText" style="margin-bottom:0"></p></div></div>
+      </section>
+
+      <section class="view" id="presentes">
+        <div class="heading"><div><h1>Alunos presentes</h1><p>Acompanhe a ocupação atual da academia.</p></div><span class="badge info">Atualizado agora</span></div>
+        <div class="grid grid-3" style="margin-bottom:20px"><div class="stat"><span>Presentes agora</span><strong>62</strong></div><div class="stat"><span>Capacidade máxima</span><strong>100</strong></div><div class="stat"><span>Ocupação</span><strong>62%</strong><div class="occupancy"><span></span></div></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Aluno</th><th>Matrícula</th><th>Entrada</th><th>Tempo atual</th><th>Ações</th></tr></thead><tbody><tr><td class="name">Mariana Souza</td><td>MAT-2026-0184</td><td>08:12</td><td>1h 24min</td><td><button class="link" onclick="toast('Saída registrada às 09:36')">Registrar saída</button></td></tr><tr><td class="name">Lucas Ferreira</td><td>MAT-2026-0201</td><td>08:40</td><td>56min</td><td><button class="link" onclick="toast('Saída registrada às 09:36')">Registrar saída</button></td></tr><tr><td class="name">Ana Beatriz Lima</td><td>MAT-2025-0932</td><td>09:05</td><td>31min</td><td><button class="link" onclick="toast('Saída registrada às 09:36')">Registrar saída</button></td></tr></tbody></table></div>
+      </section>
+
+      <section class="view" id="frequencia">
+        <div class="heading"><div><h1>Histórico de frequência</h1><p>Consulte entradas, saídas e tempo de permanência.</p></div></div>
+        <div class="toolbar"><input class="search" value="Mariana Souza"><input class="search" type="date" value="2026-09-01"><input class="search" type="date" value="2026-09-14"><button class="btn btn-primary" onclick="toast('Período filtrado com sucesso')">Filtrar</button></div>
+        <div class="grid grid-3" style="margin-bottom:20px"><div class="stat"><span>Visitas no período</span><strong>9</strong></div><div class="stat"><span>Tempo médio</span><strong>1h 18min</strong></div><div class="stat"><span>Frequência semanal</span><strong>4,5 dias</strong></div></div>
+        <div class="table-wrap"><table><thead><tr><th>Data</th><th>Entrada</th><th>Saída</th><th>Permanência</th><th>Situação</th></tr></thead><tbody><tr><td>14/09/2026</td><td>08:12</td><td>09:36</td><td>1h 24min</td><td><span class="badge ok">Concluído</span></td></tr><tr><td>12/09/2026</td><td>17:54</td><td>19:21</td><td>1h 27min</td><td><span class="badge ok">Concluído</span></td></tr><tr><td>10/09/2026</td><td>07:45</td><td>09:02</td><td>1h 17min</td><td><span class="badge ok">Concluído</span></td></tr><tr><td>08/09/2026</td><td>18:05</td><td>19:10</td><td>1h 05min</td><td><span class="badge ok">Concluído</span></td></tr></tbody></table></div>
+      </section>
+    </div>
+  </main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script>
+  const titles={alunos:'Lista de alunos',cadastro:'Cadastrar aluno',detalhes:'Detalhes do aluno',plano:'Planos e matrícula',acesso:'Entrada e saída',presentes:'Alunos presentes',frequencia:'Histórico de frequência'};
+  function openView(id){document.querySelectorAll('.view').forEach(v=>v.classList.remove('active'));document.querySelectorAll('.nav button').forEach(b=>b.classList.toggle('active',b.dataset.view===id));document.getElementById(id).classList.add('active');document.getElementById('pageTitle').textContent=titles[id];window.scrollTo({top:0,behavior:'smooth'})}
+  document.querySelectorAll('.nav button').forEach(b=>b.addEventListener('click',()=>openView(b.dataset.view)));
+  function toast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2500)}
+  function saveStudent(e){e.preventDefault();toast('Aluno cadastrado com sucesso');setTimeout(()=>openView('plano'),800)}
+  function checkAccess(){const input=document.getElementById('accessCode');const box=document.getElementById('accessResult');const title=document.getElementById('resultTitle');const text=document.getElementById('resultText');box.className='result show '+(input.value.toLowerCase().includes('bloq')?'denied':'allowed');if(box.classList.contains('allowed')){title.textContent='Acesso autorizado';text.textContent='Mariana Souza • Plano Gold • Entrada registrada às 09:36.'}else{title.textContent='Acesso negado';text.textContent='O aluno possui um bloqueio ativo. Procure a recepção.'}}
+  document.getElementById('studentSearch').addEventListener('input',e=>{const q=e.target.value.toLowerCase();document.querySelectorAll('#studentRows tr').forEach(r=>r.style.display=r.textContent.toLowerCase().includes(q)?'':'none')});
+</script>
+</body>
+</html>
