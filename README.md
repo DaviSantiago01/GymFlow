@@ -223,3 +223,18 @@ As contas u/u e v/v têm treinos de demonstração identificados. Contas novas p
 carregar os exemplos pelo botão no histórico, somente em desenvolvimento.
 Treinos reais são suportados pela mesma persistência; veja
 [como cadastrá-los por integração administrativa](docs/core/treinos-reais.md).
+
+## Planos, mensalidades e profissionais (administração)
+
+Duas funcionalidades operadas pelo novo papel de administrador, sem alterar as anteriores:
+[F007 — planos e mensalidades](docs/core/funcionalidades/F007-planos-mensalidades.md) e
+[F008 — professores e personal trainers](docs/core/funcionalidades/F008-profissionais.md).
+
+- Conta de desenvolvimento **admin / admin** (somente no perfil `desenvolvimento`), com três planos e dois profissionais
+  de exemplo. Em produção, os administradores são inseridos pela academia na tabela `ADM_ADMINISTRADOR`, com senha
+  codificada pelo `PasswordEncoder` do Spring.
+- O menu lateral do administrador mostra **Planos**, **Adesões**, **Mensalidades** e **Profissionais**. O aluno ganha
+  **Meu plano**, com o plano ativo e as próprias mensalidades.
+- A migração `V7__planos_mensalidades_profissionais.sql` só cria tabelas novas.
+- Testes novos: cenários Cucumber `planos-mensalidades.feature` e `profissionais.feature`, testes de repositório com as
+  migrações reais e testes de integração HTTP.

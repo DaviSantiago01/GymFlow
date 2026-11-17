@@ -85,6 +85,30 @@
           <span class="acessar">Ver metas <span aria-hidden="true">↗</span></span>
         </a>
       }
+      @if (autenticacao.autorizacoesDe('plano')?.buscar) {
+        <a routerLink="/core/plano/pesquisa">
+          <span class="icone" aria-hidden="true">$</span>
+          <strong>Planos e mensalidades</strong>
+          <span>Mantenha os planos, as adesões dos alunos, as cobranças e os pagamentos.</span>
+          <span class="acessar">Ver planos <span aria-hidden="true">↗</span></span>
+        </a>
+      }
+      @if (autenticacao.autorizacoesDe('profissional')?.buscar) {
+        <a routerLink="/core/profissional/pesquisa">
+          <span class="icone" aria-hidden="true">★</span>
+          <strong>Profissionais</strong>
+          <span>Cadastre professores e personal trainers, jornadas e vínculos com alunos.</span>
+          <span class="acessar">Ver profissionais <span aria-hidden="true">↗</span></span>
+        </a>
+      }
+      @if (autenticacao.autorizacoesDe('adesaoPlano')?.buscar && !autenticacao.autorizacoesDe('plano')?.buscar) {
+        <a routerLink="/core/adesao-plano/meu-plano">
+          <span class="icone" aria-hidden="true">$</span>
+          <strong>Meu plano</strong>
+          <span>Veja seu plano ativo e a situação das suas mensalidades.</span>
+          <span class="acessar">Ver meu plano <span aria-hidden="true">↗</span></span>
+        </a>
+      }
     </div>
   </section>
   <p class="aviso nota">Marcar aula é uma opção ilustrativa por enquanto.</p>

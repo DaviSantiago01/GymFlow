@@ -1,0 +1,108 @@
+<main class="pagina">
+  <header class="pagina-cabecalho">
+    <div>
+      <span class="pagina-sobretitulo">Administração</span>
+      <h1>Adesões aos planos</h1>
+    </div>
+    <div class="pagina-links">
+      <a routerLink="/core/plano/pesquisa">Planos</a>
+      <a routerLink="/core/mensalidade/pesquisa">Mensalidades</a>
+    </div>
+  </header>
+
+  <section class="bloco">
+    <h2>Nova adesão</h2>
+    <p class="pagina-descricao">
+      Cada aluno pode ter um único plano ativo. Para mudar de plano, use a troca na adesão atual.
+    </p>
+    <form class="formulario-grade" (ngSubmit)="aderir()">
+      <label
+        >Aluno
+        <select name="aluno" [(ngModel)]="aluno">
+          <option value="">Selecione</option>
+          @for (opcao of formulario().alunos; track opcao.identificador) {
+            <option [value]="opcao.identificador">{{ opcao.nome }} ({{ opcao.usuario }})</option>
+          }
+        </select>
+      </label>
+      <label
+        >Plano
+        <select name="plano" [(ngModel)]="plano">
+          <option value="">Selecione</option>
+          @for (opcao of formulario().planos; track opcao.identificador) {
+            <option [value]="opcao.identificador">
+              {{ opcao.nome }} — {{ moeda(opcao.valor) }} / {{ duracao(opcao.duracaoMeses) }}
+            </option>
+          }
+        </select>
+      </label>
+      <div class="grupo-acoes">
+        <button type="submit" class="acao acao-principal" [disabled]="ocupado()">Registrar adesão</button>
+      </div>
+    </form>
+    @if (erro()) {
+      <div class="aviso aviso-erro" role="alert">{{ erro() }}</div>
+    }
+  </section>
+
+  <form class="bloco formulario-grade" (ngSubmit)="filtrar()">
+    <label
+      >Aluno
+      <select name="filtroAluno" [(ngModel)]="filtroAluno">
+        <option value="">Todos</option>
+        @for (opcao of formulario().alunos; track opcao.identificador) {
+          <option [value]="opcao.identificador">{{ opcao.nome }}</option>
+        }
+      </select>
+    </label>
+    <label
+      >Situação
+      <select name="filtroSituacao" [(ngModel)]="filtroSituacao">
+        <option value="">Todas</option>
+        <option value="ATIVA">Ativas</option>
+        <option value="ENCERRADA">Encerradas por troca</option>
+        <option value="CANCELADA">Canceladas</option>
+      </select>
+    </label>
+    <div class="grupo-acoes">
+      <button type="submit" class="acao acao-secundaria">Filtrar</button>
+    </div>
+  </form>
+
+  <section class="bloco tabela-dados">
+    <table>
+      <thead>
+        <tr>
+          <th>Aluno</th>
+          <th>Plano</th>
+          <th>Início</th>
+          <th>Encerramento</th>
+          <th>Situação</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (adesao of adesoes(); track adesao.identificador) {
+          <tr>
+            <td>{{ adesao.alunoNome }}</td>
+            <td>{{ adesao.planoNome }}</td>
+            <td>{{ data(adesao.inicio) }}</td>
+            <td>{{ adesao.encerramento ? data(adesao.encerramento) : '—' }}</td>
+            <td>
+              <span class="marcador" [class.marcador-neutro]="adesao.situacao !== 'ATIVA'">{{
+                rotulosSituacao[adesao.situacao]
+              }}</span>
+            </td>
+            <td>
+              <a [routerLink]="['/core/adesao-plano', adesao.identificador, 'visualizacao']">Ver</a>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="estado-vazio">Nenhuma adesão encontrada.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+</main>

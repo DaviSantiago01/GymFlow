@@ -5,6 +5,8 @@ import { guardaAutenticacao } from '../d5';
 import { resolverArmarios } from './armarios/armarios.service';
 import { rotasTreinos } from './treinos/treinos.rotas';
 import { rotasAvaliacoes } from './avaliacoes/avaliacoes.rotas';
+import { rotasPlanos } from './planos/planos.rotas';
+import { rotasProfissionais } from './profissionais/profissionais.rotas';
 const tela = () => import('./armarios/armarios.component').then((m) => m.ArmariosComponent);
 export const routes: Routes = [
   {
@@ -68,6 +70,8 @@ export const routes: Routes = [
   },
   ...rotasTreinos,
   ...rotasAvaliacoes,
+  ...rotasPlanos,
+  ...rotasProfissionais,
   ...[
     { path: 'core/treino/pesquisa', modo: 'treinos' },
     { path: 'core/treino/:id/avaliacao', modo: 'nova' },

@@ -1,0 +1,235 @@
+<main class="pagina">
+  <header class="pagina-cabecalho">
+    <div>
+      <span class="pagina-sobretitulo">Profissional · {{ rotulosSituacao[tela().profissional.situacao] }}</span>
+      <h1>{{ tela().profissional.nome }}</h1>
+    </div>
+    <div class="pagina-links">
+      <a routerLink="/core/profissional/pesquisa">Profissionais</a>
+      @if (podeGerenciar() && ativo()) {
+        <a class="acao acao-secundaria" [routerLink]="['/core/profissional', tela().profissional.identificador, 'alteracao']"
+          >Alterar dados</a
+        >
+      }
+    </div>
+  </header>
+
+  @if (erro()) {
+    <div class="aviso aviso-erro" role="alert">{{ erro() }}</div>
+  }
+  @if (!ativo()) {
+    <div class="aviso" role="status">
+      Profissional inativo: não recebe novas especialidades, disponibilidades nem vínculos. O histórico é preservado.
+    </div>
+  }
+
+  <section class="bloco">
+    <div class="indicadores">
+      <div>
+        <span>CPF</span>
+        <strong>{{ tela().cpfFormatado }}</strong>
+      </div>
+      <div>
+        <span>CREF</span>
+        <strong>{{ tela().profissional.cref }}</strong>
+      </div>
+      <div>
+        <span>Contato</span>
+        <strong>{{ tela().profissional.contato }}</strong>
+      </div>
+      <div>
+        <span>Classificação</span>
+        <strong>
+          @for (classificacao of tela().profissional.classificacoes; track classificacao; let ultimo = $last) {
+            {{ rotulosClassificacao[classificacao] }}{{ ultimo ? '' : ' e ' }}
+          }
+        </strong>
+      </div>
+    </div>
+  </section>
+
+  <section class="bloco">
+    <h2>Especialidades</h2>
+    <div class="dias">
+      @for (item of tela().profissional.especialidades; track item.nome) {
+        <span class="marcador">
+          {{ item.nome }}
+          @if (podeGerenciar() && ativo()) {
+            <button type="button" [attr.aria-label]="'Remover ' + item.nome" [disabled]="ocupado()" (click)="removerEspecialidade(item.nome)">
+              ×
+            </button>
+          }
+        </span>
+      } @empty {
+        <span class="estado-vazio">Nenhuma especialidade cadastrada.</span>
+      }
+    </div>
+    @if (podeGerenciar() && ativo()) {
+      <form class="formulario-grade" (ngSubmit)="adicionarEspecialidade()">
+        <label
+          >Nova especialidade
+          <input name="especialidade" maxlength="60" list="sugestoes-especialidade" [(ngModel)]="especialidade" />
+          <datalist id="sugestoes-especialidade">
+            @for (sugestao of sugestoes; track sugestao) {
+              <option [value]="sugestao"></option>
+            }
+          </datalist>
+        </label>
+        <div class="grupo-acoes">
+          <button type="submit" class="acao acao-secundaria" [disabled]="ocupado()">Adicionar</button>
+        </div>
+      </form>
+    }
+  </section>
+
+  <section class="bloco">
+    <div class="linha">
+      <h2>Disponibilidade e jornada semanal</h2>
+      <strong>{{ horas(tela().cargaHorariaSemanalMinutos) }} de {{ horas(tela().limiteSemanalMinutos) }}</strong>
+    </div>
+    <div class="carga" aria-hidden="true"><span [style.width.%]="percentualCarga()"></span></div>
+    <div class="tabela-dados">
+      <table>
+        <thead>
+          <tr>
+            <th>Dia</th>
+            <th>Início</th>
+            <th>Fim</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of disponibilidades(); track item.identificador) {
+            <tr>
+              <td>{{ rotulosDia[item.dia] }}</td>
+              <td>{{ horario(item.inicio) }}</td>
+              <td>{{ horario(item.fim) }}</td>
+              <td>
+                @if (podeGerenciar() && ativo()) {
+                  <button type="button" class="acao acao-secundaria" [disabled]="ocupado()" (click)="editarDisponibilidade(item)">
+                    Alterar
+                  </button>
+                  <button type="button" class="acao acao-perigo" [disabled]="ocupado()" (click)="removerDisponibilidade(item)">
+                    Remover
+                  </button>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="4" class="estado-vazio">Nenhum horário cadastrado.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    @if (podeGerenciar() && ativo()) {
+      <form class="formulario-grade" (ngSubmit)="salvarDisponibilidade()">
+        <label
+          >Dia
+          <select name="dia" [(ngModel)]="dia">
+            @for (opcao of dias; track opcao) {
+              <option [value]="opcao">{{ rotulosDia[opcao] }}</option>
+            }
+          </select>
+        </label>
+        <label
+          >Início
+          <input name="inicio" type="time" required [(ngModel)]="inicio" />
+        </label>
+        <label
+          >Fim
+          <input name="fim" type="time" required [(ngModel)]="fim" />
+        </label>
+        <div class="grupo-acoes">
+          <button type="submit" class="acao acao-principal" [disabled]="ocupado()">
+            {{ editando() === null ? 'Adicionar horário' : 'Salvar alteração' }}
+          </button>
+          @if (editando() !== null) {
+            <button type="button" class="acao acao-secundaria" (click)="cancelarEdicao()">Cancelar</button>
+          }
+        </div>
+      </form>
+    }
+  </section>
+
+  @if (personal() || tela().vinculos.length > 0) {
+    <section class="bloco">
+      <h2>Alunos vinculados</h2>
+      @if (podeGerenciar() && ativo() && personal()) {
+        <form class="formulario-grade" (ngSubmit)="vincular()">
+          <label
+            >Aluno
+            <select name="aluno" [(ngModel)]="aluno">
+              <option value="">Selecione</option>
+              @for (opcao of tela().alunos; track opcao.identificador) {
+                <option [value]="opcao.identificador">{{ opcao.nome }} ({{ opcao.usuario }})</option>
+              }
+            </select>
+          </label>
+          <div class="grupo-acoes">
+            <button type="submit" class="acao acao-principal" [disabled]="ocupado()">Vincular aluno</button>
+          </div>
+        </form>
+      }
+      <div class="tabela-dados">
+        <table>
+          <thead>
+            <tr>
+              <th>Aluno</th>
+              <th>Início</th>
+              <th>Encerramento</th>
+              <th>Situação</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (vinculo of tela().vinculos; track vinculo.identificador) {
+              <tr>
+                <td>{{ vinculo.alunoNome }}</td>
+                <td>{{ data(vinculo.inicio) }}</td>
+                <td>{{ vinculo.encerramento ? data(vinculo.encerramento) : '—' }}</td>
+                <td>
+                  <span class="marcador" [class.marcador-neutro]="vinculo.situacao !== 'ATIVO'">{{
+                    rotulosVinculo[vinculo.situacao]
+                  }}</span>
+                </td>
+                <td>
+                  @if (podeGerenciar() && vinculo.situacao === 'ATIVO') {
+                    <button type="button" class="acao acao-perigo" [disabled]="ocupado()" (click)="encerrarVinculo(vinculo)">
+                      Encerrar
+                    </button>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr>
+                <td colspan="5" class="estado-vazio">Nenhum aluno vinculado.</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    </section>
+  }
+
+  @if (podeGerenciar()) {
+    <div class="grupo-acoes">
+      @if (ativo()) {
+        <button
+          type="button"
+          class="acao acao-perigo"
+          [disabled]="ocupado() || vinculosAtivos().length > 0"
+          [title]="vinculosAtivos().length > 0 ? 'Encerre os vínculos ativos antes de inativar' : ''"
+          (click)="inativar()"
+        >
+          Inativar profissional
+        </button>
+      } @else {
+        <button type="button" class="acao acao-secundaria" [disabled]="ocupado()" (click)="reativar()">
+          Reativar profissional
+        </button>
+      }
+    </div>
+  }
+</main>

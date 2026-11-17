@@ -1,0 +1,70 @@
+<main class="pagina">
+  <header class="pagina-cabecalho">
+    <div>
+      <span class="pagina-sobretitulo">Academia</span>
+      <h1>Meu plano</h1>
+    </div>
+  </header>
+
+  @if (tela.adesao; as adesao) {
+    <section class="bloco">
+      <div class="indicadores">
+        <div>
+          <span>Plano</span>
+          <strong>{{ adesao.planoNome }}</strong>
+        </div>
+        <div>
+          <span>Cobrança</span>
+          <strong>{{ moeda(adesao.valor) }}</strong>
+          <small>&nbsp;a cada {{ duracao(adesao.periodicidadeMeses) }}</small>
+        </div>
+        <div>
+          <span>Desde</span>
+          <strong>{{ data(adesao.inicio) }}</strong>
+        </div>
+        <div>
+          <span>Mensalidades pendentes</span>
+          <strong>{{ pendentes.length }}</strong>
+        </div>
+      </div>
+    </section>
+  } @else {
+    <div class="aviso" role="status">
+      Você não possui plano ativo. Procure a recepção da academia para aderir a um plano.
+    </div>
+  }
+
+  <section class="bloco tabela-dados">
+    <h2>Minhas mensalidades</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Plano</th>
+          <th>Período</th>
+          <th>Vencimento</th>
+          <th>Valor devido</th>
+          <th>Situação</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (mensalidade of tela.mensalidades; track mensalidade.identificador) {
+          <tr>
+            <td>{{ mensalidade.planoNome }}</td>
+            <td>{{ data(mensalidade.periodoInicio) }} a {{ data(mensalidade.periodoFim) }}</td>
+            <td>{{ data(mensalidade.vencimento) }}</td>
+            <td>{{ mensalidade.situacao === 'PAGA' ? '—' : moeda(mensalidade.valorDevido) }}</td>
+            <td>
+              <span class="marcador" [class.marcador-neutro]="mensalidade.situacao === 'PAGA'">{{
+                rotulos[mensalidade.situacao]
+              }}</span>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="5" class="estado-vazio">Nenhuma mensalidade registrada.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+</main>

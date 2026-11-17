@@ -1,0 +1,102 @@
+@if (tela(); as tela) {
+  <main class="pagina">
+    <header class="pagina-cabecalho">
+      <div>
+        <span class="pagina-sobretitulo">Adesão ao plano</span>
+        <h1>{{ tela.adesao.alunoNome }} · {{ tela.adesao.planoNome }}</h1>
+      </div>
+      <div class="pagina-links">
+        <a routerLink="/core/adesao-plano/pesquisa">Adesões</a>
+        <a routerLink="/core/mensalidade/pesquisa" [queryParams]="{ aluno: tela.adesao.aluno }">Mensalidades do aluno</a>
+      </div>
+    </header>
+
+    <section class="bloco">
+      <div class="indicadores">
+        <div>
+          <span>Situação</span>
+          <strong>{{ rotulosAdesao[tela.adesao.situacao] }}</strong>
+        </div>
+        <div>
+          <span>Início</span>
+          <strong>{{ data(tela.adesao.inicio) }}</strong>
+        </div>
+        <div>
+          <span>Encerramento</span>
+          <strong>{{ tela.adesao.encerramento ? data(tela.adesao.encerramento) : '—' }}</strong>
+        </div>
+        <div>
+          <span>Cobrança</span>
+          <strong>{{ moeda(tela.adesao.valor) }}</strong>
+          <small>&nbsp;a cada {{ duracao(tela.adesao.periodicidadeMeses) }}</small>
+        </div>
+      </div>
+    </section>
+
+    @if (podeGerenciar()) {
+      <section class="bloco">
+        <h2>Trocar ou cancelar</h2>
+        <form class="formulario-grade" (ngSubmit)="trocar()">
+          <label
+            >Novo plano
+            <select name="novoPlano" [(ngModel)]="novoPlano">
+              <option value="">Selecione</option>
+              @for (plano of outrosPlanos(); track plano.identificador) {
+                <option [value]="plano.identificador">
+                  {{ plano.nome }} — {{ moeda(plano.valor) }} / {{ duracao(plano.duracaoMeses) }}
+                </option>
+              }
+            </select>
+          </label>
+          <div class="grupo-acoes">
+            <button type="submit" class="acao acao-principal" [disabled]="ocupado()">Trocar plano</button>
+            <button type="button" class="acao acao-perigo" [disabled]="ocupado()" (click)="cancelar()">
+              Cancelar plano
+            </button>
+          </div>
+        </form>
+        @if (erro()) {
+          <div class="aviso aviso-erro" role="alert">{{ erro() }}</div>
+        }
+      </section>
+    }
+
+    <section class="bloco tabela-dados">
+      <h2>Mensalidades</h2>
+      <table>
+        <thead>
+          <tr>
+            <th>Período</th>
+            <th>Vencimento</th>
+            <th>Valor</th>
+            <th>Valor devido</th>
+            <th>Situação</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (mensalidade of tela.mensalidades; track mensalidade.identificador) {
+            <tr>
+              <td>{{ data(mensalidade.periodoInicio) }} a {{ data(mensalidade.periodoFim) }}</td>
+              <td>{{ data(mensalidade.vencimento) }}</td>
+              <td>{{ moeda(mensalidade.valor) }}</td>
+              <td>{{ mensalidade.situacao === 'PAGA' ? '—' : moeda(mensalidade.valorDevido) }}</td>
+              <td>
+                <span class="marcador" [class.marcador-neutro]="mensalidade.situacao === 'PAGA'">{{
+                  rotulosMensalidade[mensalidade.situacao]
+                }}</span>
+              </td>
+              <td>
+                <a [routerLink]="['/core/mensalidade', mensalidade.identificador, 'visualizacao']">Ver</a>
+              </td>
+            </tr>
+          } @empty {
+            <tr>
+              <td colspan="6" class="estado-vazio">Nenhuma mensalidade gerada.</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </section>
+  </main>
+}

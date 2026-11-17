@@ -12,7 +12,17 @@ import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.avaliacaoprofes
 import dev.sauloaraujo.d5.framework.dominio.impl.AgregadoAutorizacoes;
 import dev.sauloaraujo.d5.framework.ui.seguranca.AutenticacaoRecursoAbstrato;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.grupotreino.GrupoTreino;
+import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.adesaoplano.AdesaoPlanoAutorizacoes;
+import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.mensalidade.MensalidadeAutorizacoes;
+import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.plano.PlanoAutorizacoes;
+import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.profissional.ProfissionalAutorizacoes;
+import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.vinculopersonal.VinculoPersonalAlunoAutorizacoes;
 public class AutenticacaoRecurso extends AutenticacaoRecursoAbstrato {
+    private final PlanoAutorizacoes plano;
+    private final AdesaoPlanoAutorizacoes adesaoPlano;
+    private final MensalidadeAutorizacoes mensalidade;
+    private final ProfissionalAutorizacoes profissional;
+    private final VinculoPersonalAlunoAutorizacoes vinculoPersonalAluno;
     private final AgregadoAutorizacoes<GrupoTreino> grupoTreino;
     public AgregadoAutorizacoes<GrupoTreino> getGrupoTreino(){return grupoTreino;}
     private final AgregadoAutorizacoes<Armario> armario;
@@ -28,12 +38,21 @@ public class AutenticacaoRecurso extends AutenticacaoRecursoAbstrato {
             AgregadoAutorizacoes<Aluno> aluno, PlanoDeTreinoAutorizacoes planoDeTreino, ExecucaoDeExercicioAutorizacoes execucaoDeExercicio,
             AvaliacaoFisicaAutorizacoes avaliacaoFisica, MetaAutorizacoes meta,
             AgregadoAutorizacoes<Professor> professor, AgregadoAutorizacoes<AvaliacaoProfessor> avaliacaoProfessor,
-            AgregadoAutorizacoes<GrupoTreino> grupoTreino) {
+            AgregadoAutorizacoes<GrupoTreino> grupoTreino, PlanoAutorizacoes plano, AdesaoPlanoAutorizacoes adesaoPlano,
+            MensalidadeAutorizacoes mensalidade, ProfissionalAutorizacoes profissional,
+            VinculoPersonalAlunoAutorizacoes vinculoPersonalAluno) {
         super(usuario); this.grupoTreino=grupoTreino; this.armario=armario; this.reservaArmario=reservaArmario;
         this.aluno=aluno; this.planoDeTreino=planoDeTreino; this.execucaoDeExercicio=execucaoDeExercicio;
         this.avaliacaoFisica=avaliacaoFisica; this.meta=meta;
         this.professor=professor; this.avaliacaoProfessor=avaliacaoProfessor;
+        this.plano=plano; this.adesaoPlano=adesaoPlano; this.mensalidade=mensalidade;
+        this.profissional=profissional; this.vinculoPersonalAluno=vinculoPersonalAluno;
     }
+    public PlanoAutorizacoes getPlano() { return plano; }
+    public AdesaoPlanoAutorizacoes getAdesaoPlano() { return adesaoPlano; }
+    public MensalidadeAutorizacoes getMensalidade() { return mensalidade; }
+    public ProfissionalAutorizacoes getProfissional() { return profissional; }
+    public VinculoPersonalAlunoAutorizacoes getVinculoPersonalAluno() { return vinculoPersonalAluno; }
     public AgregadoAutorizacoes<Professor> getProfessor() { return professor; }
     public AgregadoAutorizacoes<AvaliacaoProfessor> getAvaliacaoProfessor() { return avaliacaoProfessor; }
     public AgregadoAutorizacoes<Armario> getArmario() { return armario; }

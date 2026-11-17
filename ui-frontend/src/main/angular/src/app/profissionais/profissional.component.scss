@@ -1,0 +1,22 @@
+/* Barra da carga horária semanal em relação ao limite da academia. */
+.carga {
+  height: 10px;
+  margin: var(--espaco-2) 0 var(--espaco-3);
+  overflow: hidden;
+  border-radius: var(--raio-pilula);
+  background: var(--cor-campo);
+}
+.carga span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: #6aa62c;
+}
+.dias .marcador button {
+  margin-left: 4px;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}

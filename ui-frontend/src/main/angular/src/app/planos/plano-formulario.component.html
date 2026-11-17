@@ -1,0 +1,37 @@
+<main class="pagina">
+  <header class="pagina-cabecalho">
+    <div>
+      <span class="pagina-sobretitulo">Administração</span>
+      <h1>{{ alteracao() ? 'Alterar plano' : 'Novo plano' }}</h1>
+    </div>
+    <div class="pagina-links"><a routerLink="/core/plano/pesquisa">Planos</a></div>
+  </header>
+
+  <form class="bloco" (ngSubmit)="salvar()">
+    <div class="formulario-grade">
+      <label
+        >Nome
+        <input name="nome" maxlength="60" required [(ngModel)]="nome" />
+      </label>
+      <label
+        >Valor por período (R$)
+        <input name="valor" type="number" min="0.01" step="0.01" required [(ngModel)]="valor" />
+      </label>
+      <label
+        >Duração do período (meses)
+        <input name="duracao" type="number" min="1" max="12" step="1" required [(ngModel)]="duracaoMeses" />
+      </label>
+    </div>
+    <p class="pagina-descricao">
+      O valor é cobrado a cada período. Não pode haver dois planos ativos com o mesmo nome e a mesma
+      duração. Alterações valem para as próximas mensalidades geradas.
+    </p>
+    @if (erro()) {
+      <div class="aviso aviso-erro" role="alert">{{ erro() }}</div>
+    }
+    <div class="grupo-acoes">
+      <button type="submit" class="acao acao-principal" [disabled]="ocupado()">Salvar plano</button>
+      <a class="acao acao-secundaria" routerLink="/core/plano/pesquisa">Cancelar</a>
+    </div>
+  </form>
+</main>

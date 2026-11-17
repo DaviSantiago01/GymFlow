@@ -1,0 +1,92 @@
+<main class="pagina">
+  <header class="pagina-cabecalho">
+    <div>
+      <span class="pagina-sobretitulo">Administração</span>
+      <h1>Mensalidades</h1>
+    </div>
+    <div class="pagina-links">
+      <a routerLink="/core/plano/pesquisa">Planos</a>
+      <a routerLink="/core/adesao-plano/pesquisa">Adesões</a>
+      @if (podeGerar()) {
+        <button type="button" class="acao acao-principal" [disabled]="ocupado()" (click)="gerar()">
+          Gerar mensalidades
+        </button>
+      }
+    </div>
+  </header>
+  <p class="pagina-descricao">
+    A geração cria a mensalidade de cada período já iniciado das adesões ativas, sem duplicar períodos.
+    Após o vencimento, a mensalidade em aberto passa a constar em atraso, com multa de 2% e juros de 1% ao
+    mês proporcionais aos dias.
+  </p>
+
+  <form class="bloco formulario-grade" (ngSubmit)="filtrar()">
+    <label
+      >Situação
+      <select name="situacao" [(ngModel)]="situacao">
+        <option value="">Todas</option>
+        <option value="ABERTA">Em aberto</option>
+        <option value="ATRASADA">Em atraso</option>
+        <option value="PAGA">Pagas</option>
+      </select>
+    </label>
+    <div class="grupo-acoes">
+      <button type="submit" class="acao acao-secundaria">Filtrar</button>
+      @if (aluno) {
+        <a class="acao acao-secundaria" routerLink="/core/mensalidade/pesquisa">Todos os alunos</a>
+      }
+    </div>
+  </form>
+
+  @if (totalEmAtraso() > 0) {
+    <div class="aviso aviso-erro" role="status">
+      Total devido em atraso nesta lista: <strong>{{ moeda(totalEmAtraso()) }}</strong>
+    </div>
+  }
+
+  <section class="bloco tabela-dados">
+    <table>
+      <thead>
+        <tr>
+          <th>Aluno</th>
+          <th>Plano</th>
+          <th>Período</th>
+          <th>Vencimento</th>
+          <th>Valor</th>
+          <th>Valor devido</th>
+          <th>Situação</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (mensalidade of mensalidades(); track mensalidade.identificador) {
+          <tr>
+            <td>{{ mensalidade.alunoNome }}</td>
+            <td>{{ mensalidade.planoNome }}</td>
+            <td>{{ data(mensalidade.periodoInicio) }} a {{ data(mensalidade.periodoFim) }}</td>
+            <td>{{ data(mensalidade.vencimento) }}</td>
+            <td>{{ moeda(mensalidade.valor) }}</td>
+            <td>
+              {{ mensalidade.situacao === 'PAGA' ? '—' : moeda(mensalidade.valorDevido) }}
+              @if (mensalidade.diasAtraso > 0) {
+                <small>({{ mensalidade.diasAtraso }} dia(s) de atraso)</small>
+              }
+            </td>
+            <td>
+              <span class="marcador" [class.marcador-neutro]="mensalidade.situacao === 'PAGA'">{{
+                rotulos[mensalidade.situacao]
+              }}</span>
+            </td>
+            <td>
+              <a [routerLink]="['/core/mensalidade', mensalidade.identificador, 'visualizacao']">Ver</a>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="8" class="estado-vazio">Nenhuma mensalidade encontrada.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+</main>

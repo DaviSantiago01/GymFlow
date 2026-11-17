@@ -1,0 +1,78 @@
+<main class="pagina">
+  <header class="pagina-cabecalho">
+    <div>
+      <span class="pagina-sobretitulo">Administração</span>
+      <h1>Professores e personal trainers</h1>
+    </div>
+    @if (podeCadastrar()) {
+      <a class="acao acao-principal" routerLink="/core/profissional/inclusao">Novo profissional</a>
+    }
+  </header>
+
+  <form class="bloco formulario-grade" (ngSubmit)="filtrar()">
+    <label
+      >Nome, CPF ou CREF
+      <input name="busca" [(ngModel)]="busca" placeholder="Buscar" />
+    </label>
+    <label
+      >Classificação
+      <select name="classificacao" [(ngModel)]="classificacao">
+        <option value="">Todas</option>
+        <option value="PROFESSOR">Professores</option>
+        <option value="PERSONAL_TRAINER">Personal trainers</option>
+      </select>
+    </label>
+    <label
+      >Situação
+      <select name="situacao" [(ngModel)]="situacao">
+        <option value="">Todas</option>
+        <option value="ATIVO">Ativos</option>
+        <option value="INATIVO">Inativos</option>
+      </select>
+    </label>
+    <div class="grupo-acoes">
+      <button type="submit" class="acao acao-secundaria">Filtrar</button>
+    </div>
+  </form>
+
+  <section class="bloco tabela-dados">
+    <table>
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>CPF</th>
+          <th>CREF</th>
+          <th>Classificação</th>
+          <th>Contato</th>
+          <th>Alunos vinculados</th>
+          <th>Situação</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (profissional of profissionais(); track profissional.identificador) {
+          <tr>
+            <td>{{ profissional.nome }}</td>
+            <td>{{ cpfFormatado(profissional.cpf) }}</td>
+            <td>{{ profissional.cref }}</td>
+            <td>{{ classificacoes(profissional) }}</td>
+            <td>{{ profissional.contato }}</td>
+            <td>{{ profissional.personalTrainer ? profissional.vinculosAtivos : '—' }}</td>
+            <td>
+              <span class="marcador" [class.marcador-neutro]="profissional.situacao !== 'ATIVO'">{{
+                rotulosSituacao[profissional.situacao]
+              }}</span>
+            </td>
+            <td>
+              <a [routerLink]="['/core/profissional', profissional.identificador, 'visualizacao']">Gerenciar</a>
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="8" class="estado-vazio">Nenhum profissional encontrado.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+</main>

@@ -1,0 +1,47 @@
+<main class="pagina">
+  <header class="pagina-cabecalho">
+    <div>
+      <span class="pagina-sobretitulo">Administração</span>
+      <h1>{{ alteracao() ? 'Alterar profissional' : 'Novo profissional' }}</h1>
+    </div>
+    <div class="pagina-links"><a routerLink="/core/profissional/pesquisa">Profissionais</a></div>
+  </header>
+
+  <form class="bloco" (ngSubmit)="salvar()">
+    <div class="formulario-grade">
+      <label
+        >Nome completo
+        <input name="nome" maxlength="100" required [(ngModel)]="nome" />
+      </label>
+      <label
+        >CPF
+        <input name="cpf" maxlength="14" required placeholder="000.000.000-00" [(ngModel)]="cpf" />
+      </label>
+      <label
+        >CREF
+        <input name="cref" maxlength="11" required placeholder="000000-G/UF" [(ngModel)]="cref" />
+      </label>
+      <label
+        >Contato (telefone ou e-mail)
+        <input name="contato" maxlength="100" required [(ngModel)]="contato" />
+      </label>
+    </div>
+    <fieldset class="bloco">
+      <legend>Classificação profissional</legend>
+      @for (opcao of opcoes; track opcao) {
+        <label>
+          <input type="checkbox" [checked]="marcado(opcao)" (change)="alternar(opcao)" />
+          {{ rotulos[opcao] }}
+        </label>
+      }
+      <p class="pagina-descricao">Marque ao menos uma. Somente personal trainers podem ser vinculados a alunos.</p>
+    </fieldset>
+    @if (erro()) {
+      <div class="aviso aviso-erro" role="alert">{{ erro() }}</div>
+    }
+    <div class="grupo-acoes">
+      <button type="submit" class="acao acao-principal" [disabled]="ocupado()">Salvar profissional</button>
+      <a class="acao acao-secundaria" routerLink="/core/profissional/pesquisa">Cancelar</a>
+    </div>
+  </form>
+</main>

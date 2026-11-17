@@ -1,0 +1,75 @@
+<main class="pagina">
+  <header class="pagina-cabecalho">
+    <div>
+      <span class="pagina-sobretitulo">Administração</span>
+      <h1>Planos da academia</h1>
+    </div>
+    <div class="pagina-links">
+      <a routerLink="/core/adesao-plano/pesquisa">Adesões</a>
+      <a routerLink="/core/mensalidade/pesquisa">Mensalidades</a>
+      @if (podeGerenciar()) {
+        <a class="acao acao-principal" routerLink="/core/plano/inclusao">Novo plano</a>
+      }
+    </div>
+  </header>
+
+  <form class="bloco formulario-grade" (ngSubmit)="filtrar()">
+    <label
+      >Nome
+      <input name="nome" [(ngModel)]="nome" placeholder="Buscar pelo nome" />
+    </label>
+    <label
+      >Situação
+      <select name="situacao" [(ngModel)]="situacao">
+        <option value="">Todas</option>
+        <option value="ATIVO">Ativos</option>
+        <option value="INATIVO">Inativos</option>
+      </select>
+    </label>
+    <div class="grupo-acoes">
+      <button type="submit" class="acao acao-secundaria">Filtrar</button>
+    </div>
+  </form>
+
+  <section class="bloco tabela-dados">
+    <table>
+      <thead>
+        <tr>
+          <th>Plano</th>
+          <th>Valor por período</th>
+          <th>Duração</th>
+          <th>Adesões ativas</th>
+          <th>Situação</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (plano of planos(); track plano.identificador) {
+          <tr>
+            <td>{{ plano.nome }}</td>
+            <td>{{ moeda(plano.valor) }}</td>
+            <td>{{ duracao(plano.duracaoMeses) }}</td>
+            <td>{{ plano.adesoesAtivas }}</td>
+            <td>
+              <span class="marcador" [class.marcador-neutro]="plano.situacao !== 'ATIVO'">{{
+                rotulosSituacao[plano.situacao]
+              }}</span>
+            </td>
+            <td>
+              @if (podeGerenciar() && plano.situacao === 'ATIVO') {
+                <a [routerLink]="['/core/plano', plano.identificador, 'alteracao']">Alterar</a>
+                <button type="button" class="acao acao-perigo" [disabled]="ocupado()" (click)="inativar(plano)">
+                  Inativar
+                </button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="estado-vazio">Nenhum plano encontrado.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+</main>

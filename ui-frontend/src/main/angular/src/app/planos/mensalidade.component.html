@@ -1,0 +1,117 @@
+<main class="pagina">
+  <header class="pagina-cabecalho">
+    <div>
+      <span class="pagina-sobretitulo">Mensalidade</span>
+      <h1>{{ tela().mensalidade.alunoNome }} · {{ tela().mensalidade.planoNome }}</h1>
+    </div>
+    <div class="pagina-links">
+      <a [routerLink]="['/core/adesao-plano', tela().mensalidade.adesao, 'visualizacao']">Adesão</a>
+      <a routerLink="/core/mensalidade/pesquisa">Mensalidades</a>
+    </div>
+  </header>
+
+  <section class="bloco">
+    <div class="indicadores">
+      <div>
+        <span>Situação</span>
+        <strong>{{ rotulosMensalidade[tela().mensalidade.situacao] }}</strong>
+      </div>
+      <div>
+        <span>Período</span>
+        <strong>{{ data(tela().mensalidade.periodoInicio) }} a {{ data(tela().mensalidade.periodoFim) }}</strong>
+      </div>
+      <div>
+        <span>Vencimento</span>
+        <strong>{{ data(tela().mensalidade.vencimento) }}</strong>
+      </div>
+      <div>
+        <span>Valor do plano</span>
+        <strong>{{ moeda(tela().mensalidade.valor) }}</strong>
+      </div>
+      @if (tela().mensalidade.situacao === 'ATRASADA') {
+        <div>
+          <span>Multa + juros ({{ tela().mensalidade.diasAtraso }} dias)</span>
+          <strong>{{ moeda(tela().mensalidade.multa) }} + {{ moeda(tela().mensalidade.juros) }}</strong>
+        </div>
+      }
+      @if (tela().mensalidade.situacao !== 'PAGA') {
+        <div>
+          <span>Valor devido hoje</span>
+          <strong>{{ moeda(tela().mensalidade.valorDevido) }}</strong>
+        </div>
+      }
+    </div>
+  </section>
+
+  @if (podePagar()) {
+    <section class="bloco">
+      <h2>Registrar pagamento</h2>
+      <form class="formulario-grade" (ngSubmit)="pagar()">
+        <label
+          >Forma de pagamento
+          <select name="forma" [(ngModel)]="forma">
+            @for (item of formas; track item) {
+              <option [value]="item">{{ rotulosForma[item] }}</option>
+            }
+          </select>
+        </label>
+        <div class="grupo-acoes">
+          <button type="submit" class="acao acao-principal" [disabled]="ocupado()">
+            Confirmar {{ moeda(tela().mensalidade.valorDevido) }}
+          </button>
+        </div>
+      </form>
+    </section>
+  }
+  @if (erro()) {
+    <div class="aviso aviso-erro" role="alert">{{ erro() }}</div>
+  }
+
+  <section class="bloco tabela-dados">
+    <h2>Pagamentos</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Registro</th>
+          <th>Forma</th>
+          <th>Valor</th>
+          <th>Situação</th>
+          <th>Estorno</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (pagamento of tela().pagamentos; track pagamento.identificador) {
+          <tr>
+            <td>{{ dataHora(pagamento.registro) }}</td>
+            <td>{{ rotulosForma[pagamento.forma] }}</td>
+            <td>{{ moeda(pagamento.valor) }}</td>
+            <td>
+              <span class="marcador" [class.marcador-neutro]="pagamento.situacao === 'ESTORNADO'">{{
+                rotulosPagamento[pagamento.situacao]
+              }}</span>
+            </td>
+            <td>
+              @if (pagamento.estorno) {
+                {{ dataHora(pagamento.estorno) }} — {{ pagamento.motivoEstorno }}
+              } @else {
+                —
+              }
+            </td>
+            <td>
+              @if (podeEstornar() && pagamento.situacao === 'CONFIRMADO') {
+                <button type="button" class="acao acao-perigo" [disabled]="ocupado()" (click)="estornar(pagamento)">
+                  Estornar
+                </button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="6" class="estado-vazio">Nenhum pagamento registrado.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+</main>

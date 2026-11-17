@@ -21,7 +21,13 @@
   @if (servicoAutenticacao.autenticado()) {
     <aside id="menu-aluno" class="menu-lateral" [class.aberto]="menuAberto()">
       <div class="titulo-menu">
-        <span>{{ servicoAutenticacao.autorizacoesDe('aluno')?.buscar ? 'Área do personal' : 'Área do aluno' }}</span>
+        <span>{{
+          servicoAutenticacao.autorizacoesDe('plano')?.buscar
+            ? 'Administração'
+            : servicoAutenticacao.autorizacoesDe('aluno')?.buscar
+              ? 'Área do personal'
+              : 'Área do aluno'
+        }}</span>
         <strong>Seu treino começa aqui</strong>
       </div>
       <nav aria-label="Menu do aluno">
@@ -261,6 +267,62 @@
                 <span>Metas</span>
               </a>
             }
+          </div>
+        }
+
+        @if (
+          servicoAutenticacao.autorizacoesDe('plano')?.buscar ||
+          servicoAutenticacao.autorizacoesDe('profissional')?.buscar
+        ) {
+          <div class="secao-menu" role="group" aria-labelledby="secao-administracao">
+            <span class="titulo-secao" id="secao-administracao">Administração</span>
+            @if (servicoAutenticacao.autorizacoesDe('plano')?.buscar) {
+              <a class="item-menu" routerLink="/core/plano/pesquisa" routerLinkActive="ativo" ariaCurrentWhenActive="page">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <rect x="3" y="6" width="18" height="13" rx="2" />
+                  <path d="M3 10h18M7 15h4" />
+                </svg>
+                <span>Planos</span>
+              </a>
+              <a class="item-menu" routerLink="/core/adesao-plano/pesquisa" routerLinkActive="ativo" ariaCurrentWhenActive="page">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="9" cy="8" r="3" />
+                  <path d="M3 20v-1a6 6 0 0 1 12 0v1m3-11 2 2 3-4" />
+                </svg>
+                <span>Adesões</span>
+              </a>
+              <a class="item-menu" routerLink="/core/mensalidade/pesquisa" routerLinkActive="ativo" ariaCurrentWhenActive="page">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6m-6 4h6" />
+                </svg>
+                <span>Mensalidades</span>
+              </a>
+            }
+            @if (servicoAutenticacao.autorizacoesDe('profissional')?.buscar) {
+              <a class="item-menu" routerLink="/core/profissional/pesquisa" routerLinkActive="ativo" ariaCurrentWhenActive="page">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="12" cy="7" r="4" />
+                  <path d="M4 21v-1a8 8 0 0 1 16 0v1M12 14v4" />
+                </svg>
+                <span>Profissionais</span>
+              </a>
+            }
+          </div>
+        }
+
+        @if (
+          servicoAutenticacao.autorizacoesDe('adesaoPlano')?.buscar &&
+          !servicoAutenticacao.autorizacoesDe('plano')?.buscar
+        ) {
+          <div class="secao-menu" role="group" aria-labelledby="secao-meu-plano">
+            <span class="titulo-secao" id="secao-meu-plano">Financeiro</span>
+            <a class="item-menu" routerLink="/core/adesao-plano/meu-plano" routerLinkActive="ativo" ariaCurrentWhenActive="page">
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="3" y="6" width="18" height="13" rx="2" />
+                <path d="M3 10h18M7 15h4" />
+              </svg>
+              <span>Meu plano</span>
+            </a>
           </div>
         }
       </nav>
