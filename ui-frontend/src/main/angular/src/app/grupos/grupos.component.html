@@ -1,0 +1,413 @@
+<main class="grupos" [attr.aria-busy]="carregando() || ocupado()">
+  <header class="cabecalho">
+    <div>
+      <p class="sobretitulo">JUNTOS NO PRÓXIMO TREINO</p>
+      <h1>{{ titulo() }}</h1>
+      <p>Organize encontros com alunos da sua academia.</p>
+    </div>
+    @if (modo() === 'lista') {
+      <a class="botao principal" routerLink="/core/grupo-treino/criacao">+ Criar grupo</a>
+    }
+  </header>
+  <nav class="abas" aria-label="Navegação de grupos">
+    <a routerLink="/core/grupo-treino/pesquisa" routerLinkActive="selecionada">Meus grupos</a
+    ><a routerLink="/core/grupo-treino/convites-treino" routerLinkActive="selecionada"
+      >Convites para treinos</a
+    ><a routerLink="/core/grupo-treino/historico" routerLinkActive="selecionada">Histórico</a>
+  </nav>
+  @if (erro()) {
+    <div id="erro-grupos" class="erro" role="alert" tabindex="-1">
+      {{ erro() }}
+      <button class="botao secundario" type="button" (click)="atualizar()">Atualizar dados</button>
+    </div>
+  }
+  @if (aviso()) {
+    <p class="sucesso" role="status">{{ aviso() }}</p>
+  }
+  @if (carregando()) {
+    <p role="status">Carregando…</p>
+  }
+  @if (ocupado()) {
+    <p role="status">Salvando alteração…</p>
+  }
+  @if (modo() === 'lista') {
+    <section aria-labelledby="convites-entrada">
+      <h2 id="convites-entrada">
+        Convites recebidos <span class="etiqueta">{{ dados().entradas?.total ?? 0 }}</span>
+      </h2>
+      @for (c of dados().entradas?.itens; track c.identificador) {
+        <article class="cartao convite">
+          <h3>{{ c.grupoNome }}</h3>
+          <p>{{ c.organizadorNome }} convidou você para participar deste grupo.</p>
+          <div class="acoes">
+            <button
+              class="botao principal"
+              type="button"
+              [disabled]="ocupado()"
+              (click)="responderEntrada(c, true)"
+            >
+              Aceitar convite</button
+            ><button
+              class="botao secundario"
+              type="button"
+              [disabled]="ocupado()"
+              (click)="responderEntrada(c, false)"
+            >
+              Recusar convite
+            </button>
+          </div>
+        </article>
+      } @empty {
+        <p class="vazio compacto">Você não tem convites de entrada pendentes.</p>
+      }
+    </section>
+    <section aria-labelledby="seus-grupos">
+      <h2 id="seus-grupos">
+        Seus grupos <span class="etiqueta">{{ dados().total ?? 0 }}</span>
+      </h2>
+      <div class="grade">
+        @for (g of dados().grupos; track g.identificador) {
+          <article class="cartao">
+            <div class="linha entre">
+              <span class="etiqueta">{{ g.souOrganizador ? 'Organizador' : 'Membro' }}</span>
+              @if (g.encerramento) {
+                <span>Encerrado</span>
+              }
+            </div>
+            <h2>{{ g.nome }}</h2>
+            <p>{{ g.academia }} · {{ g.membros }} membros ativos</p>
+            <p>Organizado por {{ g.organizadorNome }}</p>
+            @if (g.proximo) {
+              <p>
+                Próximo encontro<br /><strong>{{
+                  g.proximo | date: "dd/MM/yyyy 'às' HH:mm" : '-0300'
+                }}</strong>
+              </p>
+            } @else {
+              <p>{{ g.encerramento ? 'Histórico preservado.' : 'Nenhum treino agendado.' }}</p>
+            }
+            <a
+              class="botao secundario"
+              [routerLink]="['/core/grupo-treino', g.identificador, 'visualizacao']"
+              >Ver detalhes do grupo</a
+            >
+          </article>
+        } @empty {
+          <p class="vazio">Você ainda não participa de um grupo. Crie um ou aceite um convite.</p>
+        }
+      </div>
+    </section>
+  }
+  @if (modo() === 'criar' && dados().contexto; as c) {
+    <form class="cartao formulario" (ngSubmit)="criar()" novalidate>
+      <div class="destaque">
+        <strong>{{ c.nome }}</strong>
+        <p>Você será o organizador e participará automaticamente do grupo na {{ c.academia }}.</p>
+      </div>
+      <label for="nome-grupo">Nome do grupo</label
+      ><input
+        id="nome-grupo"
+        name="nome"
+        [(ngModel)]="nome"
+        required
+        maxlength="100"
+        [disabled]="ocupado()"
+        aria-describedby="limite-nome"
+      /><small id="limite-nome"
+        >{{ nome.trim().length }} / 60 caracteres, sem espaços nas extremidades.</small
+      >
+      <app-selecao-alunos [bloqueado]="ocupado()" (selecao)="convidados = $event" />
+      <p>
+        Os alunos selecionados receberão um convite para aceitar ou recusar. Você também pode
+        convidá-los depois.
+      </p>
+      <div class="acoes">
+        <button class="botao principal" type="submit" [disabled]="ocupado()">
+          Criar grupo e enviar convites</button
+        ><a class="botao secundario" routerLink="/core/grupo-treino/pesquisa">Voltar</a>
+      </div>
+    </form>
+  }
+  @if (modo() === 'grupo' && dados().detalhe; as d) {
+    <section class="cartao">
+      <div class="linha entre">
+        <div>
+          <span class="etiqueta">{{
+            d.grupo.souOrganizador ? 'Você é o organizador' : 'Seu grupo'
+          }}</span>
+          <p>{{ d.grupo.academia }} · Organizador: {{ d.grupo.organizadorNome }}</p>
+        </div>
+        <strong>{{ d.grupo.membros }} membros ativos</strong>
+      </div>
+      @if (d.grupo.encerramento) {
+        <p>
+          Grupo encerrado em {{ d.grupo.encerramento | date: 'dd/MM/yyyy HH:mm' : '-0300' }}. O
+          histórico está disponível abaixo.
+        </p>
+      } @else {
+        <div class="acoes">
+          @if (d.grupo.souOrganizador) {
+            <a class="botao principal" [routerLink]="['/core/grupo-treino', id(), 'agenda']"
+              >Propor treino</a
+            ><button class="botao secundario" type="button" (click)="editarNome.set(!editarNome())">
+              Alterar nome</button
+            ><button
+              class="botao perigo"
+              type="button"
+              [disabled]="ocupado()"
+              (click)="agirGrupo('encerrar')"
+            >
+              Encerrar grupo
+            </button>
+          } @else {
+            <button
+              class="botao perigo"
+              type="button"
+              [disabled]="ocupado()"
+              (click)="agirGrupo('sair')"
+            >
+              Sair do grupo
+            </button>
+          }
+        </div>
+      }
+      @if (editarNome()) {
+        <form class="linha" (ngSubmit)="renomear()">
+          <label class="crescer"
+            >Novo nome<input name="nome" [(ngModel)]="nome" maxlength="100" required /></label
+          ><button class="botao principal" type="submit" [disabled]="ocupado()">Salvar nome</button
+          ><small>{{ nome.trim().length }} / 60</small>
+        </form>
+      }
+    </section>
+    <section>
+      <div class="linha entre">
+        <h2>{{ historico() ? 'Histórico de treinos' : 'Treinos agendados' }}</h2>
+        <div class="acoes">
+          <button
+            class="botao secundario"
+            [class.selecionada]="!historico()"
+            type="button"
+            (click)="alternarHistorico(false)"
+          >
+            Agendados</button
+          ><button
+            class="botao secundario"
+            [class.selecionada]="historico()"
+            type="button"
+            (click)="alternarHistorico(true)"
+          >
+            Histórico do grupo
+          </button>
+        </div>
+      </div>
+      @for (t of d.treinos.itens; track t.identificador) {
+        <app-treino-grupo [treino]="t" [ocupado]="ocupado()" (acao)="acaoTreino($event)" />
+      } @empty {
+        <p class="vazio">
+          {{ historico() ? 'Nenhum treino anterior ou cancelado.' : 'Nenhum treino agendado.' }}
+        </p>
+      }
+    </section>
+    <section class="cartao">
+      <h2>Membros e participações</h2>
+      <ul class="membros">
+        @for (m of d.membros; track m.identificador) {
+          <li>
+            <div>
+              <strong>{{ m.nome }}</strong
+              ><small
+                >{{ m.organizador ? 'Organizador' : 'Membro' }} · Entrada em
+                {{ m.entrada | date: 'dd/MM/yyyy' : '-0300' }}</small
+              >
+            </div>
+            <span class="etiqueta">{{ m.saida ? 'Participação encerrada' : 'Ativo' }}</span>
+          </li>
+        }
+      </ul>
+    </section>
+    @if (!d.grupo.encerramento) {
+      <section class="cartao">
+        <h2>Convites de entrada pendentes</h2>
+        @for (c of d.pendentes; track c.identificador) {
+          <p>{{ c.alunoNome }} · Enviado em {{ c.envio | date: 'dd/MM/yyyy' : '-0300' }}</p>
+        } @empty {
+          <p>Nenhum convite pendente.</p>
+        }
+        @if (d.grupo.souOrganizador) {
+          <app-selecao-alunos
+            [grupo]="id()"
+            [revisao]="revisaoAlunos()"
+            [multiplo]="false"
+            [bloqueado]="ocupado()"
+            (selecao)="alunoEscolhido = $event"
+          /><button
+            class="botao principal"
+            type="button"
+            [disabled]="ocupado() || !alunoEscolhido.length"
+            (click)="convidar()"
+          >
+            Enviar convite
+          </button>
+        }
+      </section>
+    }
+  }
+  @if (modo() === 'propor' && dados().detalhe; as d) {
+    @if (d.grupo.souOrganizador && !d.grupo.encerramento) {
+      <form class="cartao formulario" (ngSubmit)="propor()" novalidate>
+        <h2>{{ d.grupo.nome }}</h2>
+        <p>
+          Defina a data e o horário do encontro. Todos os horários são de Brasília.
+        </p>
+        <div class="grade">
+          <label
+            >Data do treino<input
+              name="data"
+              type="date"
+              [(ngModel)]="data"
+              [min]="minimo()"
+              required /></label
+          ><label
+            >Horário do treino<input name="hora" type="time" [(ngModel)]="hora" required /></label
+          >
+        </div>
+        <p class="nota">
+          @if (prazoPrevisto(); as p) {
+            A confirmação dos membros encerra automaticamente uma hora antes do treino, em
+            <strong>{{ p | date: "dd/MM/yyyy 'às' HH:mm" : '-0300' }}</strong> (Brasília).
+          } @else {
+            A confirmação dos membros encerra automaticamente uma hora antes do treino. O treino
+            precisa começar daqui a mais de uma hora.
+          }
+        </p>
+        <div class="destaque">
+          <h3>{{ membrosAtivos().length }} membros receberão um convite</h3>
+          <p>
+            @for (m of membrosAtivos(); track m.identificador) {
+              <span class="etiqueta">{{ m.nome }}{{ m.organizador ? ' · Organizador' : '' }}</span>
+            }
+          </p>
+          <small
+            >A lista será confirmada no momento de salvar, incluindo quem entrar ou sair do grupo
+            até lá.</small
+          >
+        </div>
+        <div class="acoes">
+          <button class="botao principal" type="submit" [disabled]="ocupado()">
+            Propor treino e enviar convites</button
+          ><a class="botao secundario" [routerLink]="['/core/grupo-treino', id(), 'visualizacao']"
+            >Voltar ao grupo</a
+          >
+        </div>
+      </form>
+    } @else {
+      <p class="vazio">Somente o organizador de um grupo ativo pode propor treinos.</p>
+    }
+  }
+  @if (modo() === 'treino' && dados().treino; as d) {
+    <a class="voltar" [routerLink]="['/core/grupo-treino', id(), 'visualizacao']"
+      >← Voltar ao grupo</a
+    ><app-treino-grupo
+      [treino]="d.treino"
+      [ocupado]="ocupado()"
+      [detalhado]="true"
+      (acao)="acaoTreino($event)"
+    />
+    <section class="cartao">
+      <h2>Participantes confirmados</h2>
+      <ul class="membros">
+        @for (p of d.presencas; track p.identificador) {
+          @if (p.situacao === 'CONFIRMADO') {
+            <li>
+              <strong>{{ p.nome }}</strong
+              ><span class="etiqueta">Confirmado</span>
+            </li>
+          }
+        }
+      </ul>
+      @if (!d.treino.confirmados) {
+        <p>Nenhuma presença confirmada.</p>
+      }
+    </section>
+    <section class="cartao">
+      <h2>Convites e respostas</h2>
+      <ul class="membros">
+        @for (p of d.presencas; track p.identificador) {
+          <li>
+            <div>
+              <strong>{{ p.nome }}</strong
+              ><small>
+                @if (p.resposta) {
+                  Resposta em {{ p.resposta | date: 'dd/MM/yyyy HH:mm' : '-0300' }}
+                }
+                @if (p.cancelamento) {
+                  · Cancelado em {{ p.cancelamento | date: 'dd/MM/yyyy HH:mm' : '-0300' }}
+                }
+              </small>
+            </div>
+            <span class="etiqueta">{{ rotulo(p.situacao) }}</span>
+          </li>
+        }
+      </ul>
+    </section>
+  }
+  @if (modo() === 'convites' || modo() === 'historico') {
+    <p>
+      {{
+        modo() === 'historico'
+          ? 'Seus encontros anteriores e cancelados. Os registros permanecem mesmo depois de sair de um grupo.'
+          : 'Responda aos seus convites antes do prazo de confirmação.'
+      }}
+    </p>
+    @for (t of dados().treinos?.itens; track t.identificador) {
+      <app-treino-grupo [treino]="t" [ocupado]="ocupado()" (acao)="acaoTreino($event)" />
+    } @empty {
+      <p class="vazio">
+        {{
+          modo() === 'historico'
+            ? 'Nenhum treino no seu histórico.'
+            : 'Você não tem convites para treinos futuros.'
+        }}
+      </p>
+    }
+    @if (modo() === 'historico') {
+      <section class="cartao">
+        <h2>Histórico dos convites de entrada</h2>
+        @for (c of dados().entradas?.itens; track c.identificador) {
+          <div class="linha entre registro">
+            <div>
+              <strong>{{ c.grupoNome }}</strong>
+              <p>
+                Convite de {{ c.organizadorNome }} em {{ c.envio | date: 'dd/MM/yyyy' : '-0300' }}
+              </p>
+            </div>
+            <span class="etiqueta">{{ rotulo(c.situacao) }}</span>
+          </div>
+        } @empty {
+          <p>Nenhum convite respondido ou cancelado.</p>
+        }
+      </section>
+    }
+  }
+  @if (totalPaginas() > 1) {
+    <nav class="paginacao" aria-label="Páginas de grupos">
+      <button
+        class="botao secundario"
+        type="button"
+        [disabled]="pagina() === 0 || ocupado()"
+        (click)="paginar(pagina() - 1)"
+      >
+        Página anterior</button
+      ><span>{{ pagina() + 1 }} de {{ totalPaginas() }}</span
+      ><button
+        class="botao secundario"
+        type="button"
+        [disabled]="pagina() + 1 >= totalPaginas() || ocupado()"
+        (click)="paginar(pagina() + 1)"
+      >
+        Próxima página
+      </button>
+    </nav>
+  }
+</main>

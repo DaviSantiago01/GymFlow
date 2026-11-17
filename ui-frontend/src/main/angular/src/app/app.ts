@@ -43,6 +43,18 @@ export class App {
     });
   }
 
+  protected avaliacoesAtivas() {
+    return /^\/core\/(professor|avaliacao-professor|treino)\//.test(this.router.url);
+  }
+
+  protected gruposAtivos() {
+    return this.router.url.startsWith('/core/grupo-treino/');
+  }
+
+  protected armariosAtivos() {
+    return /^\/core\/(armario|reserva-armario)\//.test(this.router.url);
+  }
+
   protected sair() {
     this.menuAberto.set(false);
     this.servicoAutenticacao.sair().subscribe(() => this.router.navigateByUrl('/login'));

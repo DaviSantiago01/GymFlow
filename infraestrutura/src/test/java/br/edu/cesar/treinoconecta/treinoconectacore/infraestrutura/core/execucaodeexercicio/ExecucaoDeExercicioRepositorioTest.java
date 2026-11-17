@@ -1,5 +1,6 @@
 package br.edu.cesar.treinoconecta.treinoconectacore.infraestrutura.core.execucaodeexercicio;
 
+import br.edu.cesar.treinoconecta.treinoconectacore.infraestrutura.core.aluno.AlunoJpaTeste;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.math.BigDecimal;
@@ -29,6 +30,8 @@ import br.edu.cesar.treinoconecta.treinoconectacore.infraestrutura.core.planodet
 
 @DataJpaTest
 class ExecucaoDeExercicioRepositorioTest {
+    @org.springframework.beans.factory.annotation.Autowired
+    private jakarta.persistence.EntityManager emAluno;
     private static final Instant AGORA = Instant.parse("2026-11-09T12:00:00Z");
 
     @Autowired
@@ -51,7 +54,7 @@ class ExecucaoDeExercicioRepositorioTest {
     @BeforeEach
     void configurar() {
         repositorio = new ExecucaoDeExercicioRepositorio(repositorioJpa, alunosJpa, planosJpa, exerciciosJpa);
-        var alunoJpa = alunosJpa.save(new AlunoJpa(null, "u", "Aluno"));
+        var alunoJpa = alunosJpa.save(AlunoJpaTeste.novo(emAluno, "u", "Aluno"));
         var personalJpa = personaisJpa.save(new PersonalJpa(null, "p", "Personal"));
         var exercicioJpa = exerciciosJpa.save(new ExercicioJpa(null, "Supino", CategoriaExercicio.PEITO, new BigDecimal("200.00"), null));
         var planoJpa = planosJpa.save(new PlanoDeTreinoJpa(null, alunoJpa, personalJpa, "Plano", 1, SituacaoPlano.ATIVO, 1, null,

@@ -12,6 +12,8 @@ import br.edu.cesar.treinoconecta.treinoconectacore.aplicacao.core.aluno.AlunoOr
 
 @DataJpaTest
 class AlunoAplicacaoRepositorioTest {
+    @org.springframework.beans.factory.annotation.Autowired
+    private jakarta.persistence.EntityManager emAluno;
     @Autowired
     private IAlunoConsultaJpa repositorioJpa;
     private AlunoAplicacaoRepositorio repositorio;
@@ -19,8 +21,8 @@ class AlunoAplicacaoRepositorioTest {
     @BeforeEach
     void configurar() {
         repositorio = new AlunoAplicacaoRepositorio(repositorioJpa);
-        repositorioJpa.save(new AlunoJpa(null, "pedro", "Pedro Silva"));
-        repositorioJpa.save(new AlunoJpa(null, "mariana", "Mariana Costa"));
+        repositorioJpa.save(AlunoJpaTeste.novo(emAluno, "pedro", "Pedro Silva"));
+        repositorioJpa.save(AlunoJpaTeste.novo(emAluno, "mariana", "Mariana Costa"));
     }
 
     private static AlunoConsulta consultar(Optional<String> nome) {

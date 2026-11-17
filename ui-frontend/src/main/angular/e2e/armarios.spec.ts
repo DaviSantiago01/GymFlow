@@ -39,7 +39,7 @@ test('escolher data, reservar três horas, consultar agendada, cancelar e ver hi
   });
   await page.getByRole('button', { name: 'Cancelar reserva', exact: true }).click();
   await expect(page.getByRole('status')).toContainText('Reserva cancelada');
-  await page.getByRole('link', { name: 'Histórico ↗', exact: true }).click();
+  await page.getByRole('link', { name: 'Histórico de reservas', exact: true }).click();
   await expect(page.locator('.item-historico').first()).toContainText('Cancelada');
   expect(erros).toEqual([]);
 });

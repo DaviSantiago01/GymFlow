@@ -2,6 +2,8 @@ Table ALU_ALUNO {
   ALU_ID bigint [pk, increment]
   ALU_USUARIO varchar(100) [not null, unique]
   ALU_NOME varchar(100) [not null]
+  ACD_ID bigint [not null, default: 1, ref: > ACD_ACADEMIA.ACD_ID]
+  indexes { (ALU_ID, ACD_ID) [unique] }
 }
 Table USU_CREDENCIAL {
   ALU_USUARIO varchar(100) [pk, ref: - ALU_ALUNO.ALU_USUARIO]
@@ -143,4 +145,116 @@ Table MET_META {
   indexes {
     (ALU_ID, MET_INDICADOR, MET_SITUACAO)
   }
+}
+
+Table PRO_PROFESSOR {
+  PRO_ID bigint [pk, increment]
+  PRO_NOME varchar(100) [not null]
+  PRO_ESPECIALIDADE varchar(120) [not null]
+  PRO_BIOGRAFIA varchar(1000) [not null]
+  PRO_DEMONSTRACAO boolean [not null, default: false]
+  indexes { PRO_NOME }
+}
+Table VAP_AVALIACAO_REALIZADA {
+  ALU_ID bigint [not null, ref: > ALU_ALUNO.ALU_ID]
+  PRO_ID bigint [not null, ref: > PRO_PROFESSOR.PRO_ID]
+  indexes { (ALU_ID, PRO_ID) [pk] }
+  Note: 'Registro legado da V4, preservado; não restringe avaliações novas por treino.'
+}
+Table AVP_AVALIACAO_PROFESSOR {
+  AVP_ID bigint [pk, increment]
+  TRN_ID bigint [unique, ref: > VAT_TREINO_AVALIADO.TRN_ID, note: 'NULL apenas nos registros anteriores à V4']
+  ALU_ID bigint [not null, ref: > ALU_ALUNO.ALU_ID]
+  PRO_ID bigint [not null, ref: > PRO_PROFESSOR.PRO_ID]
+  AVP_AUXILIO integer [not null, note: 'CHECK entre 0 e 5']
+  AVP_PONTUALIDADE integer [not null, note: 'CHECK entre 0 e 5']
+  AVP_POSTURA integer [not null, note: 'CHECK entre 0 e 5']
+  AVP_DIDATICA integer [not null, note: 'CHECK entre 0 e 5']
+  AVP_ADEQUACAO integer [not null, note: 'CHECK entre 0 e 5; maior é mais adequada']
+  AVP_COMENTARIO varchar(500)
+  AVP_CRIACAO timestamptz [not null]
+  AVP_ATUALIZACAO timestamptz [not null, note: 'CHECK não anterior à criação']
+  indexes {
+    (PRO_ID, AVP_CRIACAO, AVP_ID)
+    (ALU_ID, AVP_CRIACAO, AVP_ID)
+  }
+}
+Table TRN_TREINO {
+  TRN_ID bigint [pk, increment]
+  ALU_ID bigint [not null, ref: > ALU_ALUNO.ALU_ID]
+  PRO_ID bigint [not null, ref: > PRO_PROFESSOR.PRO_ID]
+  TRN_DESCRICAO varchar(120) [not null]
+  TRN_INICIO timestamptz [not null]
+  TRN_TERMINO timestamptz [not null, note: 'CHECK posterior ao início']
+  TRN_CONCLUIDO boolean [not null, default: false]
+  TRN_DEMONSTRACAO boolean [not null, default: false]
+  indexes {
+    (TRN_ID, ALU_ID, PRO_ID) [unique]
+    (ALU_ID, TRN_CONCLUIDO, TRN_INICIO, TRN_ID)
+  }
+}
+Table VAT_TREINO_AVALIADO {
+  TRN_ID bigint [pk, ref: - TRN_TREINO.TRN_ID]
+  Note: 'Preserva somente o treino avaliado após excluir o conteúdo; impede recriação naquele treino.'
+}
+Ref: AVP_AVALIACAO_PROFESSOR.(TRN_ID, ALU_ID, PRO_ID) > TRN_TREINO.(TRN_ID, ALU_ID, PRO_ID)
+
+Table ACD_ACADEMIA {
+  ACD_ID bigint [pk, increment]
+  ACD_NOME varchar(100) [not null]
+}
+Table GRT_GRUPO_TREINO {
+  GRT_ID bigint [pk, increment]
+  GRT_NOME varchar(60) [not null]
+  ALU_ORGANIZADOR bigint [not null]
+  ACD_ID bigint [not null, ref: > ACD_ACADEMIA.ACD_ID]
+  GRT_CRIACAO timestamptz [not null]
+  GRT_ENCERRAMENTO timestamptz
+  indexes { (GRT_ID, ACD_ID) [unique] }
+}
+Ref: GRT_GRUPO_TREINO.(ALU_ORGANIZADOR, ACD_ID) > ALU_ALUNO.(ALU_ID, ACD_ID)
+Table PGR_PARTICIPACAO_GRUPO {
+  PGR_ID bigint [pk, increment]
+  GRT_ID bigint [not null]
+  ALU_ID bigint [not null]
+  ACD_ID bigint [not null]
+  PGR_ENTRADA timestamptz [not null]
+  PGR_SAIDA timestamptz
+  PGR_ATIVO bigint [note: 'Coluna gerada: ALU_ID quando PGR_SAIDA é nula']
+  indexes { (GRT_ID, PGR_ATIVO) [unique] (ALU_ID, GRT_ID, PGR_SAIDA) }
+}
+Ref: PGR_PARTICIPACAO_GRUPO.(GRT_ID, ACD_ID) > GRT_GRUPO_TREINO.(GRT_ID, ACD_ID)
+Ref: PGR_PARTICIPACAO_GRUPO.(ALU_ID, ACD_ID) > ALU_ALUNO.(ALU_ID, ACD_ID)
+Table CGR_CONVITE_GRUPO {
+  CGR_ID bigint [pk, increment]
+  GRT_ID bigint [not null]
+  ALU_ID bigint [not null]
+  ACD_ID bigint [not null]
+  CGR_SITUACAO varchar(12) [not null, note: 'PENDENTE, ACEITO, RECUSADO, CANCELADO']
+  CGR_ENVIO timestamptz [not null]
+  CGR_RESPOSTA timestamptz
+  CGR_PENDENTE bigint [note: 'Coluna gerada: ALU_ID quando PENDENTE']
+  indexes { (GRT_ID, CGR_PENDENTE) [unique] (ALU_ID, CGR_ENVIO) }
+}
+Ref: CGR_CONVITE_GRUPO.(GRT_ID, ACD_ID) > GRT_GRUPO_TREINO.(GRT_ID, ACD_ID)
+Ref: CGR_CONVITE_GRUPO.(ALU_ID, ACD_ID) > ALU_ALUNO.(ALU_ID, ACD_ID)
+Table TGR_TREINO_GRUPO {
+  TGR_ID bigint [pk, increment]
+  GRT_ID bigint [not null, ref: > GRT_GRUPO_TREINO.GRT_ID]
+  TGR_INICIO timestamptz [not null]
+  TGR_PRAZO timestamptz [not null, note: 'criação < prazo < início']
+  TGR_CRIACAO timestamptz [not null]
+  TGR_CANCELAMENTO timestamptz
+  indexes { (GRT_ID, TGR_INICIO) TGR_PRAZO }
+}
+Table CTR_CONVITE_TREINO {
+  CTR_ID bigint [pk, increment]
+  TGR_ID bigint [not null, ref: > TGR_TREINO_GRUPO.TGR_ID]
+  ALU_ID bigint [not null, ref: > ALU_ALUNO.ALU_ID]
+  CTR_SITUACAO varchar(12) [not null, note: 'PENDENTE, CONFIRMADO, RECUSADO, EXPIRADO, CANCELADO']
+  CTR_CRIACAO timestamptz [not null]
+  CTR_RESPOSTA timestamptz
+  CTR_CANCELAMENTO timestamptz
+  CTR_MOTIVO varchar(30)
+  indexes { (TGR_ID, ALU_ID) [unique] (ALU_ID, TGR_ID) (CTR_SITUACAO, TGR_ID) }
 }

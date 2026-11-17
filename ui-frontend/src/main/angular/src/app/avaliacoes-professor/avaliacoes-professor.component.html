@@ -1,0 +1,453 @@
+<main class="avaliacoes">
+  <header class="cabecalho">
+    <div>
+      <p class="sobretitulo">SUA EXPERIÊNCIA CONTA</p>
+      <h1>Avaliações</h1>
+      <p>Consulte seus treinos e avalie a experiência de cada aula.</p>
+    </div>
+    <span class="selo" aria-hidden="true">☆</span>
+  </header>
+  <nav class="abas" aria-label="Navegação das avaliações">
+    <a
+      routerLink="/core/treino/pesquisa"
+      routerLinkActive="selecionada"
+      ariaCurrentWhenActive="page"
+      >Histórico de treinos</a
+    >
+    <a
+      routerLink="/core/avaliacao-professor/pesquisa"
+      routerLinkActive="selecionada"
+      ariaCurrentWhenActive="page"
+      >Minhas avaliações</a
+    >
+    <a
+      routerLink="/core/professor/pesquisa"
+      routerLinkActive="selecionada"
+      ariaCurrentWhenActive="page"
+      >Quadro de professores</a
+    >
+  </nav>
+  @if (aviso()) {
+    <div role="status" class="aviso sucesso">{{ aviso() }}</div>
+  }
+  @if (erro()) {
+    <div role="alert" class="aviso erro" id="erro-avaliacao" tabindex="-1">{{ erro() }}</div>
+  }
+
+  @if (modo() === 'treinos') {
+    <div class="linha-titulo">
+      <div>
+        <h2>Histórico de treinos</h2>
+        <p>Avalie os treinos concluídos com seus professores.</p>
+      </div>
+      <span class="contagem">{{ dados().total }} treino(s)</span>
+    </div>
+    <p class="nota-contexto">
+      Datas e horários de Brasília. Cada treino pode receber uma avaliação, mesmo com o mesmo
+      professor.
+    </p>
+    @if (dados().demonstracaoDisponivel && !temDemonstracao()) {
+      <aside class="painel-demonstracao">
+        <div>
+          <strong>Experimente com treinos de demonstração</strong>
+          <p>
+            Exemplos identificados para testar o fluxo. Seus treinos reais também aparecem neste
+            histórico quando cadastrados pela academia.
+          </p>
+        </div>
+        <button
+          class="botao secundario"
+          type="button"
+          [disabled]="ocupado()"
+          (click)="carregarDemonstracao()"
+        >
+          {{ ocupado() ? 'Carregando…' : 'Carregar treinos de demonstração' }}
+        </button>
+      </aside>
+    }
+    <div class="historico-treinos">
+      @for (t of dados().treinos; track t.identificador) {
+        <article class="cartao treino" [attr.data-treino]="t.identificador">
+          <div>
+            <h3>{{ t.descricao }}</h3>
+            @if (t.demonstracao) {
+              <span class="demonstracao">Treino de demonstração</span>
+            } @else {
+              <span class="concluido">Concluído</span>
+            }
+          </div>
+          <dl>
+            <div>
+              <dt>Data</dt>
+              <dd>{{ t.inicio | date: 'dd/MM/yyyy' : '-0300' }}</dd>
+            </div>
+            <div>
+              <dt>Horário</dt>
+              <dd>
+                {{ t.inicio | date: 'HH:mm' : '-0300' }} – {{ t.termino | date: 'HH:mm' : '-0300' }}
+              </dd>
+            </div>
+            <div>
+              <dt>Professor</dt>
+              <dd>{{ t.professorNome }}</dd>
+            </div>
+          </dl>
+          @if (t.avaliacao) {
+            <a
+              class="botao secundario"
+              [routerLink]="['/core/avaliacao-professor', t.avaliacao, 'visualizacao']"
+              >Ver avaliação</a
+            >
+          } @else if (t.jaAvaliou) {
+            <span class="nota-contexto">Avaliação excluída</span>
+          } @else {
+            <a class="botao principal" [routerLink]="['/core/treino', t.identificador, 'avaliacao']"
+              >Avaliar treino</a
+            >
+          }
+        </article>
+      } @empty {
+        <section class="vazio">
+          <h3>Nenhum treino concluído</h3>
+          <p>
+            Os treinos registrados pela academia aparecerão aqui com data, horário, professor e a
+            opção de avaliar.
+          </p>
+        </section>
+      }
+    </div>
+  }
+  @if (modo() === 'minhas') {
+    <div class="linha-titulo">
+      <div>
+        <h2>Minhas avaliações</h2>
+        <p>Consulte e gerencie as avaliações que você realizou.</p>
+      </div>
+      <a class="botao principal" routerLink="/core/treino/pesquisa"
+        >Ver meus treinos <span aria-hidden="true">↗</span></a
+      >
+    </div>
+
+    <div class="grade">
+      @for (a of dados().avaliacoes; track a.identificador) {
+        <article class="cartao">
+          <div class="identificacao">
+            <span class="avatar">{{ iniciais(a.professorNome) }}</span>
+            <div>
+              <h3>{{ a.professorNome }}</h3>
+              <small>Avaliado em {{ a.criacao | date: 'dd/MM/yyyy' }}</small>
+              @if (a.treinoInicio) {
+                <p class="datas">
+                  Treino de {{ a.treinoInicio | date: 'dd/MM/yyyy HH:mm' : '-0300' }} (Brasília)
+                </p>
+              }
+            </div>
+          </div>
+          @if (a.demonstracao) {
+            <span class="demonstracao">Treino de demonstração</span>
+          }
+          <app-criterios [valores]="a.notas" />
+          <p class="comentario resumido">{{ a.comentario || 'Sem comentário.' }}</p>
+          <a
+            class="botao secundario amplo"
+            [routerLink]="['/core/avaliacao-professor', a.identificador, 'visualizacao']"
+            >Ver minha avaliação</a
+          >
+        </article>
+      } @empty {
+        <section class="vazio">
+          <span aria-hidden="true">☆</span>
+          <h3>Você ainda não tem avaliações</h3>
+          <p>Escolha um treino concluído no seu histórico para avaliar sua experiência.</p>
+          <a class="botao principal" routerLink="/core/treino/pesquisa">Ver meus treinos</a>
+        </section>
+      }
+    </div>
+  }
+  @if (modo() === 'professores') {
+    <div class="linha-titulo">
+      <div>
+        <h2>Quadro de professores</h2>
+        <p>Conheça os perfis e as avaliações dos alunos.</p>
+      </div>
+    </div>
+    <form class="busca" (ngSubmit)="pesquisar()">
+      <label for="busca-professor">Buscar por nome ou especialidade</label>
+      <div>
+        <input
+          id="busca-professor"
+          name="busca"
+          type="search"
+          maxlength="100"
+          placeholder="Quem você procura?"
+          [ngModel]="busca()"
+          (ngModelChange)="busca.set($event)"
+        /><button class="botao secundario" type="submit">Buscar</button>
+      </div>
+    </form>
+    <p class="contagem">{{ dados().total }} professor(es) encontrado(s)</p>
+    <div class="grade">
+      @for (p of dados().professores; track p.identificador) {
+        <article class="cartao professor">
+          <div class="identificacao">
+            <span class="avatar">{{ iniciais(p.nome) }}</span>
+            <div>
+              <h3>{{ p.nome }}</h3>
+              <small>{{ p.especialidade }}</small>
+            </div>
+          </div>
+          @if (p.demonstracao) {
+            <span class="demonstracao">Perfil de demonstração</span>
+          }
+          <div class="media">
+            <span aria-hidden="true">★</span
+            ><strong>{{
+              p.estatisticas.geral === null
+                ? 'Sem avaliações'
+                : (p.estatisticas.geral | number: '1.1-1') + ' / 5'
+            }}</strong>
+          </div>
+          <p>{{ p.estatisticas.quantidade }} avaliação(ões)</p>
+          <a
+            class="botao secundario amplo"
+            [routerLink]="['/core/professor', p.identificador, 'visualizacao']"
+            >Ver perfil de {{ p.nome }}</a
+          >
+        </article>
+      } @empty {
+        <section class="vazio">
+          <h3>Nenhum professor encontrado</h3>
+          <p>Tente outro nome ou especialidade.</p>
+        </section>
+      }
+    </div>
+  }
+  @if (
+    (modo() === 'treinos' || modo() === 'minhas' || modo() === 'professores') &&
+    ((dados().total ?? 0) > 9 || pagina() > 0)
+  ) {
+    <nav class="paginacao" aria-label="Paginação">
+      <button
+        class="botao secundario"
+        type="button"
+        [disabled]="pagina() === 0"
+        (click)="mudarPagina(pagina() - 1)"
+      >
+        Anterior</button
+      ><span>Página {{ pagina() + 1 }}</span
+      ><button
+        class="botao secundario"
+        type="button"
+        [disabled]="(pagina() + 1) * 9 >= (dados().total ?? 0)"
+        (click)="mudarPagina(pagina() + 1)"
+      >
+        Próxima
+      </button>
+    </nav>
+  }
+
+  @if (modo() === 'perfil') {
+    @if (dados().perfil; as perfil) {
+      <a class="voltar" routerLink="/core/professor/pesquisa">← Quadro de professores</a>
+      <section class="cartao perfil-cabecalho">
+        <div class="identificacao">
+          <span class="avatar grande">{{ iniciais(perfil.professor.nome) }}</span>
+          <div>
+            <h2>{{ perfil.professor.nome }}</h2>
+            <p>{{ perfil.professor.especialidade }}</p>
+            @if (perfil.professor.demonstracao) {
+              <span class="demonstracao">Perfil de demonstração</span>
+            }
+          </div>
+        </div>
+        <p class="biografia">{{ perfil.professor.biografia }}</p>
+        <p class="nota-contexto">
+          As avaliações são feitas a partir dos treinos concluídos no seu histórico.
+        </p>
+        <a class="botao secundario" routerLink="/core/treino/pesquisa">Ver meus treinos</a>
+      </section>
+      <div class="duas-colunas">
+        <section class="cartao">
+          <h2>Visão geral</h2>
+          <div class="pontuacao">
+            <span aria-hidden="true">★</span
+            ><strong>{{
+              perfil.professor.estatisticas.geral === null
+                ? 'Sem avaliações'
+                : (perfil.professor.estatisticas.geral | number: '1.1-1')
+            }}</strong>
+            @if (perfil.professor.estatisticas.geral !== null) {
+              <span>de 5</span>
+            }
+          </div>
+          <p>{{ perfil.professor.estatisticas.quantidade }} avaliação(ões)</p>
+          <p class="nota-contexto">A média considera igualmente os cinco critérios.</p>
+        </section>
+        <section class="cartao">
+          <h2>Média por critério</h2>
+          <app-criterios [valores]="perfil.professor.estatisticas" /><small
+            >Em adequação, uma nota maior indica dificuldade mais adequada ao aluno.</small
+          >
+        </section>
+      </div>
+      <section class="recentes">
+        <div class="linha-titulo">
+          <div>
+            <h2>Avaliações recentes</h2>
+            <p>Até dez avaliações, ordenadas pela data de criação.</p>
+          </div>
+        </div>
+        @for (a of perfil.recentes; track a.identificador) {
+          <article class="cartao recente">
+            <div class="identificacao">
+              <span class="avatar pequeno">{{ iniciais(a.alunoNome) }}</span>
+              <div>
+                <h3>
+                  {{ a.alunoNome }}
+                  @if (a.propria) {
+                    <small>· Você</small>
+                  }
+                </h3>
+                <small
+                  >{{ a.criacao | date: 'dd/MM/yyyy HH:mm' }}
+                  @if (a.atualizacao !== a.criacao) {
+                    · Editada em {{ a.atualizacao | date: 'dd/MM/yyyy HH:mm' }}
+                  }
+                </small>
+              </div>
+            </div>
+            <p class="comentario">{{ a.comentario || 'Sem comentário.' }}</p>
+            <details>
+              <summary>Ver notas por critério</summary>
+              <app-criterios [valores]="a.notas" />
+            </details>
+          </article>
+        } @empty {
+          <div class="vazio">
+            <h3>Sem avaliações</h3>
+            <p>As avaliações aparecerão aqui quando forem registradas.</p>
+          </div>
+        }
+      </section>
+    }
+  }
+
+  @if (modo() === 'nova' || modo() === 'editar') {
+    <a class="voltar" routerLink="/core/treino/pesquisa">← Histórico de treinos</a>
+    <section class="cartao formulario">
+      <p class="sobretitulo">SUA OPINIÃO FAZ A DIFERENÇA</p>
+      <h2>{{ modo() === 'editar' ? 'Editar avaliação' : 'Avaliar treino' }}</h2>
+      <h3>{{ dados().treino?.professorNome ?? dados().avaliacao?.professorNome }}</h3>
+      <p class="datas">
+        @if (dados().treino; as t) {
+          {{ t.descricao }} · {{ t.inicio | date: 'dd/MM/yyyy HH:mm' : '-0300' }} (Brasília)
+        } @else if (dados().avaliacao?.treinoInicio; as inicio) {
+          Treino de {{ inicio | date: 'dd/MM/yyyy HH:mm' : '-0300' }} (Brasília)
+        }
+      </p>
+      @if (dados().treino?.demonstracao || dados().avaliacao?.demonstracao) {
+        <span class="demonstracao">Treino de demonstração</span>
+      }
+      @if (modo() === 'nova' && dados().treino?.jaAvaliou) {
+        <p role="status">Você já avaliou este treino.</p>
+        @if (dados().treino?.avaliacao; as id) {
+          <a
+            class="botao principal"
+            [routerLink]="['/core/avaliacao-professor', id, 'visualizacao']"
+            >Ver minha avaliação</a
+          >
+        } @else {
+          <p>A avaliação foi excluída e não pode ser cadastrada novamente.</p>
+        }
+      } @else {
+        <p class="instrucao">
+          Selecione uma nota de 0 a 5 para cada critério. Todos os cinco critérios são obrigatórios.
+        </p>
+        <form (ngSubmit)="salvar()" novalidate>
+          <app-criterios
+            [valores]="notas()"
+            [editavel]="true"
+            [ocupado]="ocupado()"
+            [erros]="erros()"
+            (escolher)="escolher($event)"
+          />
+          <label class="rotulo-comentario" for="comentario"
+            >Comentário <small>(opcional)</small></label
+          >
+          <textarea
+            id="comentario"
+            name="comentario"
+            rows="4"
+            maxlength="500"
+            placeholder="Conte um pouco sobre sua experiência..."
+            [disabled]="ocupado()"
+            [ngModel]="comentario()"
+            (ngModelChange)="escreverComentario($event)"
+            aria-describedby="limite-comentario erro-comentario"
+          ></textarea>
+          <div class="contador" id="limite-comentario">
+            {{ comentario().length }}/500 caracteres
+          </div>
+          <p class="erro" id="erro-comentario">{{ erros()['comentario'] }}</p>
+          <p class="nota-contexto">
+            Você pode editar sua avaliação depois de salvar. Ao excluí-la, não poderá criar outra
+            para este treino.
+          </p>
+          <div class="acoes">
+            <a class="botao secundario" routerLink="/core/treino/pesquisa">Cancelar</a
+            ><button class="botao principal" type="submit" [disabled]="ocupado()">
+              {{ ocupado() ? 'Salvando…' : 'Salvar avaliação' }}
+            </button>
+          </div>
+        </form>
+      }
+    </section>
+  }
+
+  @if (modo() === 'minha') {
+    @if (dados().avaliacao; as a) {
+      <a class="voltar" routerLink="/core/avaliacao-professor/pesquisa">← Minhas avaliações</a>
+      <section class="cartao formulario">
+        <p class="sobretitulo">SUA EXPERIÊNCIA REGISTRADA</p>
+        <h2>Minha avaliação</h2>
+        <div class="identificacao">
+          <span class="avatar">{{ iniciais(a.professorNome) }}</span>
+          <div>
+            <h3>{{ a.professorNome }}</h3>
+            <a class="link" [routerLink]="['/core/professor', a.professor, 'visualizacao']"
+              >Ver perfil</a
+            >
+          </div>
+        </div>
+        <p class="datas">
+          @if (a.treinoInicio) {
+            Treino de {{ a.treinoInicio | date: 'dd/MM/yyyy HH:mm' : '-0300' }} (Brasília)
+          } @else {
+            Avaliação anterior ao histórico de treinos.
+          }
+        </p>
+        @if (a.demonstracao) {
+          <span class="demonstracao">Treino de demonstração</span>
+        }
+        <p class="datas">
+          Criada em {{ a.criacao | date: 'dd/MM/yyyy HH:mm' }}
+          @if (a.atualizacao !== a.criacao) {
+            <br />Atualizada em {{ a.atualizacao | date: 'dd/MM/yyyy HH:mm' }}
+          }
+        </p>
+        <app-criterios [valores]="a.notas" />
+        <h3 class="titulo-comentario">Seu comentário</h3>
+        <p class="comentario">{{ a.comentario || 'Sem comentário.' }}</p>
+        <div class="acoes">
+          <button class="botao perigo" type="button" [disabled]="ocupado()" (click)="excluir()">
+            {{ ocupado() ? 'Excluindo…' : 'Excluir avaliação' }}</button
+          ><a
+            class="botao principal"
+            [routerLink]="['/core/avaliacao-professor', a.identificador, 'edicao']"
+            >Editar avaliação</a
+          >
+        </div>
+      </section>
+    }
+  }
+</main>

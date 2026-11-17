@@ -46,6 +46,7 @@ class ReservasIntegracaoTest {
     static final String RSV="/backend/core/reserva-armario/";
 
     @BeforeEach void preparar() {
+        br.edu.cesar.treinoconecta.treinoconectacore.ui.backend.LimpezaBanco.limparDependentes(banco);
         mvc=MockMvcBuilders.webAppContextSetup(contexto).apply(springSecurity()).build();
         banco.update("delete from RSV_RESERVA_ARMARIO");banco.update("delete from USU_CREDENCIAL");
         banco.update("delete from ALU_ALUNO");banco.update("delete from ARM_ARMARIO");

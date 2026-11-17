@@ -1,5 +1,6 @@
 package br.edu.cesar.treinoconecta.treinoconectacore.infraestrutura.core.meta;
 
+import br.edu.cesar.treinoconecta.treinoconectacore.infraestrutura.core.aluno.AlunoJpaTeste;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -30,6 +31,8 @@ import br.edu.cesar.treinoconecta.treinoconectacore.infraestrutura.core.personal
 
 @DataJpaTest
 class MetaRepositorioTest {
+    @org.springframework.beans.factory.annotation.Autowired
+    private jakarta.persistence.EntityManager emAluno;
     private static final LocalDate INICIO = LocalDate.parse("2026-11-01");
     private static final LocalDate FIM = LocalDate.parse("2026-12-31");
 
@@ -53,7 +56,7 @@ class MetaRepositorioTest {
     @BeforeEach
     void configurar() {
         repositorio = new MetaRepositorio(repositorioJpa, alunosJpa, personaisJpa, avaliacoesJpa);
-        alunoJpa = alunosJpa.save(new AlunoJpa(null, "u", "Aluno"));
+        alunoJpa = alunosJpa.save(AlunoJpaTeste.novo(emAluno, "u", "Aluno"));
         personalJpa = personaisJpa.save(new PersonalJpa(null, "p", "Personal"));
         aluno = new AlunoIdentificador(alunoJpa.getIdentificador().toString());
         personal = new PersonalIdentificador(personalJpa.getIdentificador().toString());

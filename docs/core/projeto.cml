@@ -8,11 +8,91 @@ ContextMap {
 
 BoundedContext ^core implements ^core {
 	Module ^core {
+        Aggregate Academia {
+            Entity Academia { aggregateRoot -AcademiaIdentificador identificador key String nome }
+            ValueObject AcademiaIdentificador { String valor }
+        }
+        Aggregate GrupoTreino {
+            Entity GrupoTreino {
+                aggregateRoot
+                -GrupoTreinoIdentificador identificador key
+                -NomeGrupo nome
+                -AlunoIdentificador organizador
+                -AcademiaIdentificador academia
+                DateTime criacao
+                DateTime encerramento nullable
+                -ParticipacaoGrupo participacoes
+                -ConviteGrupo convites
+                -TreinoGrupo treinos
+                def void renomear(@AlunoIdentificador autor, @NomeGrupo nome);
+                def void convidar(@AlunoIdentificador autor, @Aluno destinatario, DateTime agora);
+                def void responderConvite(long convite, @Aluno autor, boolean aceitar, DateTime agora);
+                def void propor(@AlunoIdentificador autor, DateTime inicio, DateTime prazo, DateTime agora);
+                def void sair(@AlunoIdentificador autor, DateTime agora);
+                def void encerrar(@AlunoIdentificador autor, DateTime agora);
+                def void expirar(DateTime agora);
+                Repository GrupoTreinoRepository {
+                    @GrupoTreino bloquear(@GrupoTreinoIdentificador identificador);
+                    @GrupoTreino incluir(@GrupoTreino grupo);
+                    void alterar(@GrupoTreino grupo);
+                }
+            }
+            ValueObject GrupoTreinoIdentificador { String valor }
+            ValueObject NomeGrupo { String valor }
+            Entity ParticipacaoGrupo {
+                long identificador key
+                -AlunoIdentificador aluno
+                DateTime entrada
+                DateTime saida nullable
+                def @ParticipacaoGrupo sair(DateTime agora);
+            }
+            Entity ConviteGrupo {
+                long identificador key
+                -AlunoIdentificador aluno
+                -SituacaoConviteGrupo situacao
+                DateTime envio
+                DateTime resposta nullable
+                def @ConviteGrupo responder(@AlunoIdentificador autor, boolean aceitar, DateTime agora);
+                def @ConviteGrupo cancelar(DateTime agora);
+            }
+            Entity TreinoGrupo {
+                long identificador key
+                DateTime inicio
+                DateTime prazo
+                DateTime criacao
+                DateTime cancelamento nullable
+                -ConviteTreino convites
+                def @TreinoGrupo cancelar(DateTime agora);
+                def @TreinoGrupo expirar(DateTime agora);
+            }
+            Entity ConviteTreino {
+                long identificador key
+                -AlunoIdentificador aluno
+                -SituacaoConviteTreino situacao
+                DateTime criacao
+                DateTime resposta nullable
+                DateTime cancelamento nullable
+                String motivo nullable
+                def @ConviteTreino responder(@AlunoIdentificador autor, boolean confirmar, DateTime prazo, DateTime agora);
+                def @ConviteTreino cancelarPresenca(@AlunoIdentificador autor, DateTime inicio, DateTime agora);
+            }
+            enum SituacaoConviteGrupo { PENDENTE, ACEITO, RECUSADO, CANCELADO }
+            enum SituacaoConviteTreino { PENDENTE, CONFIRMADO, RECUSADO, EXPIRADO, CANCELADO }
+            Service GrupoTreinoServico {
+                @GrupoTreino criar(@NomeGrupo nome);
+                void renomear(@GrupoTreinoIdentificador identificador, @NomeGrupo nome);
+                void convidar(@GrupoTreinoIdentificador identificador, @AlunoIdentificador destinatario);
+                void propor(@GrupoTreinoIdentificador identificador, DateTime inicio, DateTime prazo);
+                void sair(@GrupoTreinoIdentificador identificador);
+                void encerrar(@GrupoTreinoIdentificador identificador);
+            }
+        }
 		Aggregate Aluno {
 			Entity Aluno {
 				aggregateRoot
 				-AlunoIdentificador identificador key
 				String usuario
+                -AcademiaIdentificador academia
 				String nome
 				Repository AlunoRepository {
 					boolean existePorUsuario(String usuario);
@@ -26,6 +106,70 @@ BoundedContext ^core implements ^core {
 				@Aluno cadastrar(String nome, String usuario, String senha, String confirmacaoSenha);
 			}
 		}
+        Aggregate Professor {
+            Entity Professor {
+                aggregateRoot
+                -ProfessorIdentificador identificador key
+                String nome
+                String especialidade
+                String biografia
+                boolean demonstracao
+                Repository ProfessorRepository { @Professor buscarPorIdentificador(@ProfessorIdentificador identificador); }
+            }
+            ValueObject ProfessorIdentificador { String valor }
+            Service ProfessorServico { @Professor buscar(@ProfessorIdentificador identificador); }
+        }
+        Aggregate Treino {
+            Entity Treino {
+                aggregateRoot
+                -TreinoIdentificador identificador key
+                -AlunoIdentificador aluno
+                -ProfessorIdentificador professor
+                String descricao
+                DateTime inicio
+                DateTime termino
+                boolean concluido
+                boolean demonstracao
+                def void exigirAluno(@AlunoIdentificador autor);
+                def void exigirAvaliavel(@AlunoIdentificador autor, DateTime agora);
+                Repository TreinoRepository {
+                    @Treino buscarPorIdentificador(@TreinoIdentificador identificador);
+                    @Treino bloquear(@TreinoIdentificador identificador);
+                }
+            }
+            ValueObject TreinoIdentificador { String valor }
+            Service TreinoServico { @Treino buscar(@TreinoIdentificador identificador); }
+        }
+        Aggregate AvaliacaoProfessor {
+            Entity AvaliacaoProfessor {
+                aggregateRoot
+                -AvaliacaoProfessorIdentificador identificador key
+                -AlunoIdentificador aluno
+                -ProfessorIdentificador professor
+                -TreinoIdentificador treino nullable
+                -NotasAvaliacao notas
+                String comentario nullable
+                DateTime criacao
+                DateTime atualizacao
+                def @AvaliacaoProfessor editar(@AlunoIdentificador autor, @NotasAvaliacao notas, String comentario, DateTime agora);
+                def void exigirAutor(@AlunoIdentificador autor);
+                Repository AvaliacaoProfessorRepository {
+                    @AvaliacaoProfessor incluir(@AvaliacaoProfessor avaliacao);
+                    void alterar(@AvaliacaoProfessor avaliacao);
+                    void excluir(@AvaliacaoProfessorIdentificador identificador);
+                    @AvaliacaoProfessor bloquear(@AvaliacaoProfessorIdentificador identificador);
+                    boolean jaAvaliou(@TreinoIdentificador treino);
+                    void registrarParticipacao(@TreinoIdentificador treino);
+                }
+            }
+            ValueObject AvaliacaoProfessorIdentificador { String valor }
+            ValueObject NotasAvaliacao { int auxilio int pontualidade int postura int didatica int adequacao }
+            Service AvaliacaoProfessorServico {
+                @AvaliacaoProfessor avaliar(@TreinoIdentificador treino, @NotasAvaliacao notas, String comentario);
+                @AvaliacaoProfessor editar(@AvaliacaoProfessorIdentificador identificador, @NotasAvaliacao notas, String comentario);
+                void remover(@AvaliacaoProfessorIdentificador identificador);
+            }
+        }
 		Aggregate Armario {
 			Entity Armario {
 				aggregateRoot

@@ -7,6 +7,9 @@ import java.time.ZoneId;
 public final class ParametrosAcademia {
     public static final ZoneId FUSO = ZoneId.of("America/Sao_Paulo");
 
+    /** O prazo de confirmação de um treino de grupo termina automaticamente uma hora antes do início. */
+    public static final int ANTECEDENCIA_CONFIRMACAO_SEGUNDOS = 3600;
+
     public static final int INTERVALO_MINIMO_SEGUNDOS = 15;
     public static final int INTERVALO_MAXIMO_SEGUNDOS = 300;
 

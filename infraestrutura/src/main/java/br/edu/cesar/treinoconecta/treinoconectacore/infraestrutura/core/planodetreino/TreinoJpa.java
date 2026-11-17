@@ -9,7 +9,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import org.jspecify.annotations.Nullable;
 
-@Entity @Table(name="TRE_TREINO")
+@Entity(name="TreinoDoPlanoJpa") @Table(name="TRE_TREINO")
 public class TreinoJpa {
     @Id @GeneratedValue(strategy=GenerationType.IDENTITY) @Column(name="TRE_ID")
     private @Nullable Long identificador;

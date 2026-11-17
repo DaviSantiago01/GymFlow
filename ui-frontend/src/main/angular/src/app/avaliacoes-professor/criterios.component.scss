@@ -1,0 +1,94 @@
+fieldset {
+  margin: 0 0 1.4rem;
+  padding: 0;
+  border: 0;
+}
+legend {
+  font-size: 0.95rem;
+  font-weight: 600;
+  margin-bottom: 0.65rem;
+}
+legend span {
+  color: #c5ff78;
+}
+.notas {
+  display: flex;
+  gap: 0.55rem;
+}
+.notas label {
+  position: relative;
+  cursor: pointer;
+  flex: 1;
+  max-width: 65px;
+}
+.notas input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+.notas span {
+  display: grid;
+  place-items: center;
+  border: 1px solid #475345;
+  border-radius: 9px;
+  height: 43px;
+  background: #111923;
+}
+.escolhida span {
+  background: #c5ff78;
+  color: #17210e;
+  font-weight: 700;
+  border-color: #c5ff78;
+}
+input:focus-visible + span {
+  outline: 2px solid white;
+  outline-offset: 3px;
+}
+input:disabled + span {
+  opacity: 0.6;
+}
+.ajuda {
+  font-size: 0.8rem;
+  color: #adb7c6;
+  margin: -0.2rem 0 0.6rem;
+}
+.erro {
+  color: #ffb4b4;
+  font-size: 0.85rem;
+  margin: 0.5rem 0 0;
+}
+.criterio {
+  margin: 1rem 0;
+}
+.rotulo {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.85rem;
+}
+.rotulo strong {
+  white-space: nowrap;
+  color: #c5ff78;
+}
+progress {
+  width: 100%;
+  height: 7px;
+  border: 0;
+  border-radius: 6px;
+  background: #344032;
+  overflow: hidden;
+  accent-color: #c5ff78;
+}
+progress::-webkit-progress-bar {
+  background: #344032;
+}
+progress::-webkit-progress-value {
+  background: #c5ff78;
+  border-radius: 6px;
+}
+progress::-moz-progress-bar {
+  background: #c5ff78;
+}

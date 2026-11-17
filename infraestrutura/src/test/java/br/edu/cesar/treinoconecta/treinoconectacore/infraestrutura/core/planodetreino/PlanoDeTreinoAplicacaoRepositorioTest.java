@@ -1,5 +1,6 @@
 package br.edu.cesar.treinoconecta.treinoconectacore.infraestrutura.core.planodetreino;
 
+import br.edu.cesar.treinoconecta.treinoconectacore.infraestrutura.core.aluno.AlunoJpaTeste;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -40,6 +41,8 @@ import dev.sauloaraujo.d5.framework.dominio.spi.ISegurancaServico;
 
 @DataJpaTest
 class PlanoDeTreinoAplicacaoRepositorioTest {
+    @org.springframework.beans.factory.annotation.Autowired
+    private jakarta.persistence.EntityManager emAluno;
     private static final Instant AGORA = Instant.parse("2026-11-09T12:00:00Z");
 
     @Autowired
@@ -72,7 +75,7 @@ class PlanoDeTreinoAplicacaoRepositorioTest {
     }
 
     private AlunoIdentificador criarAluno(String usuario, String nome) {
-        return new AlunoIdentificador(alunosJpa.save(new AlunoJpa(null, usuario, nome)).getIdentificador().toString());
+        return new AlunoIdentificador(alunosJpa.save(AlunoJpaTeste.novo(emAluno, usuario, nome)).getIdentificador().toString());
     }
 
     private PlanoDeTreinoIdentificador incluir(AlunoIdentificador aluno, String nome, SituacaoPlano situacao) {

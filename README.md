@@ -1,6 +1,6 @@
-# Treino Conecta — Reservas de armários
+# Treino Conecta — Armários, avaliações e grupos de treino
 
-Implementação de F001 sobre o projeto D5 fornecido, preservando os seis módulos
+Implementação de reservas de armários, cadastro, avaliações e grupos de treino sobre o projeto D5 fornecido, preservando os seis módulos
 Maven, Spring Boot, Angular, autenticação por sessão e convenções de domínio.
 O projeto original foi extraído de `treinoconectacore.zip`; `GymFlow` não foi alterado.
 
@@ -32,16 +32,27 @@ npm start -- --host 127.0.0.1
 Abra **http://127.0.0.1:4200**. A API escuta em **http://localhost:8080**.
 O proxy Angular mantém as chamadas na mesma origem, incluindo sessão e CSRF.
 Após o login, `/inicio` apresenta uma tela minimalista com atalhos para os recursos
-existentes e menu lateral. **Marcar aula** e **Grupos de treino** são itens
-ilustrativos desabilitados. Armários, reserva ativa e histórico continuam funcionais.
+existentes e menu lateral. **Marcar aula** permanece ilustrativo. **Grupos de treino**
+permite criar grupos, convidar colegas, propor encontros, responder presença e consultar histórico.
+Veja o [relatório dos grupos](docs/validacao/GRUPOS.md) e o [contrato HTTP](docs/core/api-grupos.md).
+Armários, reserva ativa e histórico continuam funcionais.
+A aba **Avaliações** abre o histórico de treinos com data, horário, professor e
+Avaliar treino. Há uma avaliação por treino concluído do aluno, com edição,
+exclusão, médias e avaliações recentes calculadas no banco. Consulte a
+[atualização do histórico](docs/validacao/TREINOS.md).
+Minha reserva e Histórico de reservas ficam somente dentro da área **Armários**.
+Veja o [relatório completo das avaliações](docs/validacao/AVALIACOES.md) e o
+[contrato HTTP](docs/core/api-avaliacoes.md).
 No celular, o botão **Abrir menu** exibe a navegação, que fecha ao selecionar uma página.
 Para criar sua própria conta, abra **http://127.0.0.1:4200/cadastro** ou clique em
 **Criar minha conta** na tela de login. Preencha nome, usuário, senha e confirmação;
 depois entre com a conta criada. Os dados são persistidos no mesmo banco e o novo
-aluno já pode reservar armários. Consulte [as regras do cadastro](docs/core/funcionalidades/F002-cadastro.md).
+aluno já pode reservar armários, participar de grupos e avaliar seus treinos concluídos. Consulte [as regras do cadastro](docs/core/funcionalidades/F002-cadastro.md).
 Contas exclusivas de desenvolvimento: **u / u** (Mariana Costa) e **v / v**
 (Pedro Silva). Seis armários A-01 a A-06 são inseridos uma única vez no banco.
 Esses são registros persistidos, consumidos pelos endpoints reais.
+Há três professores identificados como **Perfil de demonstração** apenas em
+desenvolvimento. Não são criadas avaliações ou médias fictícias.
 
 O banco H2 em arquivo fica em `data/treino-conecta.mv.db`, relativo ao diretório
 de execução do backend. Execute o JAR sempre na raiz do projeto para reutilizar os
@@ -51,6 +62,10 @@ As migrações **Flyway são aplicadas automaticamente na inicialização**. O a
 `infraestrutura/src/main/resources/db/migration/V1__armarios_e_reservas.sql` cria
 as tabelas e restrições. `V2__reservas_por_horario.sql` adiciona o início agendado,
 preserva reservas antigas e permite diferentes períodos no mesmo armário.
+`V4__avaliacoes_professores.sql` acrescenta professores, avaliações e o registro
+mínimo do par aluno-professor, sem modificar os dados das reservas.
+`V5__avaliacoes_por_treino.sql` vincula avaliações ao treino;
+`V6__grupos_treino.sql` acrescenta academia, grupos, participações, convites e encontros, preservando os dados existentes.
 Hibernate apenas valida o esquema (`ddl-auto=validate`).
 Para aplicar as migrações, execute o backend com o comando acima. Não é necessário
 um comando Flyway separado nem alteração manual de esquema.
@@ -64,11 +79,11 @@ aos comandos Maven executados na raiz. Em outra máquina, o repositório padrão
 | Módulo | Implementação |
 |---|---|
 | `dominio-compartilhado` | Papéis existentes do D5, preservados |
-| `dominio-core` | Agregados `Aluno`, `Armario`, `ReservaArmario`, identificadores, serviços e SPIs |
+| `dominio-core` | Agregados `Aluno`, `Armario`, `ReservaArmario`, `Professor`, `AvaliacaoProfessor`, `Treino`, `Academia`, `GrupoTreino`, identificadores, serviços e SPIs |
 | `aplicacao` | Projeções, consultas paginadas, serviços CQRS e respostas com horário do servidor |
 | `infraestrutura` | Entidades espelho JPA, repositórios, mapeamento explícito, Flyway e agendamento |
 | `ui-backend` | Controladores D5, comandos específicos, sessão/CSRF e credenciais persistidas |
-| `ui-frontend` | Angular 22, Bootstrap, resolvedores, filtros, cinco telas e testes de navegador |
+| `ui-frontend` | Angular 22, Bootstrap, resolvedores, filtros, telas de armários/avaliações/grupos e testes de navegador |
 
 `Aluno 1 → N ReservaArmario N ← 1 Armario`. No domínio as associações usam os
 identificadores dos agregados; no JPA são chaves estrangeiras `ManyToOne`.
@@ -150,8 +165,11 @@ npm run build
 npm run test:e2e
 ```
 
+A validação atual está em [GRUPOS.md](docs/validacao/GRUPOS.md):
+180 testes Java, 15 Angular e 11 fluxos de navegador aprovados.
+
 Os testes Java usam H2 isolado em memória e as migrações reais. Cobrem todos os
-12 casos solicitados, incluindo concorrência em conexões/transações separadas,
+casos solicitados nas três funcionalidades, incluindo concorrência em conexões/transações separadas,
 restrições diretas do banco, rollback, CSRF, login real e o agendador sem HTTP.
 Os testes de navegador criam contas próprias e reservas futuras e as cancelam;
 o histórico desses testes permanece no banco de desenvolvimento.
@@ -166,7 +184,7 @@ O perfil `producao` exige `TREINO_BANCO_URL`, `TREINO_BANCO_USUARIO` e
 `TREINO_BANCO_SENHA`, ativa cookies Secure e deve ser servido por HTTPS.
 As contas de demonstração não são criadas nesse perfil, mesmo que desenvolvimento
 seja ativado junto. Os alunos podem criar suas próprias contas pela tela de cadastro;
-o inventário de armários deve ser provisionado pela academia. Não existe tela de
+o inventário de armários e os perfis reais dos professores devem ser provisionados pela academia. Não existe tela de
 administração de usuários neste escopo.
 
 Foi validado H2, o banco fornecido pelo D5. As colunas geradas da migração são
@@ -180,9 +198,28 @@ do agendador (normalmente até um segundo). Durante uma parada da aplicação n�
 processo em execução; na retomada o agendador recupera vencimentos pendentes.
 
 PIN, sensores e abertura física ilustrados no PDF dependem de equipamento e estão
-fora das quatro regras solicitadas. A reserva é imediata, sem agenda futura.
+fora das quatro regras solicitadas. As reservas permitem escolher data, horário e duração de 1 a 3 horas.
 
 Referências técnicas consultadas: [fontes D5 incluídas](.agents/d5/framework),
 [agendamento Spring](https://docs.spring.io/spring-framework/reference/integration/scheduling.html),
 [H2](https://h2database.com/html/advanced.html), [HTTP Angular](https://angular.dev/guide/http/making-requests)
 e [sintaxe Context Mapper](https://contextmapper.org/docs/tactic-ddd/).
+
+## Regra de avaliação e exclusão
+
+Cada aluno mantém uma avaliação por treino concluído, com cinco notas inteiras de 0 a 5
+e comentário opcional de até 500 caracteres. Somente o autor edita ou exclui.
+As médias são calculadas dos registros existentes; sem registros, aparece
+“Sem avaliações”. As dez recentes são ordenadas pela criação.
+
+A divergência da RN03 foi documentada em
+[F003-avaliacoes.md](docs/core/funcionalidades/F003-avaliacoes.md): foi seguida a
+regra esclarecida pelo usuário: uma avaliação por treino, inclusive quando o
+professor é o mesmo em outros treinos. A V5 substitui a decisão inicial da V4.
+Após exclusão, notas e comentário são apagados, mas o vínculo com o treino é preservado para
+impedir recriação, conforme a interpretação conservadora explicada na interface.
+O histórico é a entrada das avaliações; avaliar diretamente pelo professor não é permitido.
+As contas u/u e v/v têm treinos de demonstração identificados. Contas novas podem
+carregar os exemplos pelo botão no histórico, somente em desenvolvimento.
+Treinos reais são suportados pela mesma persistência; veja
+[como cadastrá-los por integração administrativa](docs/core/treinos-reais.md).

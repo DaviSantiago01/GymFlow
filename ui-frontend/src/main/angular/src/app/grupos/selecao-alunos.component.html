@@ -1,0 +1,58 @@
+<fieldset class="selecao" [disabled]="bloqueado()">
+  <legend>Convidar pelo nome de usuário</legend>
+  <p>
+    Informe o usuário exato que a outra pessoa usa para entrar no site. A conta deve pertencer à
+    mesma academia.
+  </p>
+  <div class="linha">
+    <label class="crescer"
+      >Nome de usuário<input
+        type="search"
+        [(ngModel)]="busca"
+        [ngModelOptions]="{ standalone: true }"
+        maxlength="100"
+        autocomplete="off"
+        (keydown.enter)="$event.preventDefault(); carregar(0)"
+    /></label>
+    <button class="botao secundario" type="button" (click)="carregar(0)" [disabled]="carregando()">
+      Buscar usuário
+    </button>
+  </div>
+  @if (erro()) {
+    <p role="alert" class="erro">{{ erro() }}</p>
+  }
+  @if (carregando()) {
+    <p role="status">Buscando usuário…</p>
+  } @else if (pesquisado()) {
+    <div class="opcoes">
+      @for (a of lista().itens; track a.identificador) {
+        <label class="opcao"
+          ><input type="checkbox" [checked]="marcado(a.identificador)" (change)="escolher(a)" />{{
+            a.usuario
+          }}
+          · {{ a.nome }}</label
+        >
+      } @empty {
+        <p>
+          Nenhuma conta disponível com esse usuário. Confira se ele está correto e pertence à mesma
+          academia. Quem já participa ou tem convite pendente não aparece nesta busca.
+        </p>
+      }
+    </div>
+  }
+  @if (escolhidos().length) {
+    <p>
+      Selecionados:
+      @for (a of escolhidos(); track a.identificador) {
+        <button
+          class="etiqueta"
+          type="button"
+          (click)="escolher(a)"
+          [attr.aria-label]="'Remover ' + a.usuario"
+        >
+          {{ a.usuario }} ×
+        </button>
+      }
+    </p>
+  }
+</fieldset>

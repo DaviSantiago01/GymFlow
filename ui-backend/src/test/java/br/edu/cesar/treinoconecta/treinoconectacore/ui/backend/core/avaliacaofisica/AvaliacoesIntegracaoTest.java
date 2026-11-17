@@ -46,6 +46,7 @@ class AvaliacoesIntegracaoTest {
 
     @BeforeEach
     void preparar() {
+        br.edu.cesar.treinoconecta.treinoconectacore.ui.backend.LimpezaBanco.limparDependentes(banco);
         mvc = MockMvcBuilders.webAppContextSetup(contexto).apply(springSecurity()).build();
         for (var tabela : new String[] {"MET_META", "MDC_MEDIDA_CORPORAL", "AVF_AVALIACAO_FISICA", "EXC_EXECUCAO_EXERCICIO",
                 "SRE_SERIE", "TRE_TREINO", "PLT_PLANO_TREINO", "PCD_CREDENCIAL_PERSONAL", "PER_PERSONAL", "ALU_ALUNO"}) {

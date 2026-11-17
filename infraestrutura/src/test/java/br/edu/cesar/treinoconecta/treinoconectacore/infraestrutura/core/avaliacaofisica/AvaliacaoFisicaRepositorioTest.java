@@ -1,5 +1,6 @@
 package br.edu.cesar.treinoconecta.treinoconectacore.infraestrutura.core.avaliacaofisica;
 
+import br.edu.cesar.treinoconecta.treinoconectacore.infraestrutura.core.aluno.AlunoJpaTeste;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -28,6 +29,8 @@ import br.edu.cesar.treinoconecta.treinoconectacore.infraestrutura.core.personal
 
 @DataJpaTest
 class AvaliacaoFisicaRepositorioTest {
+    @org.springframework.beans.factory.annotation.Autowired
+    private jakarta.persistence.EntityManager emAluno;
     private static final Instant AGORA = Instant.parse("2026-11-09T12:00:00Z");
     private static final LocalDate DATA = LocalDate.parse("2026-11-01");
 
@@ -46,7 +49,7 @@ class AvaliacaoFisicaRepositorioTest {
     @BeforeEach
     void configurar() {
         repositorio = new AvaliacaoFisicaRepositorio(repositorioJpa, alunosJpa, personaisJpa);
-        aluno = new AlunoIdentificador(alunosJpa.save(new AlunoJpa(null, "u", "Aluno")).getIdentificador().toString());
+        aluno = new AlunoIdentificador(alunosJpa.save(AlunoJpaTeste.novo(emAluno, "u", "Aluno")).getIdentificador().toString());
         personal = new PersonalIdentificador(personaisJpa.save(new PersonalJpa(null, "p", "Personal")).getIdentificador().toString());
     }
 

@@ -1,0 +1,81 @@
+@let t = treino();
+<article class="cartao treino" [class.cancelado]="t.cancelamento">
+  <div class="linha entre">
+    <strong>{{ t.grupoNome }}</strong
+    ><span class="etiqueta">{{
+      t.cancelamento ? 'Treino cancelado' : passado() ? 'Data passada' : 'Treino agendado'
+    }}</span>
+  </div>
+  <h3>{{ t.inicio | date: "EEEE, dd/MM/yyyy 'às' HH:mm" : '-0300' }}</h3>
+  <p>Confirme até {{ t.prazo | date: "dd/MM/yyyy 'às' HH:mm" : '-0300' }} · Horário de Brasília</p>
+  <div class="numeros">
+    <span
+      ><strong>{{ t.confirmados }}</strong> confirmados</span
+    ><span
+      ><strong>{{ prazoEncerrado() ? 0 : t.pendentes }}</strong> pendentes</span
+    ><span
+      ><strong>{{ t.convidados }}</strong> convidados</span
+    >
+  </div>
+  @if (t.meuConvite) {
+    <p class="situacao" role="status">Sua presença: {{ situacao() }}</p>
+    @if (t.meuConvite.cancelamento) {
+      <small
+        >Cancelamento registrado em
+        {{ t.meuConvite.cancelamento | date: 'dd/MM/yyyy HH:mm' : '-0300' }}.</small
+      >
+    }
+  }
+  @if (prazoEncerrado() && !t.cancelamento) {
+    <p>Prazo de confirmação encerrado.</p>
+  }
+  <div class="acoes">
+    @if (responder()) {
+      <button
+        class="botao principal"
+        type="button"
+        [disabled]="ocupado()"
+        (click)="enviar('confirmar')"
+      >
+        Confirmar presença</button
+      ><button
+        class="botao secundario"
+        type="button"
+        [disabled]="ocupado()"
+        (click)="enviar('recusar')"
+      >
+        Recusar presença
+      </button>
+    }
+    @if (cancelar()) {
+      <button
+        class="botao perigo"
+        type="button"
+        [disabled]="ocupado()"
+        (click)="enviar('cancelar')"
+      >
+        Cancelar minha presença
+      </button>
+    }
+    @if (t.membro && !detalhado()) {
+      <a
+        class="botao secundario"
+        [routerLink]="['/core/grupo-treino', t.grupo, 'treinos', t.identificador, 'visualizacao']"
+        >Ver detalhes do treino</a
+      >
+    }
+    @if (detalhado() && t.souOrganizador && t.membro && !t.cancelamento && !passado()) {
+      <button
+        class="botao perigo"
+        type="button"
+        [disabled]="ocupado()"
+        (click)="enviar('cancelar-treino')"
+      >
+        Cancelar treino
+      </button>
+    }
+  </div>
+  @if (t.meuConvite?.situacao === 'CONFIRMADO' && !cancelar() && !t.cancelamento && !passado()) {
+    <small>O prazo para cancelar sua presença terminou (uma hora antes do início).</small>
+  }
+</article>

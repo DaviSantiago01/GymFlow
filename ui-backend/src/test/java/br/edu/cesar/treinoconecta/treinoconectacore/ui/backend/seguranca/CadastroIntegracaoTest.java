@@ -35,6 +35,7 @@ class CadastroIntegracaoTest {
     static final String SENHA = "SenhaDeTeste123!";
 
     @BeforeEach void preparar() {
+        br.edu.cesar.treinoconecta.treinoconectacore.ui.backend.LimpezaBanco.limparDependentes(banco);
         mvc=MockMvcBuilders.webAppContextSetup(contexto).apply(springSecurity()).build();
         banco.update("delete from RSV_RESERVA_ARMARIO");
         banco.update("delete from USU_CREDENCIAL");

@@ -58,6 +58,7 @@ a {
   font-size: 12px;
 }
 .atalhos a:hover,
+.atalhos a[aria-current='page'],
 .ver-detalhes {
   color: #c5fa77;
 }
