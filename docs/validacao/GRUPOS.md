@@ -43,7 +43,7 @@ Pacote de domínio: [grupotreino](../../dominio-core/src/main/java/br/edu/cesar/
 | RN07 | `cancelarPresenca` | fronteira exata de uma hora, nanossegundo posterior, autoria, remoção dos confirmados e datas preservadas |
 | RN08 | `sair`, `encerrar`, `TreinoGrupo.cancelar` | saída bloqueada por presença futura, organizador não abandona, fechamento preserva passado e cancela futuro |
 
-Os [endpoints e exemplos](../core/api-grupos.md) detalham todas as operações. A [lista de arquivos](../ARQUIVOS-GRUPOS.md) separa criações de modificações.
+Os [endpoints e exemplos](../core/api-grupos.md) detalham todas as operações.
 
 ## Testes executados
 

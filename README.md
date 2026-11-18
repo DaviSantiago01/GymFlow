@@ -175,8 +175,7 @@ Os testes de navegador criam contas próprias e reservas futuras e as cancelam;
 o histórico desses testes permanece no banco de desenvolvimento.
 
 O [relatório de validação](docs/validacao/RESULTADOS.md) contém resultados, evidências
-e avisos de compilação. A [lista de arquivos](docs/ARQUIVOS.md) compara a entrega
-com o ZIP original. Há capturas das cinco telas e da versão para celular em `docs/validacao`.
+e avisos de compilação. As capturas estão em `docs/validacao`.
 
 ## Produção e limites
 

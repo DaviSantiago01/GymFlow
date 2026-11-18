@@ -21,13 +21,10 @@ Erros recebem foco e deixam de aparecer quando o aluno corrige o campo.
 As telas seguem o visual escuro e verde dos protótipos das páginas 16–21 e do
 projeto existente. O menu fecha ao navegar no celular. As páginas abrem no topo;
 médias são exibidas com uma casa decimal e separador em pt-BR. As páginas 10–21
-foram lidas, incluindo os protótipos. A extração textual está em
-`docs/referencia/paginas-10-21.txt`; o PDF permanece como referência definitiva.
+do [PDF de referência](../atividade.pdf#page=10) incluem os protótipos.
 
 ## 2. Arquivos criados e modificados
 
-A lista completa, com caminhos relativos, está em
-[ARQUIVOS-AVALIACOES.md](../ARQUIVOS-AVALIACOES.md).
 
 | Área | Principais alterações |
 |---|---|
