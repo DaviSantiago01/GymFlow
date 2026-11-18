@@ -62,6 +62,7 @@ O backend usa **Java 25, Spring Boot, Maven e o framework D5**. O frontend usa *
 - [Modelo Context Mapper](docs/core/projeto.cml) e [modelo de dados DBML](docs/core/projeto.dbml)
 - Contratos HTTP de [equipamentos](docs/core/api-equipamentos.md), [armários](docs/core/api-armarios.md), [avaliações](docs/core/api-avaliacoes.md) e [grupos](docs/core/api-grupos.md)
 - [Evidências de validação](docs/validacao)
+- [Rastreabilidade e validação da gestão de equipamentos](docs/validacao/EQUIPAMENTOS.md)
 
 ## Testes
 
