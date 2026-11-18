@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { guardaAutenticacao } from '../../d5';
+import { guardaPerfis } from '../guarda-perfis';
 import {
   resolverAlteracaoAvaliacao,
   resolverAlteracaoMeta,
@@ -21,20 +21,20 @@ const formularioMeta = () =>
 export const rotasAvaliacoes: Routes = [
   {
     path: 'core/avaliacao-fisica/inclusao',
-    canActivate: [guardaAutenticacao],
+    canActivate: [guardaPerfis('PERSONAL')],
     loadComponent: formularioAvaliacao,
     resolve: { tela: resolverInclusaoAvaliacao },
   },
   {
     path: 'core/avaliacao-fisica/pesquisa',
-    canActivate: [guardaAutenticacao],
+    canActivate: [guardaPerfis('PERSONAL', 'USUARIO')],
     loadComponent: () => import('./avaliacoes.component').then((m) => m.AvaliacoesComponent),
     resolve: { tela: resolverAvaliacoes },
     runGuardsAndResolvers: 'paramsOrQueryParamsChange',
   },
   {
     path: 'core/avaliacao-fisica/evolucao',
-    canActivate: [guardaAutenticacao],
+    canActivate: [guardaPerfis('PERSONAL', 'USUARIO')],
     loadComponent: () =>
       import('./avaliacao-evolucao.component').then((m) => m.AvaliacaoEvolucaoComponent),
     resolve: { tela: resolverEvolucaoIndicador },
@@ -42,7 +42,7 @@ export const rotasAvaliacoes: Routes = [
   },
   {
     path: 'core/avaliacao-fisica/situacao',
-    canActivate: [guardaAutenticacao],
+    canActivate: [guardaPerfis('PERSONAL', 'USUARIO')],
     loadComponent: () =>
       import('./avaliacao-situacao.component').then((m) => m.AvaliacaoSituacaoComponent),
     resolve: { tela: resolverSituacao },
@@ -50,20 +50,20 @@ export const rotasAvaliacoes: Routes = [
   },
   {
     path: 'core/avaliacao-fisica/:id/visualizacao',
-    canActivate: [guardaAutenticacao],
+    canActivate: [guardaPerfis('PERSONAL', 'USUARIO')],
     loadComponent: () =>
       import('./avaliacao-resultado.component').then((m) => m.AvaliacaoResultadoComponent),
     resolve: { tela: resolverVisualizacaoAvaliacao },
   },
   {
     path: 'core/avaliacao-fisica/:id/alteracao',
-    canActivate: [guardaAutenticacao],
+    canActivate: [guardaPerfis('PERSONAL')],
     loadComponent: formularioAvaliacao,
     resolve: { tela: resolverAlteracaoAvaliacao },
   },
   {
     path: 'core/avaliacao-fisica/:id/comparacao',
-    canActivate: [guardaAutenticacao],
+    canActivate: [guardaPerfis('PERSONAL', 'USUARIO')],
     loadComponent: () =>
       import('./avaliacao-comparacao.component').then((m) => m.AvaliacaoComparacaoComponent),
     resolve: { tela: resolverComparacao },
@@ -71,20 +71,20 @@ export const rotasAvaliacoes: Routes = [
   },
   {
     path: 'core/meta/pesquisa',
-    canActivate: [guardaAutenticacao],
+    canActivate: [guardaPerfis('PERSONAL', 'USUARIO')],
     loadComponent: () => import('./metas.component').then((m) => m.MetasComponent),
     resolve: { tela: resolverMetas },
     runGuardsAndResolvers: 'paramsOrQueryParamsChange',
   },
   {
     path: 'core/meta/inclusao',
-    canActivate: [guardaAutenticacao],
+    canActivate: [guardaPerfis('PERSONAL')],
     loadComponent: formularioMeta,
     resolve: { tela: resolverInclusaoMeta },
   },
   {
     path: 'core/meta/:id/alteracao',
-    canActivate: [guardaAutenticacao],
+    canActivate: [guardaPerfis('PERSONAL')],
     loadComponent: formularioMeta,
     resolve: { tela: resolverAlteracaoMeta },
   },

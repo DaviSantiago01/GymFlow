@@ -2,12 +2,14 @@ import { resolverGrupos } from './grupos/grupos.service';
 import { resolverAvaliacoesProfessor } from './avaliacoes-professor/avaliacoes-professor.service';
 import { Routes } from '@angular/router';
 import { guardaAutenticacao } from '../d5';
+import { guardaPerfis } from './guarda-perfis';
 import { resolverArmarios } from './armarios/armarios.service';
 import { rotasTreinos } from './treinos/treinos.rotas';
 import { rotasAvaliacoes } from './avaliacoes/avaliacoes.rotas';
 import { rotasPlanos } from './planos/planos.rotas';
 import { rotasProfissionais } from './profissionais/profissionais.rotas';
 const tela = () => import('./armarios/armarios.component').then((m) => m.ArmariosComponent);
+const somenteAluno = guardaPerfis('USUARIO');
 export const routes: Routes = [
   {
     path: 'core/aluno/cadastro',
@@ -27,28 +29,28 @@ export const routes: Routes = [
   },
   {
     path: 'core/armario/pesquisa',
-    canActivate: [guardaAutenticacao],
+    canActivate: [somenteAluno],
     loadComponent: tela,
     resolve: { tela: resolverArmarios },
     data: { modo: 'lista' },
   },
   {
     path: 'core/armario/:id/visualizacao',
-    canActivate: [guardaAutenticacao],
+    canActivate: [somenteAluno],
     loadComponent: tela,
     resolve: { tela: resolverArmarios },
     data: { modo: 'detalhe' },
   },
   {
     path: 'core/reserva-armario/acompanhamento',
-    canActivate: [guardaAutenticacao],
+    canActivate: [somenteAluno],
     loadComponent: tela,
     resolve: { tela: resolverArmarios },
     data: { modo: 'ativa' },
   },
   {
     path: 'core/reserva-armario/pesquisa',
-    canActivate: [guardaAutenticacao],
+    canActivate: [somenteAluno],
     loadComponent: tela,
     resolve: { tela: resolverArmarios },
     data: { modo: 'historico' },
@@ -56,14 +58,14 @@ export const routes: Routes = [
   },
   {
     path: 'core/reserva-armario/:id/confirmacao',
-    canActivate: [guardaAutenticacao],
+    canActivate: [somenteAluno],
     loadComponent: tela,
     resolve: { tela: resolverArmarios },
     data: { modo: 'confirmacao' },
   },
   {
     path: 'core/reserva-armario/:id/visualizacao',
-    canActivate: [guardaAutenticacao],
+    canActivate: [somenteAluno],
     loadComponent: tela,
     resolve: { tela: resolverArmarios },
     data: { modo: 'reserva' },
@@ -83,7 +85,7 @@ export const routes: Routes = [
     { path: 'core/avaliacao-professor/:id/edicao', modo: 'editar' },
   ].map(({ path, modo }) => ({
     path,
-    canActivate: [guardaAutenticacao],
+    canActivate: [somenteAluno],
     loadComponent: () =>
       import('./avaliacoes-professor/avaliacoes-professor.component').then((m) => m.AvaliacoesProfessorComponent),
     resolve: { tela: resolverAvaliacoesProfessor },
@@ -101,7 +103,7 @@ export const routes: Routes = [
     { path: 'core/grupo-treino/:id/treinos/:treino/convite', modo: 'treino' },
   ].map(({ path, modo }) => ({
     path,
-    canActivate: [guardaAutenticacao],
+    canActivate: [somenteAluno],
     loadComponent: () => import('./grupos/grupos.component').then((m) => m.GruposComponent),
     resolve: { tela: resolverGrupos },
     data: { modo },

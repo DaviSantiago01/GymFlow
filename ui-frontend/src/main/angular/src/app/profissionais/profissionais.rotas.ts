@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { guardaAutenticacao } from '../../d5';
+import { guardaPerfis } from '../guarda-perfis';
 import { resolverProfissionais, resolverProfissional } from './profissionais.service';
 
 const formulario = () =>
@@ -8,26 +8,26 @@ const formulario = () =>
 export const rotasProfissionais: Routes = [
   {
     path: 'core/profissional/pesquisa',
-    canActivate: [guardaAutenticacao],
+    canActivate: [guardaPerfis('ADMINISTRADOR')],
     loadComponent: () => import('./profissionais.component').then((m) => m.ProfissionaisComponent),
     resolve: { tela: resolverProfissionais },
     runGuardsAndResolvers: 'paramsOrQueryParamsChange',
   },
   {
     path: 'core/profissional/inclusao',
-    canActivate: [guardaAutenticacao],
+    canActivate: [guardaPerfis('ADMINISTRADOR')],
     loadComponent: formulario,
     resolve: { tela: resolverProfissional },
   },
   {
     path: 'core/profissional/:id/alteracao',
-    canActivate: [guardaAutenticacao],
+    canActivate: [guardaPerfis('ADMINISTRADOR')],
     loadComponent: formulario,
     resolve: { tela: resolverProfissional },
   },
   {
     path: 'core/profissional/:id/visualizacao',
-    canActivate: [guardaAutenticacao],
+    canActivate: [guardaPerfis('ADMINISTRADOR')],
     loadComponent: () => import('./profissional.component').then((m) => m.ProfissionalComponent),
     resolve: { tela: resolverProfissional },
   },
