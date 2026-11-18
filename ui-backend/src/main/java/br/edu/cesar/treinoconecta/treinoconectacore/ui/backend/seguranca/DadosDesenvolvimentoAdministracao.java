@@ -28,10 +28,8 @@ public class DadosDesenvolvimentoAdministracao {
     @Bean ApplicationRunner cadastrarAdministracao(JdbcTemplate banco, PasswordEncoder senhas,
             PlatformTransactionManager gerenciador) {
         return argumentos -> new TransactionTemplate(gerenciador).executeWithoutResult(estado -> {
-            if (Long.valueOf(0).equals(banco.queryForObject("select count(*) from ADM_ADMINISTRADOR where ADM_USUARIO = 'admin'", Long.class))) {
-                banco.update("insert into ADM_ADMINISTRADOR(ADM_USUARIO,ADM_NOME,ADM_SENHA) values ('admin','Administração',?)",
-                        senhas.encode("admin"));
-            }
+            cadastrarAdministrador(banco, senhas, "admin", "Administração");
+            cadastrarAdministrador(banco, senhas, "gestor", "Gestor");
             for (var plano : PLANOS) {
                 if (Long.valueOf(0).equals(banco.queryForObject("select count(*) from PLA_PLANO where PLA_NOME = ?", Long.class, plano[0]))) {
                     banco.update("insert into PLA_PLANO(PLA_NOME,PLA_VALOR,PLA_DURACAO_MESES,PLA_SITUACAO) values (?,CAST(? AS DECIMAL(7,2)),?,'ATIVO')",
@@ -45,5 +43,13 @@ public class DadosDesenvolvimentoAdministracao {
                 }
             }
         });
+    }
+
+    private static void cadastrarAdministrador(JdbcTemplate banco, PasswordEncoder senhas, String usuario, String nome) {
+        if (Long.valueOf(0).equals(banco.queryForObject(
+                "select count(*) from ADM_ADMINISTRADOR where ADM_USUARIO = ?", Long.class, usuario))) {
+            banco.update("insert into ADM_ADMINISTRADOR(ADM_USUARIO,ADM_NOME,ADM_SENHA) values (?,?,?)",
+                    usuario, nome, senhas.encode(usuario));
+        }
     }
 }

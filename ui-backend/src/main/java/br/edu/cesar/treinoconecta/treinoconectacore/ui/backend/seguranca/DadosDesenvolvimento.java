@@ -12,11 +12,18 @@ import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.support.TransactionTemplate;
 @Configuration @Profile("desenvolvimento & !producao")
 public class DadosDesenvolvimento {
+    private static final String[][] ALUNOS = {
+        {"u", "Mariana Costa"},
+        {"v", "Pedro Silva"},
+        {"aluno", "Aluno"},
+    };
+
     @Bean ApplicationRunner cadastrarExemplos(JdbcTemplate banco, PasswordEncoder senhas, PlatformTransactionManager gerenciador, ITreinoDemonstracaoRepositorio treinos, Clock relogio) {
         return argumentos -> new TransactionTemplate(gerenciador).executeWithoutResult(estado -> {
-            for (String usuario : new String[]{"u","v"}) {
+            for (var exemplo : ALUNOS) {
+                var usuario = exemplo[0];
                 if (Long.valueOf(0).equals(banco.queryForObject("select count(*) from ALU_ALUNO where ALU_USUARIO = ?",Long.class,usuario))) {
-                    banco.update("insert into ALU_ALUNO(ALU_USUARIO,ALU_NOME) values (?,?)",usuario,usuario.equals("u")?"Mariana Costa":"Pedro Silva");
+                    banco.update("insert into ALU_ALUNO(ALU_USUARIO,ALU_NOME) values (?,?)", usuario, exemplo[1]);
                     banco.update("insert into USU_CREDENCIAL(ALU_USUARIO,USU_SENHA) values (?,?)",usuario,senhas.encode(usuario));
                 }
             }
@@ -25,7 +32,8 @@ public class DadosDesenvolvimento {
                     banco.update("insert into PRO_PROFESSOR(PRO_NOME,PRO_ESPECIALIDADE,PRO_BIOGRAFIA,PRO_DEMONSTRACAO) values (?,?,?,true)",nome,"Treinamento físico",
                         "Perfil de demonstração para testar avaliações. Não representa um cadastro real da academia.");
             }
-            for (String usuario : new String[]{"u","v"}) {
+            for (var exemplo : ALUNOS) {
+                var usuario = exemplo[0];
                 var id=Objects.requireNonNull(banco.queryForObject("select ALU_ID from ALU_ALUNO where ALU_USUARIO=?",Long.class,usuario));
                 treinos.cadastrar(new AlunoIdentificador(id.toString()),relogio.instant());
             }

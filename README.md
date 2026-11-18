@@ -35,17 +35,13 @@ Abra [http://127.0.0.1:4200](http://127.0.0.1:4200). O Angular encaminha `/backe
 
 | Perfil | Usuário | Senha |
 | --- | --- | --- |
-| Gestor | `admin` | `admin` |
-| Professor | `p` ou `q` | Igual ao usuário |
-| Aluno | `u` ou `v` | Igual ao usuário |
+| Gestor | `gestor` | `gestor` |
+| Professor | `professor` | `professor` |
+| Aluno | `aluno` | `aluno` |
 
 Use o campo **Usuário** no login. Execute com o perfil `desenvolvimento` para carregar as contas e os dados de demonstração. O perfil `producao` desativa a criação de contas de demonstração.
 
 Em produção, o backend recebe `TREINO_BANCO_URL`, `TREINO_BANCO_USUARIO` e `TREINO_BANCO_SENHA` pelo ambiente. A aplicação usa HTTPS para enviar os cookies seguros. As migrações desta versão foram verificadas com H2.
-
-### Experimentar os fluxos
-
-Entre como gestor para consultar planos, mensalidades e profissionais. Na conta de professor, abra a lista de alunos para prescrever um treino. Na conta de aluno, consulte o histórico de treinos ou faça uma reserva em **Armários**.
 
 ## Arquitetura e documentação
 

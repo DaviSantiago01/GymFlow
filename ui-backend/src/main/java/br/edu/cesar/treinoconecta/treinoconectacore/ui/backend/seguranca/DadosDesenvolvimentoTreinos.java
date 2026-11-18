@@ -4,6 +4,7 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
+import org.springframework.core.env.Environment;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.transaction.PlatformTransactionManager;
@@ -31,10 +32,13 @@ public class DadosDesenvolvimentoTreinos {
     };
 
     @Bean ApplicationRunner cadastrarPersonaisEExercicios(JdbcTemplate banco, PasswordEncoder senhas,
-            PlatformTransactionManager gerenciador) {
+            PlatformTransactionManager gerenciador, Environment ambiente) {
         return argumentos -> new TransactionTemplate(gerenciador).executeWithoutResult(estado -> {
             for (var personal : PERSONAIS) {
                 cadastrarPersonal(banco, senhas, personal[0], personal[1]);
+            }
+            if (ambiente.matchesProfiles("desenvolvimento")) {
+                cadastrarPersonal(banco, senhas, "professor", "Professor");
             }
             for (var exercicio : EXERCICIOS) {
                 cadastrarExercicio(banco, exercicio);
