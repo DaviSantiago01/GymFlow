@@ -1,5 +1,8 @@
 package br.edu.cesar.treinoconecta.treinoconectacore.ui.backend.seguranca;
 
+import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.equipamento.Equipamento;
+import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.equipamento.OperacaoEquipamentosAutorizacoes;
+
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.aluno.Aluno;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.armario.Armario;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.avaliacaofisica.AvaliacaoFisicaAutorizacoes;
@@ -18,6 +21,7 @@ import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.plano.PlanoAuto
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.profissional.ProfissionalAutorizacoes;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.vinculopersonal.VinculoPersonalAlunoAutorizacoes;
 public class AutenticacaoRecurso extends AutenticacaoRecursoAbstrato {
+    private final OperacaoEquipamentosAutorizacoes<Equipamento> equipamento;
     private final PlanoAutorizacoes plano;
     private final AdesaoPlanoAutorizacoes adesaoPlano;
     private final MensalidadeAutorizacoes mensalidade;
@@ -40,14 +44,17 @@ public class AutenticacaoRecurso extends AutenticacaoRecursoAbstrato {
             AgregadoAutorizacoes<Professor> professor, AgregadoAutorizacoes<AvaliacaoProfessor> avaliacaoProfessor,
             AgregadoAutorizacoes<GrupoTreino> grupoTreino, PlanoAutorizacoes plano, AdesaoPlanoAutorizacoes adesaoPlano,
             MensalidadeAutorizacoes mensalidade, ProfissionalAutorizacoes profissional,
-            VinculoPersonalAlunoAutorizacoes vinculoPersonalAluno) {
+            VinculoPersonalAlunoAutorizacoes vinculoPersonalAluno,
+            OperacaoEquipamentosAutorizacoes<Equipamento> equipamento) {
         super(usuario); this.grupoTreino=grupoTreino; this.armario=armario; this.reservaArmario=reservaArmario;
         this.aluno=aluno; this.planoDeTreino=planoDeTreino; this.execucaoDeExercicio=execucaoDeExercicio;
         this.avaliacaoFisica=avaliacaoFisica; this.meta=meta;
         this.professor=professor; this.avaliacaoProfessor=avaliacaoProfessor;
         this.plano=plano; this.adesaoPlano=adesaoPlano; this.mensalidade=mensalidade;
         this.profissional=profissional; this.vinculoPersonalAluno=vinculoPersonalAluno;
+        this.equipamento = equipamento;
     }
+    public OperacaoEquipamentosAutorizacoes<Equipamento> getEquipamento() { return equipamento; }
     public PlanoAutorizacoes getPlano() { return plano; }
     public AdesaoPlanoAutorizacoes getAdesaoPlano() { return adesaoPlano; }
     public MensalidadeAutorizacoes getMensalidade() { return mensalidade; }

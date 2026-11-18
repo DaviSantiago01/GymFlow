@@ -258,3 +258,63 @@ Table CTR_CONVITE_TREINO {
   CTR_MOTIVO varchar(30)
   indexes { (TGR_ID, ALU_ID) [unique] (ALU_ID, TGR_ID) (CTR_SITUACAO, TGR_ID) }
 }
+
+Table EQP_EQUIPAMENTO {
+  EQP_ID bigint [pk, increment]
+  EQP_PATRIMONIO varchar(24) [not null, unique]
+  EQP_SERIE varchar(40) [unique]
+  EQP_NOME varchar(100) [not null]
+  EQP_TIPO varchar(20) [not null]
+  EQP_MARCA varchar(60) [not null]
+  EQP_MODELO varchar(60) [not null]
+  EQP_AQUISICAO date [not null]
+  EQP_AREA varchar(20) [not null]
+  EQP_SITUACAO varchar(20) [not null]
+  EQP_PERIODICIDADE integer [not null]
+  EQP_ULTIMA_INSPECAO date
+}
+
+Table REQ_REGISTRO_EQUIPAMENTO {
+  REQ_ID bigint [pk, increment]
+  EQP_ID bigint [not null, ref: > EQP_EQUIPAMENTO.EQP_ID]
+  REQ_DATA date [not null]
+  REQ_RESPONSAVEL varchar(100) [not null]
+  REQ_AREA_ANTERIOR varchar(20) [not null]
+  REQ_AREA_NOVA varchar(20) [not null]
+  REQ_SITUACAO_ANTERIOR varchar(20) [not null]
+  REQ_SITUACAO_NOVA varchar(20) [not null]
+  REQ_RESULTADO varchar(24)
+  REQ_OBSERVACAO varchar(800)
+}
+
+Table PEQ_PROBLEMA_EQUIPAMENTO {
+  PEQ_ID bigint [pk, increment]
+  EQP_ID bigint [not null, ref: > EQP_EQUIPAMENTO.EQP_ID]
+  PEQ_TITULO varchar(100) [not null]
+  PEQ_RELATO varchar(800) [not null]
+  PEQ_GRAVIDADE varchar(10) [not null]
+  PEQ_RISCO boolean [not null]
+  PEQ_EVIDENCIA varchar(180)
+  PEQ_DATA_RELATO date [not null]
+  PEQ_RESPONSAVEL varchar(100) [not null]
+  PEQ_SITUACAO varchar(12) [not null]
+  PEQ_DATA_ENCERRAMENTO date
+  PEQ_DESFECHO varchar(800)
+}
+
+Table OMT_ORDEM_MANUTENCAO {
+  OMT_ID bigint [pk, increment]
+  PEQ_ID bigint [not null, ref: > PEQ_PROBLEMA_EQUIPAMENTO.PEQ_ID]
+  OMT_TECNICO varchar(100) [not null]
+  OMT_DIAGNOSTICO varchar(800) [not null]
+  OMT_ABERTURA date [not null]
+  OMT_RESPONSAVEL varchar(100) [not null]
+  OMT_SITUACAO varchar(12) [not null]
+  OMT_INICIO date
+  OMT_TERMINO date
+  OMT_CUSTO_ESTIMADO decimal(12,2)
+  OMT_CUSTO_REAL decimal(12,2)
+  OMT_SERVICO_EXECUTADO varchar(800)
+  OMT_JUSTIFICATIVA varchar(800)
+  OMT_PROBLEMA_ATIVO bigint [unique, note: 'PEQ_ID quando aberta ou em andamento']
+}

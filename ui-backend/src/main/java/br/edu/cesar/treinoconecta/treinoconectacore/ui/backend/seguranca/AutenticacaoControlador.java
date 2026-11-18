@@ -1,6 +1,7 @@
 package br.edu.cesar.treinoconecta.treinoconectacore.ui.backend.seguranca;
 
 import java.util.Optional;
+import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.equipamento.EquipamentoServico;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.aluno.AlunoServico;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.professor.ProfessorServico;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.avaliacaoprofessor.AvaliacaoProfessorServico;
@@ -36,18 +37,20 @@ public class AutenticacaoControlador extends AutenticacaoControladorAbstrato {
     private final MensalidadeServico mensalidades;
     private final ProfissionalServico profissionais;
     private final VinculoPersonalAlunoServico vinculos;
+    private final EquipamentoServico equipamentos;
     public AutenticacaoControlador(ISegurancaServico segurancaServico, ArmarioServico armarios, ReservaArmarioServico reservas,
             AlunoServico alunos, PlanoDeTreinoServico planos, ExecucaoDeExercicioServico execucoes,
             AvaliacaoFisicaServico avaliacoes, MetaServico metas,
             ProfessorServico professores, AvaliacaoProfessorServico avaliacoesProfessor,
             br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.grupotreino.GrupoTreinoServico grupos,
             PlanoServico planosAcademia, AdesaoPlanoServico adesoes, MensalidadeServico mensalidades,
-            ProfissionalServico profissionais, VinculoPersonalAlunoServico vinculos) {
+            ProfissionalServico profissionais, VinculoPersonalAlunoServico vinculos, EquipamentoServico equipamentos) {
         super(segurancaServico); this.grupos=grupos; this.armarios=armarios; this.reservas=reservas;
         this.alunos=alunos; this.planos=planos; this.execucoes=execucoes; this.avaliacoes=avaliacoes; this.metas=metas;
         this.professores=professores; this.avaliacoesProfessor=avaliacoesProfessor;
         this.planosAcademia=planosAcademia; this.adesoes=adesoes; this.mensalidades=mensalidades;
         this.profissionais=profissionais; this.vinculos=vinculos;
+        this.equipamentos = equipamentos;
     }
     @Override protected AutenticacaoRecurso recurso() {
         return new AutenticacaoRecurso(segurancaServico.getUsuario(),armarios.criarAutorizacoes(Optional.empty()),reservas.criarAutorizacoes(Optional.empty()),
@@ -57,6 +60,6 @@ public class AutenticacaoControlador extends AutenticacaoControladorAbstrato {
                 grupos.criarAutorizacoes(Optional.empty()),
                 planosAcademia.criarAutorizacoes(Optional.empty()),adesoes.criarAutorizacoes(Optional.empty()),
                 mensalidades.criarAutorizacoes(Optional.empty()),profissionais.criarAutorizacoes(Optional.empty()),
-                vinculos.criarAutorizacoes(Optional.empty()));
+                vinculos.criarAutorizacoes(Optional.empty()), equipamentos.criarAutorizacoes(Optional.empty()));
     }
 }
