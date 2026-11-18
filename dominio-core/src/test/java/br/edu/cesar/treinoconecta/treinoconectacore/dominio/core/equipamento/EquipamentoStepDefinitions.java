@@ -1,15 +1,8 @@
 package br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.equipamento;
 
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.Optional;
 
-import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.equipamento.*;
-import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.ordemmanutencao.*;
-import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.problemaequipamento.*;
-import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.registroequipamento.*;
 import dev.sauloaraujo.d5.framework.dominio.AgregadoExistenteExcecao;
-import dev.sauloaraujo.d5.framework.dominio.spi.NaoAutorizadoExcecao;
 import io.cucumber.java.pt.Dado;
 import io.cucumber.java.pt.Então;
 
@@ -59,7 +52,8 @@ public class EquipamentoStepDefinitions {
         a.cadastro.excluir(a.equipamentoId);
         verify(a.equipamentos).excluir(a.equipamentoId);
         when(a.registros.existePorEquipamento(a.equipamentoId)).thenReturn(true);
-        assertThrows(NaoAutorizadoExcecao.class, () -> a.cadastro.excluir(a.equipamentoId));
+        var bloqueio = assertThrows(IllegalStateException.class, () -> a.cadastro.excluir(a.equipamentoId));
+        assertEquals("O equipamento possui histórico. Inative o cadastro.", bloqueio.getMessage());
         when(a.problemas.existeAberto(a.equipamentoId)).thenReturn(true);
         assertThrows(IllegalStateException.class, () -> a.cadastro.inativar(a.equipamentoId));
         when(a.problemas.existeAberto(a.equipamentoId)).thenReturn(false);
