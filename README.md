@@ -41,6 +41,8 @@ Abra [http://127.0.0.1:4200](http://127.0.0.1:4200). O Angular encaminha `/backe
 
 Use o campo **Usuário** no login. Execute com o perfil `desenvolvimento` para carregar as contas e os dados de demonstração. O perfil `producao` desativa a criação de contas de demonstração.
 
+A conta `aluno` já tem plano de treino, histórico de cargas, avaliações físicas, meta, grupo de treino, histórico de armário e mensalidades. A conta `professor` pode acompanhar e editar o plano desse aluno. A conta `gestor` pode consultar a adesão, as cobranças e os dados de profissionais de exemplo. A carga de dados fictícios é aplicada uma vez por banco, para preservar as alterações feitas durante a demonstração.
+
 Em produção, o backend recebe `TREINO_BANCO_URL`, `TREINO_BANCO_USUARIO` e `TREINO_BANCO_SENHA` pelo ambiente. A aplicação usa HTTPS para enviar os cookies seguros. As migrações desta versão foram verificadas com H2.
 
 ## Arquitetura e documentação
