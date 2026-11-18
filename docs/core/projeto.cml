@@ -499,5 +499,162 @@ BoundedContext ^core implements ^core {
 				@Meta encerrar(@MetaIdentificador identificador);
 			}
 		}
+
+        Aggregate Equipamento {
+            Entity Equipamento {
+                aggregateRoot
+                -EquipamentoIdentificador identificador key
+                -DadosEquipamento dados
+                -AreaEquipamento area
+                -SituacaoEquipamento situacao
+                Date ultimaInspecao nullable
+                Repository EquipamentoRepository {
+                    @Equipamento incluir(@Equipamento agregado);
+                    boolean existePorIdentificador(@EquipamentoIdentificador identificador);
+                    @Equipamento buscarPorIdentificador(@EquipamentoIdentificador identificador);
+                    void alterar(@Equipamento agregado);
+                    void excluir(@EquipamentoIdentificador identificador);
+                    @Equipamento bloquear(@EquipamentoIdentificador identificador);
+                    boolean existePatrimonio(String patrimonio, @EquipamentoIdentificador ignorado);
+                    boolean existeSerie(String serie, @EquipamentoIdentificador ignorado);
+                }
+            }
+            ValueObject EquipamentoIdentificador { String valor }
+            ValueObject DadosEquipamento {
+                String patrimonio
+                String serie nullable
+                String nome
+                -TipoEquipamento tipo
+                String marca
+                String modelo
+                Date aquisicao
+                int periodicidade
+            }
+            enum TipoEquipamento { CARDIO, MUSCULACAO, FUNCIONAL }
+            enum AreaEquipamento { CARDIO, MUSCULACAO, FUNCIONAL }
+            enum SituacaoEquipamento { DISPONIVEL, EM_MANUTENCAO, INTERDITADO, INATIVO }
+            Service EquipamentoServico {
+                @Equipamento buscar(@EquipamentoIdentificador identificador);
+                @Equipamento cadastrar(@DadosEquipamento dados, @AreaEquipamento area);
+                void editar(@EquipamentoIdentificador identificador, @DadosEquipamento dados);
+                void excluir(@EquipamentoIdentificador identificador);
+                void inativar(@EquipamentoIdentificador identificador);
+            }
+        }
+
+        Aggregate RegistroEquipamento {
+            Entity RegistroEquipamento {
+                aggregateRoot
+                -RegistroEquipamentoIdentificador identificador key
+                -EquipamentoIdentificador equipamento
+                Date data
+                String responsavel
+                -AreaEquipamento areaAnterior
+                -AreaEquipamento areaNova
+                -SituacaoEquipamento situacaoAnterior
+                -SituacaoEquipamento situacaoNova
+                -ResultadoInspecao resultado nullable
+                String observacao nullable
+                Repository RegistroEquipamentoRepository {
+                    @RegistroEquipamento incluir(@RegistroEquipamento agregado);
+                    boolean existePorIdentificador(@RegistroEquipamentoIdentificador identificador);
+                    @RegistroEquipamento buscarPorIdentificador(@RegistroEquipamentoIdentificador identificador);
+                    void alterar(@RegistroEquipamento agregado);
+                    void excluir(@RegistroEquipamentoIdentificador identificador);
+                    boolean existePorEquipamento(@EquipamentoIdentificador equipamento);
+                }
+            }
+            ValueObject RegistroEquipamentoIdentificador { String valor }
+            enum ResultadoInspecao { APROVADO, APROVADO_COM_OBSERVACAO, REPROVADO }
+            Service RegistroEquipamentoServico {
+                @RegistroEquipamento buscar(@RegistroEquipamentoIdentificador identificador);
+                void movimentar(@EquipamentoIdentificador equipamento, @AreaEquipamento area, @SituacaoEquipamento situacao, String observacao);
+                void inspecionar(@EquipamentoIdentificador equipamento, Date data, @ResultadoInspecao resultado, @AreaEquipamento area, @SituacaoEquipamento situacao, String observacao);
+            }
+        }
+
+        Aggregate ProblemaEquipamento {
+            Entity ProblemaEquipamento {
+                aggregateRoot
+                -ProblemaEquipamentoIdentificador identificador key
+                -EquipamentoIdentificador equipamento
+                -DadosProblema dados
+                String responsavel
+                -SituacaoProblema situacao
+                Date dataEncerramento nullable
+                String desfecho nullable
+                Repository ProblemaEquipamentoRepository {
+                    @ProblemaEquipamento incluir(@ProblemaEquipamento agregado);
+                    boolean existePorIdentificador(@ProblemaEquipamentoIdentificador identificador);
+                    @ProblemaEquipamento buscarPorIdentificador(@ProblemaEquipamentoIdentificador identificador);
+                    void alterar(@ProblemaEquipamento agregado);
+                    void excluir(@ProblemaEquipamentoIdentificador identificador);
+                    boolean existePorEquipamento(@EquipamentoIdentificador equipamento);
+                    boolean existeAberto(@EquipamentoIdentificador equipamento);
+                    boolean existeRiscoAberto(@EquipamentoIdentificador equipamento);
+                    @EquipamentoIdentificador identificarEquipamento(@ProblemaEquipamentoIdentificador problema);
+                }
+            }
+            ValueObject ProblemaEquipamentoIdentificador { String valor }
+            ValueObject DadosProblema {
+                String titulo
+                String relato
+                -GravidadeProblema gravidade
+                boolean risco
+                String evidencia nullable
+                Date dataRelato
+            }
+            enum GravidadeProblema { BAIXA, MEDIA, ALTA, CRITICA }
+            enum SituacaoProblema { ABERTO, RESOLVIDO, CANCELADO }
+            Service ProblemaEquipamentoServico {
+                @ProblemaEquipamento buscar(@ProblemaEquipamentoIdentificador identificador);
+                @ProblemaEquipamento registrar(@EquipamentoIdentificador equipamento, @DadosProblema dados);
+                void editar(@ProblemaEquipamentoIdentificador identificador, @DadosProblema dados);
+                void resolver(@ProblemaEquipamentoIdentificador identificador, Date data, String solucao);
+                void cancelar(@ProblemaEquipamentoIdentificador identificador, String justificativa);
+            }
+        }
+
+        Aggregate OrdemManutencao {
+            Entity OrdemManutencao {
+                aggregateRoot
+                -OrdemManutencaoIdentificador identificador key
+                -ProblemaEquipamentoIdentificador problema
+                -DadosOrdem dados
+                Date abertura
+                String responsavel
+                -SituacaoOrdem situacao
+                Date inicio nullable
+                Date termino nullable
+                BigDecimal custoReal nullable
+                String servicoExecutado nullable
+                String justificativa nullable
+                Repository OrdemManutencaoRepository {
+                    @OrdemManutencao incluir(@OrdemManutencao agregado);
+                    boolean existePorIdentificador(@OrdemManutencaoIdentificador identificador);
+                    @OrdemManutencao buscarPorIdentificador(@OrdemManutencaoIdentificador identificador);
+                    void alterar(@OrdemManutencao agregado);
+                    void excluir(@OrdemManutencaoIdentificador identificador);
+                    boolean existeAtiva(@ProblemaEquipamentoIdentificador problema);
+                    boolean existeAtivaNoEquipamento(@EquipamentoIdentificador equipamento);
+                    @ProblemaEquipamentoIdentificador identificarProblema(@OrdemManutencaoIdentificador ordem);
+                }
+            }
+            ValueObject OrdemManutencaoIdentificador { String valor }
+            ValueObject DadosOrdem {
+                String tecnico
+                String diagnostico
+                BigDecimal custoEstimado nullable
+            }
+            enum SituacaoOrdem { ABERTA, EM_ANDAMENTO, CONCLUIDA, CANCELADA }
+            Service OrdemManutencaoServico {
+                @OrdemManutencao buscar(@OrdemManutencaoIdentificador identificador);
+                @OrdemManutencao abrir(@ProblemaEquipamentoIdentificador problema, @DadosOrdem dados);
+                void editar(@OrdemManutencaoIdentificador identificador, @DadosOrdem dados);
+                void iniciar(@OrdemManutencaoIdentificador identificador, Date data);
+                void concluir(@OrdemManutencaoIdentificador identificador, Date data, String servico, BigDecimal custo);
+                void cancelar(@OrdemManutencaoIdentificador identificador, String justificativa);
+            }
+        }
 	}
 }

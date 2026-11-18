@@ -1,0 +1,121 @@
+<main class="pagina">
+  <header class="pagina-cabecalho">
+    <div>
+      <h1>{{ descricao.titulo }}</h1>
+      <p>{{ descricao.descricao }}</p>
+    </div>
+    @if (modo === 'cadastro') {
+      <a class="acao acao-principal" routerLink="/core/equipamento/inclusao"
+        >Cadastrar equipamento</a
+      >
+    }
+    @if (modo === 'problemas' || modo === 'ordens') {
+      <a
+        class="acao acao-secundaria"
+        [routerLink]="
+          modo === 'problemas'
+            ? '/core/equipamento/pesquisa'
+            : '/core/problema-equipamento/pesquisa'
+        "
+      >
+        {{ modo === 'problemas' ? 'Escolher equipamento' : 'Escolher problema' }}
+      </a>
+    }
+  </header>
+  <app-equipamentos-menu />
+  @let resultado = lista();
+  <section class="bloco" aria-label="Pesquisa">
+    <form class="formulario-grade" #pesquisa="ngForm" (ngSubmit)="filtrar(pesquisa.value)">
+      @for (filtro of filtros; track filtro.chave) {
+        <label
+          ><span [id]="'filtro-' + filtro.chave">{{ filtro.nome }}</span>
+          @if (filtro.opcoes; as opcoes) {
+            <select
+              [name]="filtro.chave"
+              [attr.aria-labelledby]="'filtro-' + filtro.chave"
+              [ngModel]="resultado.filtros[filtro.chave] ?? ''"
+            >
+              <option value="">Todos</option>
+              @for (valor of opcoes; track valor) {
+                <option [value]="valor">{{ rotulo(valor) }}</option>
+              }
+            </select>
+          } @else {
+            <input
+              [name]="filtro.chave"
+              [ngModel]="resultado.filtros[filtro.chave] ?? ''"
+              [pattern]="filtro.chave === 'termo' ? '' : '[0-9]{1,18}'"
+              maxlength="100"
+            />
+          }
+        </label>
+      }
+      <div class="grupo-acoes">
+        <button class="acao acao-principal" [disabled]="pesquisa.invalid">Pesquisar</button>
+        <a class="acao acao-secundaria" [routerLink]="[]">Limpar filtros</a>
+      </div>
+    </form>
+  </section>
+  <section class="bloco" aria-label="Resultados">
+    @if (resultado.linhas.length) {
+      <div class="tabela-dados" role="region" tabindex="0" aria-label="Tabela de resultados">
+        <table>
+          <thead>
+            <tr>
+              @for (titulo of descricao.colunas; track titulo) {
+                <th scope="col">{{ titulo }}</th>
+              }
+              <th scope="col">Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (linha of resultado.linhas; track linha.id) {
+              <tr>
+                @for (celula of linha.celulas; track $index) {
+                  <td>{{ celula }}</td>
+                }
+                <td>
+                  <a
+                    [routerLink]="['/core', recurso, linha.id, 'visualizacao']"
+                    [attr.aria-label]="'Ver detalhes ' + linha.celulas[0]"
+                    >Ver detalhes</a
+                  >
+                  @if (linha.equipamento) {
+                    <br /><a [routerLink]="['/core/equipamento', linha.equipamento, 'visualizacao']"
+                      >Equipamento</a
+                    >
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    } @else {
+      <p class="estado-vazio">Nenhum registro encontrado para esta pesquisa.</p>
+    }
+    @if (quantidadePaginas() > 1 || resultado.pagina > 0) {
+      <nav class="grupo-acoes" aria-label="Paginação">
+        @if (resultado.pagina > 0) {
+          <a
+            class="acao acao-secundaria"
+            [routerLink]="[]"
+            [queryParams]="{ pagina: resultado.pagina - 1 }"
+            queryParamsHandling="merge"
+            >Anterior</a
+          >
+        }
+        <span>Página {{ resultado.pagina + 1 }} de {{ quantidadePaginas() }}</span>
+        @if (resultado.pagina + 1 < quantidadePaginas()) {
+          <a
+            class="acao acao-secundaria"
+            [routerLink]="[]"
+            [queryParams]="{ pagina: resultado.pagina + 1 }"
+            queryParamsHandling="merge"
+            >Próxima</a
+          >
+        }
+      </nav>
+    }
+  </section>
+</main>

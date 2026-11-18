@@ -6,7 +6,7 @@ O GymFlow é um sistema acadêmico de gestão de academias. O gestor acompanha a
 
 | Perfil | Recursos disponíveis |
 | --- | --- |
-| **Gestor** | Gerencia planos, adesões, mensalidades e cadastro de profissionais. |
+| **Gestor** | Gerencia planos, adesões, mensalidades, profissionais e equipamentos. Registra inspeções, problemas e ordens de manutenção. |
 | **Professor** | Consulta alunos, prescreve e acompanha treinos, registra avaliações físicas e define metas. |
 | **Aluno** | Cria a própria conta, consulta treino e evolução, registra a execução, vê plano e mensalidades, reserva armários, participa de grupos e avalia treinos concluídos. |
 
@@ -43,6 +43,8 @@ Use o campo **Usuário** no login. Execute com o perfil `desenvolvimento` para c
 
 A conta `aluno` já tem plano de treino, histórico de cargas, avaliações físicas, meta, grupo de treino, histórico de armário e mensalidades. A conta `professor` pode acompanhar e editar o plano desse aluno. A conta `gestor` pode consultar a adesão, as cobranças e os dados de profissionais de exemplo. A carga de dados fictícios é aplicada uma vez por banco, para preservar as alterações feitas durante a demonstração.
 
+No perfil Gestor, o módulo de equipamentos inclui exemplos com prazos de inspeção diferentes e uma ordem de manutenção em andamento.
+
 Em produção, o backend recebe `TREINO_BANCO_URL`, `TREINO_BANCO_USUARIO` e `TREINO_BANCO_SENHA` pelo ambiente. A aplicação usa HTTPS para enviar os cookies seguros. As migrações desta versão foram verificadas com H2.
 
 ## Arquitetura e documentação
@@ -58,8 +60,9 @@ O backend usa **Java 25, Spring Boot, Maven e o framework D5**. O frontend usa *
 
 - [Especificações de funcionalidades](docs/core/funcionalidades) e [cenários Gherkin](dominio-core/src/test/resources/features)
 - [Modelo Context Mapper](docs/core/projeto.cml) e [modelo de dados DBML](docs/core/projeto.dbml)
-- Contratos HTTP de [armários](docs/core/api-armarios.md), [avaliações](docs/core/api-avaliacoes.md) e [grupos](docs/core/api-grupos.md)
+- Contratos HTTP de [equipamentos](docs/core/api-equipamentos.md), [armários](docs/core/api-armarios.md), [avaliações](docs/core/api-avaliacoes.md) e [grupos](docs/core/api-grupos.md)
 - [Evidências de validação](docs/validacao)
+- [Rastreabilidade e validação da gestão de equipamentos](docs/validacao/EQUIPAMENTOS.md)
 
 ## Testes
 

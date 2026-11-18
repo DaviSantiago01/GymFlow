@@ -1,15 +1,20 @@
+@let perfil = perfilAtual();
+@let aluno = perfil?.nome === 'Aluno';
+@let professor = perfil?.nome === 'Professor';
+@let gestor = perfil?.nome === 'Gestor';
 <main class="pagina">
   <header class="pagina-cabecalho">
     <div>
-      <span class="pagina-sobretitulo">Seu espaço na academia</span>
+      @if (perfil) {
+        <span class="pagina-sobretitulo">{{ perfil.area }}</span>
+      }
       <h1>Boas-vindas, {{ autenticacao.usuarioAtual() }}.</h1>
-      <p class="pagina-descricao">Organize seu treino. Comece por um dos atalhos abaixo.</p>
     </div>
   </header>
   <section aria-labelledby="titulo-atalhos">
     <h2 id="titulo-atalhos">Acesso rápido</h2>
     <div class="atalhos">
-      @if (autenticacao.autorizacoesDe('armario')?.buscar) {
+      @if (aluno && autenticacao.autorizacoesDe('armario')?.buscar) {
         <a routerLink="/core/armario/pesquisa">
           <span class="icone" aria-hidden="true">▥</span>
           <strong>Armários</strong>
@@ -17,7 +22,7 @@
           <span class="acessar">Ver armários <span aria-hidden="true">↗</span></span>
         </a>
       }
-      @if (autenticacao.autorizacoesDe('reservaArmario')?.buscar) {
+      @if (aluno && autenticacao.autorizacoesDe('reservaArmario')?.buscar) {
         <a routerLink="/core/reserva-armario/acompanhamento">
           <span class="icone" aria-hidden="true">◷</span>
           <strong>Minha reserva</strong>
@@ -31,21 +36,21 @@
           <span class="acessar">Ver histórico <span aria-hidden="true">↗</span></span>
         </a>
       }
-      @if (autenticacao.autorizacoesDe('avaliacaoProfessor')?.buscar) {
+      @if (aluno && autenticacao.autorizacoesDe('avaliacaoProfessor')?.buscar) {
         <a routerLink="/core/treino/pesquisa"
           ><span class="icone" aria-hidden="true">☆</span><strong>Avaliar treinos</strong
           ><span>Consulte seus treinos e avalie sua experiência em cada aula.</span
           ><span class="acessar">Ver treinos <span aria-hidden="true">↗</span></span></a
         >
       }
-      @if (autenticacao.autorizacoesDe('grupoTreino')?.buscar) {
+      @if (aluno && autenticacao.autorizacoesDe('grupoTreino')?.buscar) {
         <a routerLink="/core/grupo-treino/pesquisa"
           ><span class="icone" aria-hidden="true">♧</span><strong>Grupos de treino</strong
           ><span>Reúna seus colegas, proponha treinos e confirme sua presença.</span
           ><span class="acessar">Ver meus grupos ↗</span></a
         >
       }
-      @if (autenticacao.autorizacoesDe('aluno')?.buscar) {
+      @if (professor && autenticacao.autorizacoesDe('aluno')?.buscar) {
         <a routerLink="/core/aluno/pesquisa">
           <span class="icone" aria-hidden="true">☰</span>
           <strong>Alunos</strong>
@@ -53,15 +58,27 @@
           <span class="acessar">Ver alunos <span aria-hidden="true">↗</span></span>
         </a>
       }
-      @if (autenticacao.autorizacoesDe('planoDeTreino')?.buscar) {
+      @if ((professor || aluno) && autenticacao.autorizacoesDe('planoDeTreino')?.buscar) {
         <a routerLink="/core/plano-de-treino/pesquisa">
           <span class="icone" aria-hidden="true">≡</span>
-          <strong>Planos de treino</strong>
-          <span>Consulte os planos ativos, em rascunho e encerrados.</span>
+          <strong>{{ professor ? 'Planos de treino' : 'Meus planos de treino' }}</strong>
+          <span>{{
+            professor
+              ? 'Monte e acompanhe os planos de treino dos alunos.'
+              : 'Consulte seu plano de treino e os exercícios prescritos.'
+          }}</span>
           <span class="acessar">Ver planos <span aria-hidden="true">↗</span></span>
         </a>
       }
-      @if (autenticacao.autorizacoesDe('execucaoDeExercicio')?.buscar) {
+      @if (aluno && podeRegistrarExecucao()) {
+        <a routerLink="/core/execucao-de-exercicio/inclusao">
+          <span class="icone" aria-hidden="true">✓</span>
+          <strong>Registrar execução</strong>
+          <span>Informe séries, repetições e cargas realizadas.</span>
+          <span class="acessar">Registrar treino <span aria-hidden="true">↗</span></span>
+        </a>
+      }
+      @if ((professor || aluno) && autenticacao.autorizacoesDe('execucaoDeExercicio')?.buscar) {
         <a routerLink="/core/execucao-de-exercicio/pesquisa">
           <span class="icone" aria-hidden="true">↗</span>
           <strong>Histórico de cargas</strong>
@@ -69,23 +86,31 @@
           <span class="acessar">Ver cargas <span aria-hidden="true">↗</span></span>
         </a>
       }
-      @if (autenticacao.autorizacoesDe('avaliacaoFisica')?.buscar) {
+      @if ((professor || aluno) && autenticacao.autorizacoesDe('avaliacaoFisica')?.buscar) {
         <a routerLink="/core/avaliacao-fisica/pesquisa">
           <span class="icone" aria-hidden="true">✓</span>
           <strong>Avaliações físicas</strong>
-          <span>Consulte os resultados, compare avaliações e veja o histórico.</span>
+          <span>{{
+            professor
+              ? 'Registre medidas e acompanhe os resultados dos alunos.'
+              : 'Consulte seus resultados e compare avaliações anteriores.'
+          }}</span>
           <span class="acessar">Ver avaliações <span aria-hidden="true">↗</span></span>
         </a>
       }
-      @if (autenticacao.autorizacoesDe('meta')?.buscar) {
+      @if ((professor || aluno) && autenticacao.autorizacoesDe('meta')?.buscar) {
         <a routerLink="/core/meta/pesquisa">
           <span class="icone" aria-hidden="true">◎</span>
           <strong>Metas</strong>
-          <span>Acompanhe o percentual de cumprimento de cada meta.</span>
+          <span>{{
+            professor
+              ? 'Defina metas e acompanhe o progresso dos alunos.'
+              : 'Acompanhe seu progresso em cada meta.'
+          }}</span>
           <span class="acessar">Ver metas <span aria-hidden="true">↗</span></span>
         </a>
       }
-      @if (autenticacao.autorizacoesDe('plano')?.buscar) {
+      @if (gestor && autenticacao.autorizacoesDe('plano')?.buscar) {
         <a routerLink="/core/plano/pesquisa">
           <span class="icone" aria-hidden="true">$</span>
           <strong>Planos e mensalidades</strong>
@@ -93,7 +118,7 @@
           <span class="acessar">Ver planos <span aria-hidden="true">↗</span></span>
         </a>
       }
-      @if (autenticacao.autorizacoesDe('profissional')?.buscar) {
+      @if (gestor && autenticacao.autorizacoesDe('profissional')?.buscar) {
         <a routerLink="/core/profissional/pesquisa">
           <span class="icone" aria-hidden="true">★</span>
           <strong>Profissionais</strong>
@@ -101,7 +126,15 @@
           <span class="acessar">Ver profissionais <span aria-hidden="true">↗</span></span>
         </a>
       }
-      @if (autenticacao.autorizacoesDe('adesaoPlano')?.buscar && !autenticacao.autorizacoesDe('plano')?.buscar) {
+      @if (gestor && autenticacao.autorizacoesDe('equipamento')?.buscar) {
+        <a routerLink="/core/equipamento/pesquisa">
+          <span class="icone" aria-hidden="true">▥</span>
+          <strong>Equipamentos</strong>
+          <span>Acompanhe o cadastro, as inspeções, os problemas e as ordens de manutenção.</span>
+          <span class="acessar">Ver equipamentos <span aria-hidden="true">↗</span></span>
+        </a>
+      }
+      @if (aluno && autenticacao.autorizacoesDe('adesaoPlano')?.buscar) {
         <a routerLink="/core/adesao-plano/meu-plano">
           <span class="icone" aria-hidden="true">$</span>
           <strong>Meu plano</strong>
@@ -111,5 +144,4 @@
       }
     </div>
   </section>
-  <p class="aviso nota">Marcar aula é uma opção ilustrativa por enquanto.</p>
 </main>

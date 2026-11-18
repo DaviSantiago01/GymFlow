@@ -10,6 +10,7 @@ import {
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { NotificacoesComponent } from '../d5/bootstrap/notificacoes.component';
 import { ServicoAutenticacao, ServicoNotificacao } from '../d5';
+import { perfilDaSessao } from './perfil';
 import { AutorizacoesExecucao } from './treinos/treinos.service';
 
 @Component({
@@ -23,6 +24,9 @@ export class App {
   private readonly router = inject(Router);
   private readonly notificacoes = inject(ServicoNotificacao);
   protected readonly menuAberto = signal(false);
+  protected readonly perfilAtual = computed(() =>
+    perfilDaSessao(this.servicoAutenticacao.autorizacoes()),
+  );
   protected readonly podeRegistrarExecucao = computed(
     () =>
       this.servicoAutenticacao.autorizacoesDe<AutorizacoesExecucao>('execucaoDeExercicio')

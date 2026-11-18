@@ -84,13 +84,6 @@
   letter-spacing: 1.2px;
   text-transform: uppercase;
 }
-.titulo-menu strong {
-  display: block;
-  margin-top: 6px;
-  color: var(--cor-texto-suave);
-  font-size: 13px;
-  font-weight: 500;
-}
 .menu-lateral nav {
   display: flex;
   flex-direction: column;
@@ -225,9 +218,6 @@
   }
   .titulo-menu {
     padding-bottom: var(--espaco-3);
-  }
-  .titulo-menu strong {
-    display: none;
   }
   .rodape-menu {
     padding-top: var(--espaco-3);

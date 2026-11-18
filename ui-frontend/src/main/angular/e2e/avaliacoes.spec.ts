@@ -27,11 +27,8 @@ async function abrirHistorico(page: Page) {
   const abrir = page.getByRole('button', { name: 'Abrir menu' });
   if (await abrir.isVisible()) await abrir.click();
   const menu = page.getByRole('navigation', { name: 'Menu do aluno' });
-  await expect(menu.getByRole('link', { name: 'Minha reserva', exact: true })).toHaveCount(0);
-  await expect(menu.getByRole('link', { name: 'Histórico de reservas', exact: true })).toHaveCount(
-    0,
-  );
-  await menu.getByRole('link', { name: 'Avaliações', exact: true }).click();
+  await expect(menu.getByRole('link', { name: 'Histórico de reservas', exact: true })).toBeVisible();
+  await menu.getByRole('link', { name: 'Avaliar treinos', exact: true }).click();
   await expect(
     page.getByRole('heading', { name: 'Histórico de treinos', exact: true }),
   ).toBeVisible();

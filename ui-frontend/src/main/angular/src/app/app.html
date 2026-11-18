@@ -1,3 +1,7 @@
+@let perfil = perfilAtual();
+@let aluno = perfil?.nome === 'Aluno';
+@let professor = perfil?.nome === 'Professor';
+@let gestor = perfil?.nome === 'Gestor';
 <header class="navbar navbar-dark">
   <div class="barra-superior">
     <a class="navbar-brand" routerLink="/"><span class="marca-logo" aria-hidden="true">▥</span> <strong>Treino Conecta</strong></a>
@@ -7,7 +11,7 @@
         <button
           class="alternar-menu"
           type="button"
-          aria-controls="menu-aluno"
+          aria-controls="menu-perfil"
           [attr.aria-expanded]="menuAberto()"
           (click)="menuAberto.set(!menuAberto())"
         >
@@ -19,18 +23,11 @@
 </header>
 <div class="estrutura" [class.com-menu]="servicoAutenticacao.autenticado()">
   @if (servicoAutenticacao.autenticado()) {
-    <aside id="menu-aluno" class="menu-lateral" [class.aberto]="menuAberto()">
+    <aside id="menu-perfil" class="menu-lateral" [class.aberto]="menuAberto()">
       <div class="titulo-menu">
-        <span>{{
-          servicoAutenticacao.autorizacoesDe('plano')?.buscar
-            ? 'Administração'
-            : servicoAutenticacao.autorizacoesDe('aluno')?.buscar
-              ? 'Área do personal'
-              : 'Área do aluno'
-        }}</span>
-        <strong>Seu treino começa aqui</strong>
+        <span>{{ perfil?.area ?? 'Minha conta' }}</span>
       </div>
-      <nav aria-label="Menu do aluno">
+      <nav [attr.aria-label]="perfil?.menu ?? 'Menu principal'">
         <a
           class="item-menu"
           routerLink="/inicio"
@@ -43,52 +40,55 @@
           <span>Início</span>
         </a>
 
-        <div class="secao-menu" role="group" aria-labelledby="secao-academia">
-          <span class="titulo-secao" id="secao-academia">Academia</span>
-          <button
-            class="item-menu indisponivel"
-            type="button"
-            disabled
-            aria-describedby="aviso-aulas"
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <rect x="3" y="5" width="18" height="16" rx="3" />
-              <path d="M7 3v4m10-4v4M3 11h18m-14 4h3m4 0h3" />
-            </svg>
-            <span>Marcar aula</span><small id="aviso-aulas">Ilustrativo</small>
-          </button>
-          @if (servicoAutenticacao.autorizacoesDe('grupoTreino')?.buscar) {
-            <a
-              class="item-menu"
-              routerLink="/core/grupo-treino/pesquisa"
-              [class.ativo]="gruposAtivos()"
-              [attr.aria-current]="gruposAtivos() ? 'page' : null"
+        @if (aluno) {
+          <div class="secao-menu" role="group" aria-labelledby="secao-academia">
+            <span class="titulo-secao" id="secao-academia">Academia</span>
+            <button
+              class="item-menu indisponivel"
+              type="button"
+              disabled
+              aria-describedby="aviso-aulas"
             >
               <svg viewBox="0 0 24 24" aria-hidden="true">
-                <circle cx="9" cy="7" r="3" />
-                <path d="M3 21v-3a6 6 0 0 1 12 0v3m1-17a3 3 0 0 1 0 6m2 4a5 5 0 0 1 3 4v3" />
+                <rect x="3" y="5" width="18" height="16" rx="3" />
+                <path d="M7 3v4m10-4v4M3 11h18m-14 4h3m4 0h3" />
               </svg>
-              <span>Grupos de treino</span>
-            </a>
-          }
-          @if (servicoAutenticacao.autorizacoesDe('avaliacaoProfessor')?.buscar) {
-            <a
-              class="item-menu"
-              routerLink="/core/treino/pesquisa"
-              [class.ativo]="avaliacoesAtivas()"
-              [attr.aria-current]="avaliacoesAtivas() ? 'page' : null"
-            >
-              <svg viewBox="0 0 24 24" aria-hidden="true">
-                <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z" />
-              </svg>
-              <span>Avaliar treinos</span>
-            </a>
-          }
-        </div>
+              <span>Marcar aula</span><small id="aviso-aulas">Ilustrativo</small>
+            </button>
+            @if (servicoAutenticacao.autorizacoesDe('grupoTreino')?.buscar) {
+              <a
+                class="item-menu"
+                routerLink="/core/grupo-treino/pesquisa"
+                [class.ativo]="gruposAtivos()"
+                [attr.aria-current]="gruposAtivos() ? 'page' : null"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="9" cy="7" r="3" />
+                  <path d="M3 21v-3a6 6 0 0 1 12 0v3m1-17a3 3 0 0 1 0 6m2 4a5 5 0 0 1 3 4v3" />
+                </svg>
+                <span>Grupos de treino</span>
+              </a>
+            }
+            @if (servicoAutenticacao.autorizacoesDe('avaliacaoProfessor')?.buscar) {
+              <a
+                class="item-menu"
+                routerLink="/core/treino/pesquisa"
+                [class.ativo]="avaliacoesAtivas()"
+                [attr.aria-current]="avaliacoesAtivas() ? 'page' : null"
+              >
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9Z" />
+                </svg>
+                <span>Avaliar treinos</span>
+              </a>
+            }
+          </div>
+        }
 
         @if (
-          servicoAutenticacao.autorizacoesDe('armario')?.buscar ||
-          servicoAutenticacao.autorizacoesDe('reservaArmario')?.buscar
+          aluno &&
+          (servicoAutenticacao.autorizacoesDe('armario')?.buscar ||
+            servicoAutenticacao.autorizacoesDe('reservaArmario')?.buscar)
         ) {
           <div class="secao-menu" role="group" aria-labelledby="secao-armarios">
             <span class="titulo-secao" id="secao-armarios">Armários</span>
@@ -136,13 +136,16 @@
         }
 
         @if (
-          servicoAutenticacao.autorizacoesDe('aluno')?.buscar ||
-          servicoAutenticacao.autorizacoesDe('planoDeTreino')?.buscar ||
-          servicoAutenticacao.autorizacoesDe('execucaoDeExercicio')?.buscar
+          (professor || aluno) &&
+          (servicoAutenticacao.autorizacoesDe('aluno')?.buscar ||
+            servicoAutenticacao.autorizacoesDe('planoDeTreino')?.buscar ||
+            servicoAutenticacao.autorizacoesDe('execucaoDeExercicio')?.buscar)
         ) {
           <div class="secao-menu" role="group" aria-labelledby="secao-treinos">
-            <span class="titulo-secao" id="secao-treinos">Treinos</span>
-            @if (servicoAutenticacao.autorizacoesDe('aluno')?.buscar) {
+            <span class="titulo-secao" id="secao-treinos">
+              {{ aluno ? 'Meus treinos' : 'Acompanhamento de alunos' }}
+            </span>
+            @if (professor && servicoAutenticacao.autorizacoesDe('aluno')?.buscar) {
               <a
                 class="item-menu"
                 routerLink="/core/aluno/pesquisa"
@@ -166,11 +169,11 @@
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M6 7v10M3 9v6m15-8v10m3-8v6M6 12h12" />
                 </svg>
-                <span>Planos de treino</span>
+                <span>{{ aluno ? 'Meus planos de treino' : 'Planos de treino' }}</span>
               </a>
             }
             @if (servicoAutenticacao.autorizacoesDe('execucaoDeExercicio')?.buscar) {
-              @if (podeRegistrarExecucao()) {
+              @if (aluno && podeRegistrarExecucao()) {
                 <a
                   class="item-menu"
                   routerLink="/core/execucao-de-exercicio/inclusao"
@@ -210,8 +213,9 @@
         }
 
         @if (
-          servicoAutenticacao.autorizacoesDe('avaliacaoFisica')?.buscar ||
-          servicoAutenticacao.autorizacoesDe('meta')?.buscar
+          (professor || aluno) &&
+          (servicoAutenticacao.autorizacoesDe('avaliacaoFisica')?.buscar ||
+            servicoAutenticacao.autorizacoesDe('meta')?.buscar)
         ) {
           <div class="secao-menu" role="group" aria-labelledby="secao-avaliacao">
             <span class="titulo-secao" id="secao-avaliacao">Avaliação física</span>
@@ -227,7 +231,7 @@
                 </svg>
                 <span>Avaliações físicas</span>
               </a>
-              @if (!servicoAutenticacao.autorizacoesDe('aluno')?.buscar) {
+              @if (aluno) {
                 <a
                   class="item-menu"
                   routerLink="/core/avaliacao-fisica/situacao"
@@ -271,11 +275,13 @@
         }
 
         @if (
-          servicoAutenticacao.autorizacoesDe('plano')?.buscar ||
-          servicoAutenticacao.autorizacoesDe('profissional')?.buscar
+          gestor &&
+          (servicoAutenticacao.autorizacoesDe('plano')?.buscar ||
+            servicoAutenticacao.autorizacoesDe('adesaoPlano')?.buscar ||
+            servicoAutenticacao.autorizacoesDe('mensalidade')?.buscar)
         ) {
-          <div class="secao-menu" role="group" aria-labelledby="secao-administracao">
-            <span class="titulo-secao" id="secao-administracao">Administração</span>
+          <div class="secao-menu" role="group" aria-labelledby="secao-planos">
+            <span class="titulo-secao" id="secao-planos">Planos e cobranças</span>
             @if (servicoAutenticacao.autorizacoesDe('plano')?.buscar) {
               <a class="item-menu" routerLink="/core/plano/pesquisa" routerLinkActive="ativo" ariaCurrentWhenActive="page">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -284,6 +290,8 @@
                 </svg>
                 <span>Planos</span>
               </a>
+            }
+            @if (servicoAutenticacao.autorizacoesDe('adesaoPlano')?.buscar) {
               <a class="item-menu" routerLink="/core/adesao-plano/pesquisa" routerLinkActive="ativo" ariaCurrentWhenActive="page">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <circle cx="9" cy="8" r="3" />
@@ -291,6 +299,8 @@
                 </svg>
                 <span>Adesões</span>
               </a>
+            }
+            @if (servicoAutenticacao.autorizacoesDe('mensalidade')?.buscar) {
               <a class="item-menu" routerLink="/core/mensalidade/pesquisa" routerLinkActive="ativo" ariaCurrentWhenActive="page">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
                   <path d="M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6m-6 4h6" />
@@ -298,6 +308,16 @@
                 <span>Mensalidades</span>
               </a>
             }
+          </div>
+        }
+
+        @if (
+          gestor &&
+          (servicoAutenticacao.autorizacoesDe('profissional')?.buscar ||
+            servicoAutenticacao.autorizacoesDe('equipamento')?.buscar)
+        ) {
+          <div class="secao-menu" role="group" aria-labelledby="secao-operacao">
+            <span class="titulo-secao" id="secao-operacao">Operação da academia</span>
             @if (servicoAutenticacao.autorizacoesDe('profissional')?.buscar) {
               <a class="item-menu" routerLink="/core/profissional/pesquisa" routerLinkActive="ativo" ariaCurrentWhenActive="page">
                 <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -307,13 +327,18 @@
                 <span>Profissionais</span>
               </a>
             }
+            @if (servicoAutenticacao.autorizacoesDe('equipamento')?.buscar) {
+              <a class="item-menu" routerLink="/core/equipamento/pesquisa" routerLinkActive="ativo" ariaCurrentWhenActive="page">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M7 12h10M3 10v4m4-7v10M17 7v10m4-7v4" />
+                </svg>
+                <span>Equipamentos</span>
+              </a>
+            }
           </div>
         }
 
-        @if (
-          servicoAutenticacao.autorizacoesDe('adesaoPlano')?.buscar &&
-          !servicoAutenticacao.autorizacoesDe('plano')?.buscar
-        ) {
+        @if (aluno && servicoAutenticacao.autorizacoesDe('adesaoPlano')?.buscar) {
           <div class="secao-menu" role="group" aria-labelledby="secao-meu-plano">
             <span class="titulo-secao" id="secao-meu-plano">Financeiro</span>
             <a class="item-menu" routerLink="/core/adesao-plano/meu-plano" routerLinkActive="ativo" ariaCurrentWhenActive="page">

@@ -26,7 +26,7 @@ export async function entrar(page: Page) {
   const menu = page.getByRole('navigation', { name: 'Menu do aluno' });
   await expect(menu.getByRole('button', { name: /Marcar aula/ })).toBeDisabled();
   await expect(menu.getByRole('link', { name: 'Grupos de treino', exact: true })).toBeVisible();
-  await menu.getByRole('link', { name: 'Armários', exact: true }).click();
+  await menu.getByRole('link', { name: 'Reservar armário', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Armários', exact: true })).toBeVisible();
   if (await abrir.isVisible()) await expect(menu).toBeHidden();
 }
