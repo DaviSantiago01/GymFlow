@@ -1,0 +1,55 @@
+<main class="pagina">
+  <header class="pagina-cabecalho">
+    <div>
+      <h1>{{ registro.resultado ? 'Inspeção de equipamento' : 'Mudança de equipamento' }}</h1>
+      <p>{{ registro.equipamentoNome }} · {{ dia(registro.data) }}</p>
+    </div>
+    <a
+      class="acao acao-secundaria"
+      routerLink="/core/registro-equipamento/pesquisa"
+      [queryParams]="{ equipamento: registro.equipamento }"
+      >Voltar ao histórico</a
+    >
+  </header>
+  <app-equipamentos-menu />
+  <section class="bloco">
+    <h2>Detalhes do registro</h2>
+    <dl class="detalhes-equipamento">
+      <div>
+        <dt>Responsável</dt>
+        <dd>{{ registro.responsavel }}</dd>
+      </div>
+      <div>
+        <dt>Área anterior</dt>
+        <dd>{{ rotulo(registro.areaAnterior) }}</dd>
+      </div>
+      <div>
+        <dt>Área após o registro</dt>
+        <dd>{{ rotulo(registro.areaNova) }}</dd>
+      </div>
+      <div>
+        <dt>Situação anterior</dt>
+        <dd>{{ rotulo(registro.situacaoAnterior) }}</dd>
+      </div>
+      <div>
+        <dt>Situação após o registro</dt>
+        <dd>{{ rotulo(registro.situacaoNova) }}</dd>
+      </div>
+      @if (registro.resultado) {
+        <div>
+          <dt>Resultado</dt>
+          <dd>{{ rotulo(registro.resultado) }}</dd>
+        </div>
+      }
+    </dl>
+    @if (registro.observacao) {
+      <h3>Observação</h3>
+      <p class="texto-registrado">{{ registro.observacao }}</p>
+    }
+    <a
+      class="acao acao-secundaria"
+      [routerLink]="['/core/equipamento', registro.equipamento, 'visualizacao']"
+      >Ver equipamento</a
+    >
+  </section>
+</main>

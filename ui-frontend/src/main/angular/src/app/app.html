@@ -272,7 +272,8 @@
 
         @if (
           servicoAutenticacao.autorizacoesDe('plano')?.buscar ||
-          servicoAutenticacao.autorizacoesDe('profissional')?.buscar
+          servicoAutenticacao.autorizacoesDe('profissional')?.buscar ||
+          servicoAutenticacao.autorizacoesDe('equipamento')?.buscar
         ) {
           <div class="secao-menu" role="group" aria-labelledby="secao-administracao">
             <span class="titulo-secao" id="secao-administracao">Administração</span>
@@ -305,6 +306,14 @@
                   <path d="M4 21v-1a8 8 0 0 1 16 0v1M12 14v4" />
                 </svg>
                 <span>Profissionais</span>
+              </a>
+            }
+            @if (servicoAutenticacao.autorizacoesDe('equipamento')?.buscar) {
+              <a class="item-menu" routerLink="/core/equipamento/pesquisa" routerLinkActive="ativo" ariaCurrentWhenActive="page">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M7 12h10M3 10v4m4-7v10M17 7v10m4-7v4" />
+                </svg>
+                <span>Equipamentos</span>
               </a>
             }
           </div>

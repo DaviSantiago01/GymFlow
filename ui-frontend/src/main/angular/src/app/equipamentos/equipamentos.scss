@@ -1,0 +1,49 @@
+.equipamentos-menu {
+  margin-block: 0 1rem;
+}
+
+.aba-atual {
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+}
+
+.tabela-dados td {
+  overflow-wrap: anywhere;
+}
+
+.detalhes-equipamento {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 12rem), 1fr));
+  gap: 0.875rem 1.25rem;
+  margin-block: 1rem;
+}
+
+.detalhes-equipamento dd {
+  margin: 0.25rem 0 0;
+  overflow-wrap: anywhere;
+}
+
+.texto-registrado {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.formulario-grade > * {
+  min-width: 0;
+}
+
+.aviso-operacional {
+  font-weight: 650;
+}
+
+.formulario-grade .campo-risco {
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  gap: 0.5rem;
+}
+
+.formulario-grade .campo-risco input {
+  width: auto;
+}

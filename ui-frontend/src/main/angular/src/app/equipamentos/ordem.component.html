@@ -1,0 +1,222 @@
+@let item = ordem();
+@let modo = acao();
+<main class="pagina">
+  <header class="pagina-cabecalho">
+    <div>
+      <h1>{{ item ? 'Ordem #' + item.identificador : 'Abrir ordem de manutenção' }}</h1>
+      <p>{{ item ? rotulo(item.situacao) + ' · ' + item.problemaTitulo : problema?.titulo }}</p>
+    </div>
+    <a class="acao acao-secundaria" routerLink="/core/ordem-manutencao/pesquisa"
+      >Voltar às ordens</a
+    >
+  </header>
+  <app-equipamentos-menu />
+
+  @if (item && !modo) {
+    <section class="bloco">
+      <h2>Dados da manutenção</h2>
+      <dl class="detalhes-equipamento">
+        <div>
+          <dt>Problema</dt>
+          <dd>
+            <a [routerLink]="['/core/problema-equipamento', item.problema, 'visualizacao']">{{
+              item.problemaTitulo
+            }}</a>
+          </dd>
+        </div>
+        <div>
+          <dt>Equipamento</dt>
+          <dd>
+            <a [routerLink]="['/core/equipamento', item.equipamento, 'visualizacao']"
+              >Ver equipamento</a
+            >
+          </dd>
+        </div>
+        <div>
+          <dt>Técnico</dt>
+          <dd>{{ item.tecnico }}</dd>
+        </div>
+        <div>
+          <dt>Aberta por</dt>
+          <dd>{{ item.responsavel }}</dd>
+        </div>
+        <div>
+          <dt>Abertura</dt>
+          <dd>{{ dia(item.abertura) }}</dd>
+        </div>
+        <div>
+          <dt>Início</dt>
+          <dd>{{ dia(item.inicio) }}</dd>
+        </div>
+        <div>
+          <dt>Término</dt>
+          <dd>{{ dia(item.termino) }}</dd>
+        </div>
+        <div>
+          <dt>Custo estimado</dt>
+          <dd>{{ (item.custoEstimado | currency: 'BRL') ?? '—' }}</dd>
+        </div>
+        <div>
+          <dt>Custo real</dt>
+          <dd>{{ (item.custoReal | currency: 'BRL') ?? '—' }}</dd>
+        </div>
+      </dl>
+      <h3>Diagnóstico</h3>
+      <p class="texto-registrado">{{ item.diagnostico }}</p>
+      @if (item.servicoExecutado) {
+        <h3>Serviço executado</h3>
+        <p class="texto-registrado">{{ item.servicoExecutado }}</p>
+      }
+      @if (item.justificativa) {
+        <h3>Justificativa</h3>
+        <p class="texto-registrado">{{ item.justificativa }}</p>
+      }
+      @if (item.situacao === 'ABERTA' || item.situacao === 'EM_ANDAMENTO') {
+        <div class="grupo-acoes">
+          @if (item.situacao === 'ABERTA') {
+            <button class="acao acao-principal" type="button" (click)="abrir('iniciar')">
+              Iniciar ordem
+            </button>
+          } @else {
+            <button class="acao acao-principal" type="button" (click)="abrir('concluir')">
+              Concluir ordem
+            </button>
+          }
+          <button class="acao acao-secundaria" type="button" (click)="abrir('editar')">
+            Editar ordem
+          </button>
+          <button class="acao acao-secundaria" type="button" (click)="abrir('cancelar')">
+            Cancelar ordem
+          </button>
+        </div>
+      }
+    </section>
+  }
+
+  @if (modo) {
+    <section class="bloco">
+      @switch (modo) {
+        @case ('abrir') {
+          <h2>Dados da ordem</h2>
+        }
+        @case ('editar') {
+          <h2>Editar ordem</h2>
+        }
+        @case ('iniciar') {
+          <h2>Iniciar ordem</h2>
+        }
+        @case ('concluir') {
+          <h2>Concluir ordem</h2>
+        }
+        @case ('cancelar') {
+          <h2>Cancelar ordem</h2>
+        }
+      }
+      <form #edicao="ngForm" (ngSubmit)="edicao.valid && salvar()">
+        @if (modo === 'concluir') {
+          <p>
+            A conclusão resolve o problema vinculado. O retorno ao uso depende de uma inspeção
+            aprovada.
+          </p>
+        }
+        <div class="formulario-grade">
+          @if (modo === 'abrir' || modo === 'editar') {
+            <label
+              >Técnico
+              <input name="tecnico" required maxlength="100" [(ngModel)]="formulario.tecnico"
+            /></label>
+            <label
+              >Custo estimado em reais
+              <input
+                name="custoEstimado"
+                type="number"
+                min="0"
+                max="9999999999.99"
+                step="0.01"
+                [(ngModel)]="formulario.custoEstimado"
+              />
+            </label>
+            <label
+              >Diagnóstico
+              <textarea
+                name="diagnostico"
+                required
+                rows="4"
+                maxlength="800"
+                [(ngModel)]="formulario.diagnostico"
+              ></textarea>
+            </label>
+          }
+          @if (modo === 'iniciar' || modo === 'concluir') {
+            <label
+              >{{ modo === 'iniciar' ? 'Data de início' : 'Data de término' }}
+              <input
+                name="data"
+                type="date"
+                required
+                [min]="item?.inicio ?? item?.abertura ?? ''"
+                [max]="hoje"
+                [(ngModel)]="data"
+              />
+            </label>
+          }
+          @if (modo === 'concluir') {
+            <label
+              >Custo real em reais
+              <input
+                name="custoReal"
+                type="number"
+                min="0"
+                max="9999999999.99"
+                step="0.01"
+                [(ngModel)]="custoReal"
+              />
+            </label>
+          }
+          @if (modo === 'concluir' || modo === 'cancelar') {
+            <label
+              >{{ modo === 'concluir' ? 'Serviço executado' : 'Justificativa do cancelamento' }}
+              <textarea
+                name="desfecho"
+                required
+                rows="4"
+                maxlength="800"
+                [(ngModel)]="desfecho"
+              ></textarea>
+            </label>
+          }
+        </div>
+        @if (envio.erro()) {
+          <p class="aviso aviso-erro" role="alert">{{ envio.erro() }}</p>
+        }
+        <div class="grupo-acoes">
+          <button class="acao acao-principal" [disabled]="edicao.invalid || envio.ocupado()">
+            {{
+              envio.ocupado()
+                ? 'Salvando…'
+                : modo === 'cancelar'
+                  ? 'Confirmar cancelamento'
+                  : 'Salvar'
+            }}
+          </button>
+          @if (item) {
+            <button
+              class="acao acao-secundaria"
+              type="button"
+              [disabled]="envio.ocupado()"
+              (click)="abrir('')"
+            >
+              Voltar
+            </button>
+          } @else {
+            <a
+              class="acao acao-secundaria"
+              [routerLink]="['/core/problema-equipamento', problema?.identificador, 'visualizacao']"
+              >Cancelar</a
+            >
+          }
+        </div>
+      </form>
+    </section>
+  }
+</main>

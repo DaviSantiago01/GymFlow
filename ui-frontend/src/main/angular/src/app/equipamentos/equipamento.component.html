@@ -1,0 +1,344 @@
+@let item = dados()?.equipamento;
+@let modo = acao();
+<main class="pagina">
+  <header class="pagina-cabecalho">
+    <div>
+      <h1>{{ item?.nome ?? 'Cadastrar equipamento' }}</h1>
+      @if (item) {
+        <p>Patrimônio {{ item.patrimonio }} · {{ rotulo(item.situacao) }}</p>
+      }
+    </div>
+    <a class="acao acao-secundaria" routerLink="/core/equipamento/pesquisa"
+      >Voltar aos equipamentos</a
+    >
+  </header>
+  <app-equipamentos-menu />
+
+  @if (item && !modo) {
+    <section class="bloco">
+      <h2>Dados do equipamento</h2>
+      <dl class="detalhes-equipamento">
+        <div>
+          <dt>Código</dt>
+          <dd>{{ item.identificador }}</dd>
+        </div>
+        <div>
+          <dt>Número de série</dt>
+          <dd>{{ item.serie || '—' }}</dd>
+        </div>
+        <div>
+          <dt>Tipo</dt>
+          <dd>{{ rotulo(item.tipo) }}</dd>
+        </div>
+        <div>
+          <dt>Marca</dt>
+          <dd>{{ item.marca }}</dd>
+        </div>
+        <div>
+          <dt>Modelo</dt>
+          <dd>{{ item.modelo }}</dd>
+        </div>
+        <div>
+          <dt>Aquisição</dt>
+          <dd>{{ dia(item.aquisicao) }}</dd>
+        </div>
+        <div>
+          <dt>Área atual</dt>
+          <dd>{{ rotulo(item.area) }}</dd>
+        </div>
+      </dl>
+      <div class="grupo-acoes">
+        @if (item.situacao !== 'INATIVO') {
+          <button class="acao acao-secundaria" type="button" (click)="abrir('editar')">
+            Editar cadastro
+          </button>
+        }
+        @if (dados()?.podeExcluir) {
+          <button class="acao acao-perigo" type="button" (click)="abrir('excluir')">
+            Excluir equipamento
+          </button>
+        }
+        @if (item.situacao !== 'INATIVO') {
+          <button class="acao acao-secundaria" type="button" (click)="abrir('inativar')">
+            Inativar equipamento
+          </button>
+        }
+      </div>
+      @if (!dados()?.podeExcluir) {
+        <p>O equipamento tem histórico. Os registros permanecem disponíveis após a inativação.</p>
+      }
+    </section>
+    <section class="bloco">
+      <h2>Inspeções e situação</h2>
+      <dl class="detalhes-equipamento">
+        <div>
+          <dt>Periodicidade</dt>
+          <dd>{{ item.periodicidade }} dias</dd>
+        </div>
+        <div>
+          <dt>Última inspeção</dt>
+          <dd>{{ dia(item.ultimaInspecao) }}</dd>
+        </div>
+        <div>
+          <dt>Próxima inspeção</dt>
+          <dd>{{ item.situacao === 'INATIVO' ? '—' : dia(item.proximaInspecao) }}</dd>
+        </div>
+        <div>
+          <dt>Prazo</dt>
+          <dd class="aviso-operacional">
+            {{ item.situacao === 'INATIVO' ? '—' : rotulo(item.prazoInspecao) }}
+          </dd>
+        </div>
+      </dl>
+      <div class="grupo-acoes">
+        @if (item.situacao !== 'INATIVO') {
+          <button class="acao acao-principal" type="button" (click)="abrir('inspecionar')">
+            Registrar inspeção
+          </button>
+          <button class="acao acao-secundaria" type="button" (click)="abrir('movimentar')">
+            Alterar área ou situação
+          </button>
+        }
+        <a
+          class="acao acao-secundaria"
+          routerLink="/core/registro-equipamento/pesquisa"
+          [queryParams]="{ equipamento: item.identificador }"
+          >Ver histórico</a
+        >
+      </div>
+    </section>
+    <section class="bloco">
+      <h2>Problemas</h2>
+      <div class="grupo-acoes">
+        @if (item.situacao !== 'INATIVO') {
+          <a
+            class="acao acao-principal"
+            routerLink="/core/problema-equipamento/inclusao"
+            [queryParams]="{ equipamento: item.identificador }"
+            >Registrar problema</a
+          >
+        }
+        <a
+          class="acao acao-secundaria"
+          routerLink="/core/problema-equipamento/pesquisa"
+          [queryParams]="{ equipamento: item.identificador }"
+          >Consultar problemas</a
+        >
+      </div>
+    </section>
+  }
+
+  @if (modo) {
+    <section class="bloco">
+      @switch (modo) {
+        @case ('cadastrar') {
+          <h2>Identificação e localização</h2>
+        }
+        @case ('editar') {
+          <h2>Editar cadastro</h2>
+        }
+        @case ('movimentar') {
+          <h2>Alterar área ou situação</h2>
+        }
+        @case ('inspecionar') {
+          <h2>Registrar inspeção</h2>
+        }
+        @case ('inativar') {
+          <h2>Confirmar inativação</h2>
+        }
+        @case ('excluir') {
+          <h2>Confirmar exclusão</h2>
+        }
+      }
+      <form #edicao="ngForm" (ngSubmit)="edicao.valid && salvar()">
+        @if (modo === 'cadastrar' || modo === 'editar') {
+          <div class="formulario-grade">
+            <label
+              >Nome <input name="nome" required maxlength="100" [(ngModel)]="formulario.nome"
+            /></label>
+            <label
+              >Patrimônio
+              <input name="patrimonio" required maxlength="24" [(ngModel)]="formulario.patrimonio"
+            /></label>
+            <label
+              >Número de série <input name="serie" maxlength="40" [(ngModel)]="formulario.serie"
+            /></label>
+            <label
+              ><span id="equipamento-tipo">Tipo</span>
+              <select
+                name="tipo"
+                aria-labelledby="equipamento-tipo"
+                required
+                [(ngModel)]="formulario.tipo"
+              >
+                <option value="">Selecione</option>
+                @for (tipo of areas; track tipo) {
+                  <option [value]="tipo">{{ rotulo(tipo) }}</option>
+                }
+              </select>
+            </label>
+            <label
+              >Marca <input name="marca" required maxlength="60" [(ngModel)]="formulario.marca"
+            /></label>
+            <label
+              >Modelo <input name="modelo" required maxlength="60" [(ngModel)]="formulario.modelo"
+            /></label>
+            <label
+              >Data de aquisição
+              <input
+                name="aquisicao"
+                type="date"
+                required
+                [max]="hoje"
+                [readOnly]="!!item && !dados()?.podeExcluir"
+                [(ngModel)]="formulario.aquisicao"
+              />
+            </label>
+            <label
+              >Periodicidade de inspeção em dias
+              <input
+                name="periodicidade"
+                type="number"
+                min="1"
+                step="1"
+                required
+                [(ngModel)]="formulario.periodicidade"
+              />
+            </label>
+            @if (!item) {
+              <label
+                ><span id="equipamento-area-inicial">Área inicial</span>
+                <select
+                  name="area"
+                  aria-labelledby="equipamento-area-inicial"
+                  required
+                  [(ngModel)]="formulario.area"
+                >
+                  <option value="">Selecione</option>
+                  @for (area of areas; track area) {
+                    <option [value]="area">{{ rotulo(area) }}</option>
+                  }
+                </select>
+              </label>
+            }
+          </div>
+          @if (!item) {
+            <p>A situação inicial é Disponível.</p>
+          }
+        }
+        @if (modo === 'movimentar' || modo === 'inspecionar') {
+          <div class="formulario-grade">
+            @if (modo === 'inspecionar') {
+              <label
+                >Data da inspeção
+                <input
+                  name="data"
+                  type="date"
+                  required
+                  [max]="hoje"
+                  [min]="item?.ultimaInspecao ?? item?.aquisicao ?? ''"
+                  [(ngModel)]="operacao.data"
+                />
+              </label>
+              <label
+                ><span id="equipamento-resultado">Resultado</span>
+                <select
+                  name="resultado"
+                  aria-labelledby="equipamento-resultado"
+                  required
+                  [(ngModel)]="operacao.resultado"
+                >
+                  @for (resultado of resultados; track resultado) {
+                    <option [value]="resultado">{{ rotulo(resultado) }}</option>
+                  }
+                </select>
+              </label>
+            }
+            <label
+              ><span id="equipamento-area">Área</span>
+              <select
+                name="area"
+                aria-labelledby="equipamento-area"
+                required
+                [(ngModel)]="operacao.area"
+              >
+                @for (area of areas; track area) {
+                  <option [value]="area">{{ rotulo(area) }}</option>
+                }
+              </select>
+            </label>
+            @if (modo === 'inspecionar' && operacao.resultado === 'REPROVADO') {
+              <p>Uma inspeção reprovada interdita o equipamento.</p>
+            } @else {
+              <label
+                ><span id="equipamento-situacao">Situação após o registro</span>
+                <select
+                  name="situacao"
+                  aria-labelledby="equipamento-situacao"
+                  required
+                  [(ngModel)]="operacao.situacao"
+                >
+                  @for (situacao of situacoes; track situacao) {
+                    @if (
+                      situacao !== 'DISPONIVEL' ||
+                      modo === 'inspecionar' ||
+                      item?.situacao === 'DISPONIVEL'
+                    ) {
+                      <option [value]="situacao">{{ rotulo(situacao) }}</option>
+                    }
+                  }
+                </select>
+              </label>
+            }
+            <label
+              >Observação
+              <textarea
+                name="observacao"
+                rows="3"
+                maxlength="800"
+                [(ngModel)]="operacao.observacao"
+              ></textarea>
+            </label>
+          </div>
+        }
+        @if (modo === 'excluir') {
+          <p>O cadastro de {{ item?.nome }} será removido definitivamente.</p>
+        }
+        @if (modo === 'inativar') {
+          <p>O equipamento sairá de uso e o histórico continuará disponível.</p>
+        }
+        @if (envio.erro()) {
+          <p class="aviso aviso-erro" role="alert">{{ envio.erro() }}</p>
+        }
+        <div class="grupo-acoes">
+          <button
+            [class]="modo === 'excluir' ? 'acao acao-perigo' : 'acao acao-principal'"
+            [disabled]="edicao.invalid || envio.ocupado()"
+          >
+            @if (envio.ocupado()) {
+              Salvando…
+            } @else if (modo === 'excluir') {
+              Confirmar exclusão
+            } @else if (modo === 'inativar') {
+              Confirmar inativação
+            } @else {
+              Salvar
+            }
+          </button>
+          @if (item) {
+            <button
+              class="acao acao-secundaria"
+              type="button"
+              [disabled]="envio.ocupado()"
+              (click)="abrir('')"
+            >
+              Cancelar
+            </button>
+          } @else {
+            <a class="acao acao-secundaria" routerLink="/core/equipamento/pesquisa">Cancelar</a>
+          }
+        </div>
+      </form>
+    </section>
+  }
+</main>

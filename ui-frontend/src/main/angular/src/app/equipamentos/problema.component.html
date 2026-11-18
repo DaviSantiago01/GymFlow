@@ -1,0 +1,226 @@
+@let item = problema();
+@let modo = acao();
+<main class="pagina">
+  <header class="pagina-cabecalho">
+    <div>
+      <h1>{{ item?.titulo ?? 'Registrar problema' }}</h1>
+      <p>{{ item ? rotulo(item.situacao) + ' · ' + item.equipamentoNome : equipamento?.nome }}</p>
+    </div>
+    <a class="acao acao-secundaria" routerLink="/core/problema-equipamento/pesquisa"
+      >Voltar aos problemas</a
+    >
+  </header>
+  <app-equipamentos-menu />
+
+  @if (item && !modo) {
+    <section class="bloco">
+      <h2>Relato e acompanhamento</h2>
+      <dl class="detalhes-equipamento">
+        <div>
+          <dt>Código</dt>
+          <dd>{{ item.identificador }}</dd>
+        </div>
+        <div>
+          <dt>Equipamento</dt>
+          <dd>
+            <a [routerLink]="['/core/equipamento', item.equipamento, 'visualizacao']">{{
+              item.equipamentoNome
+            }}</a>
+          </dd>
+        </div>
+        <div>
+          <dt>Gravidade</dt>
+          <dd>{{ rotulo(item.gravidade) }}</dd>
+        </div>
+        <div>
+          <dt>Risco à segurança</dt>
+          <dd>{{ item.risco ? 'Sim' : 'Não' }}</dd>
+        </div>
+        <div>
+          <dt>Data do relato</dt>
+          <dd>{{ dia(item.dataRelato) }}</dd>
+        </div>
+        <div>
+          <dt>Registrado por</dt>
+          <dd>{{ item.responsavel }}</dd>
+        </div>
+        <div>
+          <dt>Evidência</dt>
+          <dd>{{ item.evidencia || '—' }}</dd>
+        </div>
+        @if (item.dataEncerramento) {
+          <div>
+            <dt>Encerramento</dt>
+            <dd>{{ dia(item.dataEncerramento) }}</dd>
+          </div>
+        }
+      </dl>
+      <h3>Relato</h3>
+      <p class="texto-registrado">{{ item.relato }}</p>
+      @if (item.desfecho) {
+        <h3>{{ item.situacao === 'RESOLVIDO' ? 'Solução' : 'Justificativa' }}</h3>
+        <p class="texto-registrado">{{ item.desfecho }}</p>
+      }
+      <div class="grupo-acoes">
+        @if (item.situacao === 'ABERTO') {
+          <button class="acao acao-secundaria" type="button" (click)="abrir('editar')">
+            Editar relato
+          </button>
+          <button class="acao acao-principal" type="button" (click)="abrir('resolver')">
+            Resolver problema
+          </button>
+          <button class="acao acao-secundaria" type="button" (click)="abrir('cancelar')">
+            Cancelar problema
+          </button>
+          <a
+            class="acao acao-secundaria"
+            routerLink="/core/ordem-manutencao/inclusao"
+            [queryParams]="{ problema: item.identificador }"
+            >Abrir ordem</a
+          >
+        }
+        <a
+          class="acao acao-secundaria"
+          routerLink="/core/ordem-manutencao/pesquisa"
+          [queryParams]="{ problema: item.identificador }"
+          >Consultar ordens</a
+        >
+      </div>
+    </section>
+  }
+
+  @if (modo) {
+    <section class="bloco">
+      @switch (modo) {
+        @case ('registrar') {
+          <h2>Dados do problema</h2>
+        }
+        @case ('editar') {
+          <h2>Editar relato</h2>
+        }
+        @case ('resolver') {
+          <h2>Resolver problema</h2>
+        }
+        @case ('cancelar') {
+          <h2>Cancelar problema</h2>
+        }
+      }
+      <form #edicao="ngForm" (ngSubmit)="edicao.valid && salvar()">
+        @if (modo === 'registrar' || modo === 'editar') {
+          <div class="formulario-grade">
+            <label
+              >Título <input name="titulo" required maxlength="100" [(ngModel)]="formulario.titulo"
+            /></label>
+            @if (!item) {
+              <label
+                >Data do relato
+                <input
+                  name="dataRelato"
+                  type="date"
+                  required
+                  [min]="equipamento?.aquisicao ?? ''"
+                  [max]="hoje"
+                  [(ngModel)]="formulario.dataRelato"
+                />
+              </label>
+            }
+            <label
+              ><span id="problema-gravidade">Gravidade</span>
+              <select
+                name="gravidade"
+                aria-labelledby="problema-gravidade"
+                required
+                [(ngModel)]="formulario.gravidade"
+              >
+                <option value="">Selecione</option>
+                @for (gravidade of gravidades; track gravidade) {
+                  <option [value]="gravidade">{{ rotulo(gravidade) }}</option>
+                }
+              </select>
+            </label>
+            <label class="campo-risco">
+              <input type="checkbox" name="risco" [(ngModel)]="formulario.risco" /> Risco à
+              segurança
+            </label>
+            <label
+              >Relato
+              <textarea
+                name="relato"
+                required
+                rows="4"
+                maxlength="800"
+                [(ngModel)]="formulario.relato"
+              ></textarea>
+            </label>
+            <label
+              >Referência da evidência
+              <input name="evidencia" maxlength="180" [(ngModel)]="formulario.evidencia" />
+            </label>
+          </div>
+          @if (formulario.risco || formulario.gravidade === 'CRITICA') {
+            <p class="aviso-operacional">
+              A gravidade crítica ou o risco à segurança interdita o equipamento.
+            </p>
+          }
+        } @else {
+          <p>A liberação de um equipamento interditado requer uma inspeção aprovada.</p>
+          <div class="formulario-grade">
+            @if (modo === 'resolver') {
+              <label
+                >Data da solução
+                <input
+                  name="data"
+                  type="date"
+                  required
+                  [min]="item?.dataRelato ?? ''"
+                  [max]="hoje"
+                  [(ngModel)]="dataSolucao"
+                />
+              </label>
+            }
+            <label
+              >{{ modo === 'resolver' ? 'Descrição da solução' : 'Justificativa do cancelamento' }}
+              <textarea
+                name="desfecho"
+                rows="4"
+                required
+                maxlength="800"
+                [(ngModel)]="desfecho"
+              ></textarea>
+            </label>
+          </div>
+        }
+        @if (envio.erro()) {
+          <p class="aviso aviso-erro" role="alert">{{ envio.erro() }}</p>
+        }
+        <div class="grupo-acoes">
+          <button class="acao acao-principal" [disabled]="edicao.invalid || envio.ocupado()">
+            {{
+              envio.ocupado()
+                ? 'Salvando…'
+                : modo === 'cancelar'
+                  ? 'Confirmar cancelamento'
+                  : 'Salvar'
+            }}
+          </button>
+          @if (item) {
+            <button
+              class="acao acao-secundaria"
+              type="button"
+              [disabled]="envio.ocupado()"
+              (click)="abrir('')"
+            >
+              Voltar
+            </button>
+          } @else {
+            <a
+              class="acao acao-secundaria"
+              [routerLink]="['/core/equipamento', equipamento?.identificador, 'visualizacao']"
+              >Cancelar</a
+            >
+          }
+        </div>
+      </form>
+    </section>
+  }
+</main>

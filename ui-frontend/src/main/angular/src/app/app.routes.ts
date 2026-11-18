@@ -107,5 +107,9 @@ export const routes: Routes = [
     data: { modo },
     runGuardsAndResolvers: 'paramsOrQueryParamsChange' as const,
   })),
+  {
+    path: '',
+    loadChildren: () => import('./equipamentos/equipamentos.rotas').then((m) => m.rotasEquipamentos),
+  },
   { path: '**', redirectTo: 'inicio' },
 ];
