@@ -1,5 +1,8 @@
 package br.edu.cesar.treinoconecta.treinoconectacore.ui.backend.seguranca;
 
+import java.util.List;
+
+import br.edu.cesar.treinoconecta.treinoconectacore.dominio.Autorizacao;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.equipamento.Equipamento;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.equipamento.OperacaoEquipamentosAutorizacoes;
 
@@ -21,6 +24,7 @@ import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.plano.PlanoAuto
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.profissional.ProfissionalAutorizacoes;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.vinculopersonal.VinculoPersonalAlunoAutorizacoes;
 public class AutenticacaoRecurso extends AutenticacaoRecursoAbstrato {
+    private final List<Autorizacao> autorizacoes;
     private final OperacaoEquipamentosAutorizacoes<Equipamento> equipamento;
     private final PlanoAutorizacoes plano;
     private final AdesaoPlanoAutorizacoes adesaoPlano;
@@ -38,7 +42,8 @@ public class AutenticacaoRecurso extends AutenticacaoRecursoAbstrato {
     private final MetaAutorizacoes meta;
     private final AgregadoAutorizacoes<Professor> professor;
     private final AgregadoAutorizacoes<AvaliacaoProfessor> avaliacaoProfessor;
-    public AutenticacaoRecurso(String usuario, AgregadoAutorizacoes<Armario> armario, AgregadoAutorizacoes<ReservaArmario> reservaArmario,
+    public AutenticacaoRecurso(String usuario, List<Autorizacao> autorizacoes,
+            AgregadoAutorizacoes<Armario> armario, AgregadoAutorizacoes<ReservaArmario> reservaArmario,
             AgregadoAutorizacoes<Aluno> aluno, PlanoDeTreinoAutorizacoes planoDeTreino, ExecucaoDeExercicioAutorizacoes execucaoDeExercicio,
             AvaliacaoFisicaAutorizacoes avaliacaoFisica, MetaAutorizacoes meta,
             AgregadoAutorizacoes<Professor> professor, AgregadoAutorizacoes<AvaliacaoProfessor> avaliacaoProfessor,
@@ -47,6 +52,7 @@ public class AutenticacaoRecurso extends AutenticacaoRecursoAbstrato {
             VinculoPersonalAlunoAutorizacoes vinculoPersonalAluno,
             OperacaoEquipamentosAutorizacoes<Equipamento> equipamento) {
         super(usuario); this.grupoTreino=grupoTreino; this.armario=armario; this.reservaArmario=reservaArmario;
+        this.autorizacoes = List.copyOf(autorizacoes);
         this.aluno=aluno; this.planoDeTreino=planoDeTreino; this.execucaoDeExercicio=execucaoDeExercicio;
         this.avaliacaoFisica=avaliacaoFisica; this.meta=meta;
         this.professor=professor; this.avaliacaoProfessor=avaliacaoProfessor;
@@ -54,6 +60,7 @@ public class AutenticacaoRecurso extends AutenticacaoRecursoAbstrato {
         this.profissional=profissional; this.vinculoPersonalAluno=vinculoPersonalAluno;
         this.equipamento = equipamento;
     }
+    public List<Autorizacao> getAutorizacoes() { return autorizacoes; }
     public OperacaoEquipamentosAutorizacoes<Equipamento> getEquipamento() { return equipamento; }
     public PlanoAutorizacoes getPlano() { return plano; }
     public AdesaoPlanoAutorizacoes getAdesaoPlano() { return adesaoPlano; }

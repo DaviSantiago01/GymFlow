@@ -1,6 +1,9 @@
 package br.edu.cesar.treinoconecta.treinoconectacore.ui.backend.seguranca;
 
+import java.util.Arrays;
 import java.util.Optional;
+
+import br.edu.cesar.treinoconecta.treinoconectacore.dominio.Autorizacao;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.equipamento.EquipamentoServico;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.aluno.AlunoServico;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.professor.ProfessorServico;
@@ -53,7 +56,11 @@ public class AutenticacaoControlador extends AutenticacaoControladorAbstrato {
         this.equipamentos = equipamentos;
     }
     @Override protected AutenticacaoRecurso recurso() {
-        return new AutenticacaoRecurso(segurancaServico.getUsuario(),armarios.criarAutorizacoes(Optional.empty()),reservas.criarAutorizacoes(Optional.empty()),
+        var autorizacoes = Arrays.stream(Autorizacao.values())
+                .filter(autorizacao -> segurancaServico.possuiAutorizacao(autorizacao.name()))
+                .toList();
+        return new AutenticacaoRecurso(segurancaServico.getUsuario(), autorizacoes,
+                armarios.criarAutorizacoes(Optional.empty()),reservas.criarAutorizacoes(Optional.empty()),
                 alunos.criarAutorizacoes(Optional.empty()),planos.criarAutorizacoes(Optional.empty()),execucoes.criarAutorizacoes(Optional.empty()),
                 avaliacoes.criarAutorizacoes(Optional.empty()),metas.criarAutorizacoes(Optional.empty()),
                 professores.criarAutorizacoes(Optional.empty()),avaliacoesProfessor.criarAutorizacoes(Optional.empty()),
