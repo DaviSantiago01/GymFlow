@@ -1,7 +1,7 @@
-import { expect, request } from '@playwright/test';
+import { expect, FullConfig, request } from '@playwright/test';
 
-export default async function preparar() {
-  const cliente = await request.newContext({ baseURL: 'http://127.0.0.1:4200' });
+export default async function preparar(config: FullConfig) {
+  const cliente = await request.newContext({ baseURL: config.projects[0]?.use.baseURL });
   try {
     await expect.poll(async () => {
       try {

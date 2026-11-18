@@ -23,7 +23,7 @@ test('criar conta, entrar com senha acentuada e reservar como o novo aluno', asy
   await expect(page.getByRole('heading', { name: `Boas-vindas, ${usuario}.` })).toBeVisible();
   await page
     .getByRole('navigation', { name: 'Menu do aluno' })
-    .getByRole('link', { name: 'Armários', exact: true })
+    .getByRole('link', { name: 'Reservar armário', exact: true })
     .click();
   await expect(page.getByRole('heading', { name: 'Armários', exact: true })).toBeVisible();
   await page.locator('.cartao-armario').first().click();
@@ -44,7 +44,7 @@ test('criar conta, entrar com senha acentuada e reservar como o novo aluno', asy
   await page.getByRole('button', { name: 'Entrar', exact: true }).click();
   await page
     .getByRole('navigation', { name: 'Menu do aluno' })
-    .getByRole('link', { name: 'Armários', exact: true })
+    .getByRole('link', { name: 'Reservar armário', exact: true })
     .click();
   await page
     .getByRole('navigation', { name: 'Navegação de armários' })

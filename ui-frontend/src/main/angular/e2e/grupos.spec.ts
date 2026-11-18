@@ -58,8 +58,9 @@ async function propor(page: Page) {
 test('organizador e membro percorrem convites, presença, saída e encerramento', async ({
   page,
   browser,
+  baseURL,
 }) => {
-  const contexto = await browser.newContext({ baseURL: 'http://127.0.0.1:4200' });
+  const contexto = await browser.newContext({ baseURL });
   const membro = await contexto.newPage();
   try {
     const colega = await cadastrar(membro, 'Colega');

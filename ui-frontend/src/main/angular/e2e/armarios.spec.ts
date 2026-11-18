@@ -47,9 +47,10 @@ test('escolher data, reservar três horas, consultar agendada, cancelar e ver hi
 test('duas sessões: tela desatualizada rejeita conflito e permite intervalo adjacente', async ({
   page,
   browser,
+  baseURL,
 }) => {
   await entrar(page);
-  const outra = await browser.newContext({ baseURL: 'http://127.0.0.1:4200' });
+  const outra = await browser.newContext({ baseURL });
   const visitante = await outra.newPage();
   try {
     await entrar(visitante);
