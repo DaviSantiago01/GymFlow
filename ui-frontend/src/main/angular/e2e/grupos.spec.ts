@@ -7,9 +7,9 @@ async function cadastrar(page: Page, sufixo: string) {
   const usuario = `grupo_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`;
   const nome = `${usuario} ${sufixo}`;
   await page.goto('/cadastro');
-  await page.request.get('/backend/cadastro');
+  await page.request.get('/backend/core/aluno/cadastro');
   const token = (await page.context().cookies()).find((c) => c.name === 'XSRF-TOKEN')!.value;
-  const r = await page.request.post('/backend/cadastro', {
+  const r = await page.request.post('/backend/core/aluno/cadastrar', {
     headers: { 'X-XSRF-TOKEN': decodeURIComponent(token) },
     data: { nome, usuario, senha, confirmacaoSenha: senha },
   });

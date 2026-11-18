@@ -44,10 +44,6 @@ test('criar conta, entrar com senha acentuada e reservar como o novo aluno', asy
   await page.getByRole('button', { name: 'Entrar', exact: true }).click();
   await page
     .getByRole('navigation', { name: 'Menu do aluno' })
-    .getByRole('link', { name: 'Reservar armário', exact: true })
-    .click();
-  await page
-    .getByRole('navigation', { name: 'Navegação de armários' })
     .getByRole('link', { name: 'Histórico de reservas', exact: true })
     .click();
   await expect(page.locator('.item-historico').first()).toContainText('Cancelada');
