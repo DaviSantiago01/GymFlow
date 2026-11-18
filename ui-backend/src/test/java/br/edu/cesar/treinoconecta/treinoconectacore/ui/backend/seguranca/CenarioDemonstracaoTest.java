@@ -37,6 +37,10 @@ class CenarioDemonstracaoTest {
         consultar(mvc, "gestor", "profissional/pesquisa", "Bruno Almeida");
         consultar(mvc, "gestor", "adesao-plano/pesquisa", "Mensal");
         consultar(mvc, "gestor", "mensalidade/pesquisa", "PAGA");
+        consultar(mvc, "gestor", "equipamento/pesquisa", "Esteira de demonstração");
+        consultar(mvc, "gestor", "registro-equipamento/pesquisa", "APROVADO");
+        consultar(mvc, "gestor", "problema-equipamento/pesquisa", "Folga na trava");
+        consultar(mvc, "gestor", "ordem-manutencao/pesquisa", "EM_ANDAMENTO");
 
         consultar(mvc, "professor", "aluno/pesquisa", "Mariana Costa");
         consultar(mvc, "professor", "plano-de-treino/pesquisa", "Força e técnica");
@@ -60,6 +64,7 @@ class CenarioDemonstracaoTest {
             assertEquals(1, banco.queryForObject("select count(*) from GRT_GRUPO_TREINO", Integer.class));
             assertEquals("Equipe editada", banco.queryForObject("select GRT_NOME from GRT_GRUPO_TREINO", String.class));
             assertEquals(3, banco.queryForObject("select count(*) from MEN_MENSALIDADE", Integer.class));
+            assertEquals(2, banco.queryForObject("select count(*) from EQP_EQUIPAMENTO", Integer.class));
         } finally {
             banco.update("update GRT_GRUPO_TREINO set GRT_NOME = ? where GRT_NOME = ?",
                     "Treino em equipe · demonstração", "Equipe editada");

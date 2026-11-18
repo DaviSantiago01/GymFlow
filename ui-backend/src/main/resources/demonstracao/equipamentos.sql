@@ -1,0 +1,48 @@
+-- Equipamentos fictícios para demonstrar inspeções e manutenção.
+INSERT INTO EQP_EQUIPAMENTO (EQP_PATRIMONIO, EQP_SERIE, EQP_NOME, EQP_TIPO, EQP_MARCA, EQP_MODELO,
+    EQP_AQUISICAO, EQP_AREA, EQP_SITUACAO, EQP_PERIODICIDADE, EQP_ULTIMA_INSPECAO)
+SELECT item.codigo, 'SERIE-' || item.codigo, item.nome, item.tipo, 'Linha demonstração', item.modelo,
+       DATEADD('DAY', -120, CURRENT_DATE), item.tipo, item.situacao, 30,
+       DATEADD('DAY', -item.dias, CURRENT_DATE)
+FROM (VALUES ('DEMO-001', 'Esteira de demonstração', 'CARDIO', 'E10', 'DISPONIVEL', 25),
+             ('DEMO-002', 'Leg press de demonstração', 'MUSCULACAO', 'L20', 'EM_MANUTENCAO', 40))
+    item(codigo, nome, tipo, modelo, situacao, dias)
+WHERE NOT EXISTS (SELECT 1 FROM EQP_EQUIPAMENTO WHERE EQP_PATRIMONIO = item.codigo);
+
+INSERT INTO REQ_REGISTRO_EQUIPAMENTO (EQP_ID, REQ_DATA, REQ_RESPONSAVEL, REQ_AREA_ANTERIOR, REQ_AREA_NOVA,
+    REQ_SITUACAO_ANTERIOR, REQ_SITUACAO_NOVA, REQ_RESULTADO, REQ_OBSERVACAO)
+SELECT EQP_ID, EQP_ULTIMA_INSPECAO, 'gestor', EQP_AREA, EQP_AREA,
+       'DISPONIVEL', 'DISPONIVEL', 'APROVADO', 'Inspeção periódica do cenário fictício.'
+FROM EQP_EQUIPAMENTO equipamento
+WHERE EQP_PATRIMONIO IN ('DEMO-001', 'DEMO-002') AND EQP_ULTIMA_INSPECAO IS NOT NULL
+  AND NOT EXISTS (SELECT 1 FROM REQ_REGISTRO_EQUIPAMENTO WHERE EQP_ID = equipamento.EQP_ID);
+
+INSERT INTO PEQ_PROBLEMA_EQUIPAMENTO (EQP_ID, PEQ_TITULO, PEQ_RELATO, PEQ_GRAVIDADE, PEQ_RISCO,
+    PEQ_DATA_RELATO, PEQ_RESPONSAVEL, PEQ_SITUACAO)
+SELECT EQP_ID, 'Folga na trava de segurança', 'A trava se moveu durante a inspeção visual.', 'CRITICA', TRUE,
+       DATEADD('DAY', -2, CURRENT_DATE), 'gestor', 'ABERTO'
+FROM EQP_EQUIPAMENTO equipamento
+WHERE EQP_PATRIMONIO = 'DEMO-002' AND EQP_SITUACAO = 'EM_MANUTENCAO'
+  AND NOT EXISTS (SELECT 1 FROM PEQ_PROBLEMA_EQUIPAMENTO WHERE EQP_ID = equipamento.EQP_ID);
+
+INSERT INTO REQ_REGISTRO_EQUIPAMENTO (EQP_ID, REQ_DATA, REQ_RESPONSAVEL, REQ_AREA_ANTERIOR, REQ_AREA_NOVA,
+    REQ_SITUACAO_ANTERIOR, REQ_SITUACAO_NOVA, REQ_OBSERVACAO)
+SELECT equipamento.EQP_ID, DATEADD('DAY', movimento.dia, CURRENT_DATE), 'gestor', EQP_AREA, EQP_AREA,
+       movimento.situacao_anterior, movimento.situacao_nova, movimento.observacao
+FROM EQP_EQUIPAMENTO equipamento
+JOIN PEQ_PROBLEMA_EQUIPAMENTO problema ON problema.EQP_ID = equipamento.EQP_ID
+CROSS JOIN (VALUES (-2, 'DISPONIVEL', 'INTERDITADO', 'Problema crítico registrado.'),
+                   (-1, 'INTERDITADO', 'EM_MANUTENCAO', 'Ordem de manutenção iniciada.'))
+    movimento(dia, situacao_anterior, situacao_nova, observacao)
+WHERE EQP_PATRIMONIO = 'DEMO-002' AND PEQ_TITULO = 'Folga na trava de segurança'
+  AND NOT EXISTS (SELECT 1 FROM REQ_REGISTRO_EQUIPAMENTO
+      WHERE EQP_ID = equipamento.EQP_ID AND REQ_SITUACAO_NOVA = movimento.situacao_nova);
+
+INSERT INTO OMT_ORDEM_MANUTENCAO (PEQ_ID, OMT_TECNICO, OMT_DIAGNOSTICO, OMT_ABERTURA, OMT_RESPONSAVEL,
+    OMT_SITUACAO, OMT_INICIO, OMT_CUSTO_ESTIMADO)
+SELECT problema.PEQ_ID, 'Equipe técnica de demonstração', 'Ajustar a trava e verificar a fixação.',
+       PEQ_DATA_RELATO, 'gestor', 'EM_ANDAMENTO', DATEADD('DAY', -1, CURRENT_DATE), 120.00
+FROM PEQ_PROBLEMA_EQUIPAMENTO problema
+JOIN EQP_EQUIPAMENTO equipamento ON equipamento.EQP_ID = problema.EQP_ID
+WHERE EQP_PATRIMONIO = 'DEMO-002' AND PEQ_TITULO = 'Folga na trava de segurança' AND PEQ_SITUACAO = 'ABERTO'
+  AND NOT EXISTS (SELECT 1 FROM OMT_ORDEM_MANUTENCAO WHERE PEQ_ID = problema.PEQ_ID);

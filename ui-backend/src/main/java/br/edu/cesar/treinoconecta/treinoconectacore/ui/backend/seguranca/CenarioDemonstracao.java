@@ -28,13 +28,18 @@ public class CenarioDemonstracao {
 
     @EventListener(ApplicationReadyEvent.class)
     public void carregar() {
-        var dados = new EncodedResource(new ClassPathResource("demonstracao/cenario.sql"), StandardCharsets.UTF_8);
         banco.execute("CREATE TABLE IF NOT EXISTS DEM_CENARIO (DEM_NOME VARCHAR(60) PRIMARY KEY)");
+        carregarUmaVez("gymflow", "demonstracao/cenario.sql");
+        carregarUmaVez("gymflow-equipamentos", "demonstracao/equipamentos.sql");
+    }
+
+    private void carregarUmaVez(String nome, String recurso) {
+        var dados = new EncodedResource(new ClassPathResource(recurso), StandardCharsets.UTF_8);
         transacao.executeWithoutResult(estado -> {
             int aplicado = banco.update("""
                     INSERT INTO DEM_CENARIO (DEM_NOME)
                     SELECT ? WHERE NOT EXISTS (SELECT 1 FROM DEM_CENARIO WHERE DEM_NOME = ?)
-                    """, "gymflow", "gymflow");
+                    """, nome, nome);
             if (aplicado == 0) return;
 
             // As contas, os exercícios e os catálogos já foram carregados pelos ApplicationRunners.
