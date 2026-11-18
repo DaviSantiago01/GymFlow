@@ -504,16 +504,9 @@ BoundedContext ^core implements ^core {
             Entity Equipamento {
                 aggregateRoot
                 -EquipamentoIdentificador identificador key
-                String patrimonio
-                String serie nullable
-                String nome
-                -TipoEquipamento tipo
-                String marca
-                String modelo
-                Date aquisicao
+                -DadosEquipamento dados
                 -AreaEquipamento area
                 -SituacaoEquipamento situacao
-                int periodicidade
                 Date ultimaInspecao nullable
                 Repository EquipamentoRepository {
                     @Equipamento incluir(@Equipamento agregado);
@@ -585,12 +578,7 @@ BoundedContext ^core implements ^core {
                 aggregateRoot
                 -ProblemaEquipamentoIdentificador identificador key
                 -EquipamentoIdentificador equipamento
-                String titulo
-                String relato
-                -GravidadeProblema gravidade
-                boolean risco
-                String evidencia nullable
-                Date dataRelato
+                -DadosProblema dados
                 String responsavel
                 -SituacaoProblema situacao
                 Date dataEncerramento nullable
@@ -632,14 +620,12 @@ BoundedContext ^core implements ^core {
                 aggregateRoot
                 -OrdemManutencaoIdentificador identificador key
                 -ProblemaEquipamentoIdentificador problema
-                String tecnico
-                String diagnostico
+                -DadosOrdem dados
                 Date abertura
                 String responsavel
                 -SituacaoOrdem situacao
                 Date inicio nullable
                 Date termino nullable
-                BigDecimal custoEstimado nullable
                 BigDecimal custoReal nullable
                 String servicoExecutado nullable
                 String justificativa nullable
