@@ -6,7 +6,8 @@ import br.edu.cesar.treinoconecta.treinoconectacore.dominio.Autorizacao;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.equipamento.Equipamento;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.equipamento.OperacaoEquipamentosAutorizacoes;
 
-import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.aluno.Aluno;
+import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.aluno.AlunoAutorizacoes;
+import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.registroacesso.RegistroAcessoAutorizacoes;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.armario.Armario;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.avaliacaofisica.AvaliacaoFisicaAutorizacoes;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.execucaodeexercicio.ExecucaoDeExercicioAutorizacoes;
@@ -35,7 +36,9 @@ public class AutenticacaoRecurso extends AutenticacaoRecursoAbstrato {
     public AgregadoAutorizacoes<GrupoTreino> getGrupoTreino(){return grupoTreino;}
     private final AgregadoAutorizacoes<Armario> armario;
     private final AgregadoAutorizacoes<ReservaArmario> reservaArmario;
-    private final AgregadoAutorizacoes<Aluno> aluno;
+    private final AlunoAutorizacoes aluno;
+    private final RegistroAcessoAutorizacoes registroAcesso;
+    public RegistroAcessoAutorizacoes getRegistroAcesso() { return registroAcesso; }
     private final PlanoDeTreinoAutorizacoes planoDeTreino;
     private final ExecucaoDeExercicioAutorizacoes execucaoDeExercicio;
     private final AvaliacaoFisicaAutorizacoes avaliacaoFisica;
@@ -44,15 +47,16 @@ public class AutenticacaoRecurso extends AutenticacaoRecursoAbstrato {
     private final AgregadoAutorizacoes<AvaliacaoProfessor> avaliacaoProfessor;
     public AutenticacaoRecurso(String usuario, List<Autorizacao> autorizacoes,
             AgregadoAutorizacoes<Armario> armario, AgregadoAutorizacoes<ReservaArmario> reservaArmario,
-            AgregadoAutorizacoes<Aluno> aluno, PlanoDeTreinoAutorizacoes planoDeTreino, ExecucaoDeExercicioAutorizacoes execucaoDeExercicio,
+            AlunoAutorizacoes aluno, PlanoDeTreinoAutorizacoes planoDeTreino, ExecucaoDeExercicioAutorizacoes execucaoDeExercicio,
             AvaliacaoFisicaAutorizacoes avaliacaoFisica, MetaAutorizacoes meta,
             AgregadoAutorizacoes<Professor> professor, AgregadoAutorizacoes<AvaliacaoProfessor> avaliacaoProfessor,
             AgregadoAutorizacoes<GrupoTreino> grupoTreino, PlanoAutorizacoes plano, AdesaoPlanoAutorizacoes adesaoPlano,
             MensalidadeAutorizacoes mensalidade, ProfissionalAutorizacoes profissional,
             VinculoPersonalAlunoAutorizacoes vinculoPersonalAluno,
-            OperacaoEquipamentosAutorizacoes<Equipamento> equipamento) {
+            OperacaoEquipamentosAutorizacoes<Equipamento> equipamento, RegistroAcessoAutorizacoes registroAcesso) {
         super(usuario); this.grupoTreino=grupoTreino; this.armario=armario; this.reservaArmario=reservaArmario;
         this.autorizacoes = List.copyOf(autorizacoes);
+        this.registroAcesso = registroAcesso;
         this.aluno=aluno; this.planoDeTreino=planoDeTreino; this.execucaoDeExercicio=execucaoDeExercicio;
         this.avaliacaoFisica=avaliacaoFisica; this.meta=meta;
         this.professor=professor; this.avaliacaoProfessor=avaliacaoProfessor;
@@ -71,7 +75,7 @@ public class AutenticacaoRecurso extends AutenticacaoRecursoAbstrato {
     public AgregadoAutorizacoes<AvaliacaoProfessor> getAvaliacaoProfessor() { return avaliacaoProfessor; }
     public AgregadoAutorizacoes<Armario> getArmario() { return armario; }
     public AgregadoAutorizacoes<ReservaArmario> getReservaArmario() { return reservaArmario; }
-    public AgregadoAutorizacoes<Aluno> getAluno() { return aluno; }
+    public AlunoAutorizacoes getAluno() { return aluno; }
     public PlanoDeTreinoAutorizacoes getPlanoDeTreino() { return planoDeTreino; }
     public ExecucaoDeExercicioAutorizacoes getExecucaoDeExercicio() { return execucaoDeExercicio; }
     public AvaliacaoFisicaAutorizacoes getAvaliacaoFisica() { return avaliacaoFisica; }

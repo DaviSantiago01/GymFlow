@@ -36,6 +36,9 @@ public interface IMensalidadeRepositorioJpa extends JpaRepository<MensalidadeJpa
     @Query("select count(m) > 0 from MensalidadeJpa m where m.adesao.identificador = :adesao and m.periodoInicio = :inicio")
     boolean existePorAdesaoEPeriodo(Long adesao, LocalDate inicio);
 
+    @Query("select count(m) > 0 from MensalidadeJpa m where m.aluno.identificador = :aluno and m.situacao = 'ABERTA' and m.vencimento < :hoje")
+    boolean existeAtrasadaDoAluno(Long aluno, LocalDate hoje);
+
     @Query(value = PROJECAO + FILTROS, countQuery = """
             select count(m)
               from MensalidadeJpa m

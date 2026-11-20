@@ -314,10 +314,29 @@
         @if (
           gestor &&
           (servicoAutenticacao.autorizacoesDe('profissional')?.buscar ||
-            servicoAutenticacao.autorizacoesDe('equipamento')?.buscar)
+            servicoAutenticacao.autorizacoesDe('equipamento')?.buscar ||
+            podeGerenciarAlunos() ||
+            servicoAutenticacao.autorizacoesDe('registroAcesso')?.buscar)
         ) {
           <div class="secao-menu" role="group" aria-labelledby="secao-operacao">
             <span class="titulo-secao" id="secao-operacao">Operação da academia</span>
+            @if (podeGerenciarAlunos()) {
+              <a class="item-menu" routerLink="/core/aluno/gestao" routerLinkActive="ativo" ariaCurrentWhenActive="page">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <circle cx="9" cy="8" r="4" />
+                  <path d="M2 21v-1a7 7 0 0 1 14 0v1m2-12h4m-2-2v4" />
+                </svg>
+                <span>Alunos</span>
+              </a>
+            }
+            @if (servicoAutenticacao.autorizacoesDe('registroAcesso')?.buscar) {
+              <a class="item-menu" routerLink="/core/registro-acesso/recepcao" routerLinkActive="ativo" ariaCurrentWhenActive="page">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 21V5a2 2 0 0 1 2-2h8l6 6v12M14 3v6h6M9 14h6m-3-3v6" />
+                </svg>
+                <span>Recepção</span>
+              </a>
+            }
             @if (servicoAutenticacao.autorizacoesDe('profissional')?.buscar) {
               <a class="item-menu" routerLink="/core/profissional/pesquisa" routerLinkActive="ativo" ariaCurrentWhenActive="page">
                 <svg viewBox="0 0 24 24" aria-hidden="true">

@@ -1,0 +1,110 @@
+<main class="pagina">
+  <header class="pagina-cabecalho">
+    <div>
+      <span class="pagina-sobretitulo">Administração</span>
+      <h1>Recepção · entrada e saída</h1>
+      <p class="pagina-descricao">
+        Entradas permitidas das {{ painel().abertura.slice(0, 5) }} às {{ painel().fechamento.slice(0, 5) }}. Permanências acima
+        de {{ duracao(painel().permanenciaMaximaMinutos) }} são marcadas para verificação.
+      </p>
+    </div>
+    <div class="grupo-acoes">
+      <a class="acao acao-secundaria" routerLink="/core/aluno/gestao">Alunos</a>
+    </div>
+  </header>
+
+  @if (erro()) {
+    <div class="aviso aviso-erro" role="alert">{{ erro() }}</div>
+  }
+
+  <form class="bloco formulario-grade" (ngSubmit)="pesquisar()">
+    <label
+      >Aluno (nome, usuário ou CPF)
+      <input name="busca" [(ngModel)]="busca" placeholder="Buscar aluno" autocomplete="off" />
+    </label>
+    <div class="grupo-acoes">
+      <button type="submit" class="acao acao-secundaria">Buscar</button>
+    </div>
+  </form>
+
+  @if (pesquisou()) {
+    <section class="bloco tabela-dados">
+      <table>
+        <thead>
+          <tr><th>Aluno</th><th>CPF</th><th>Plano</th><th>Situação</th><th></th></tr>
+        </thead>
+        <tbody>
+          @for (aluno of resultados(); track aluno.identificador) {
+            <tr>
+              <td><a [routerLink]="['/core/aluno', aluno.identificador, 'ficha']">{{ aluno.nome }}</a></td>
+              <td>{{ aluno.cpf ? cpfFormatado(aluno.cpf) : '—' }}</td>
+              <td>{{ aluno.plano ?? '—' }}</td>
+              <td>
+                <span class="marcador" [class.marcador-neutro]="aluno.situacao !== 'ATIVO'">{{ rotulos[aluno.situacao] }}</span>
+              </td>
+              <td>
+                @if (presentes().has(aluno.identificador)) {
+                  <button type="button" class="acao acao-secundaria" [disabled]="ocupado()" (click)="saida(aluno)">
+                    Registrar saída
+                  </button>
+                } @else {
+                  <button type="button" class="acao acao-principal" [disabled]="ocupado()" (click)="entrada(aluno)">
+                    Registrar entrada
+                  </button>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="5" class="estado-vazio">Nenhum aluno encontrado.</td></tr>
+          }
+        </tbody>
+      </table>
+    </section>
+  }
+
+  <section class="bloco">
+    <div class="pagina-cabecalho">
+      <h2>Alunos presentes</h2>
+      <button type="button" class="acao acao-secundaria" (click)="atualizar()">Atualizar</button>
+    </div>
+    <div class="indicadores">
+      <div><span>Na academia</span><strong>{{ painel().presentes }} de {{ painel().capacidadeMaxima }}</strong></div>
+      <div><span>Lotação</span><strong>{{ lotacao() }}%</strong></div>
+    </div>
+    <div class="tabela-dados">
+      <table>
+        <thead>
+          <tr><th>Aluno</th><th>Entrada</th><th>Permanência</th><th></th><th></th></tr>
+        </thead>
+        <tbody>
+          @for (item of painel().registros; track item.registro.identificador) {
+            <tr>
+              <td>
+                <a [routerLink]="['/core/aluno', item.registro.aluno, 'ficha']">{{ item.registro.alunoNome }}</a>
+              </td>
+              <td>{{ dataHora(item.registro.entrada) }}</td>
+              <td>{{ duracao(item.minutos) }}</td>
+              <td>
+                @if (item.excedeuLimite) {
+                  <span class="marcador marcador-neutro">Verificar permanência</span>
+                }
+              </td>
+              <td>
+                <button
+                  type="button"
+                  class="acao acao-secundaria"
+                  [disabled]="ocupado()"
+                  (click)="saida({ identificador: item.registro.aluno, nome: item.registro.alunoNome })"
+                >
+                  Registrar saída
+                </button>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="5" class="estado-vazio">Nenhum aluno na academia agora.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>

@@ -1,3 +1,4 @@
+import { AutorizacoesAluno } from './alunos/alunos.service';
 import { Component, computed, inject, signal } from '@angular/core';
 import {
   NavigationEnd,
@@ -31,6 +32,10 @@ export class App {
     () =>
       this.servicoAutenticacao.autorizacoesDe<AutorizacoesExecucao>('execucaoDeExercicio')
         ?.registrar ?? false,
+  );
+
+  protected readonly podeGerenciarAlunos = computed(
+    () => this.servicoAutenticacao.autorizacoesDe<AutorizacoesAluno>('aluno')?.gerenciar ?? false,
   );
 
   constructor() {

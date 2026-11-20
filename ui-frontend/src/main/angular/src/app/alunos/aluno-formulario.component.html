@@ -1,0 +1,83 @@
+<main class="pagina">
+  <header class="pagina-cabecalho">
+    <div>
+      <span class="pagina-sobretitulo">Administração</span>
+      <h1>{{ alteracao() ? 'Alterar aluno' : 'Novo aluno' }}</h1>
+    </div>
+    <div class="pagina-links"><a routerLink="/core/aluno/gestao">Alunos</a></div>
+  </header>
+
+  <form class="bloco" (ngSubmit)="salvar()">
+    <div class="formulario-grade">
+      <label
+        >Nome completo
+        <input name="nome" maxlength="100" required [(ngModel)]="nome" />
+      </label>
+      <label
+        >CPF
+        <input name="cpf" maxlength="14" required placeholder="000.000.000-00" [(ngModel)]="cpf" />
+      </label>
+      <label
+        >Data de nascimento
+        <input name="nascimento" type="date" required [max]="hoje" [(ngModel)]="nascimento" />
+      </label>
+      <label
+        >E-mail (opcional)
+        <input name="email" type="email" maxlength="100" [(ngModel)]="email" />
+      </label>
+      <label
+        >Telefone
+        <input name="telefone" maxlength="20" placeholder="(81) 99999-0000" [(ngModel)]="telefone" />
+      </label>
+      <label
+        >Endereço
+        <input name="endereco" maxlength="200" [(ngModel)]="endereco" />
+      </label>
+    </div>
+
+    @if (menorDeIdade() || responsavelNome || responsavelCpf) {
+      <fieldset class="bloco">
+        <legend>Responsável legal {{ menorDeIdade() ? '(obrigatório para menores de 18 anos)' : '' }}</legend>
+        <div class="formulario-grade">
+          <label
+            >Nome do responsável
+            <input name="responsavelNome" maxlength="100" [(ngModel)]="responsavelNome" />
+          </label>
+          <label
+            >CPF do responsável
+            <input name="responsavelCpf" maxlength="14" placeholder="000.000.000-00" [(ngModel)]="responsavelCpf" />
+          </label>
+          <label
+            >Telefone do responsável
+            <input name="responsavelTelefone" maxlength="20" [(ngModel)]="responsavelTelefone" />
+          </label>
+        </div>
+      </fieldset>
+    }
+
+    @if (!alteracao()) {
+      <fieldset class="bloco">
+        <legend>Acesso ao sistema</legend>
+        <div class="formulario-grade">
+          <label
+            >Usuário
+            <input name="usuario" maxlength="40" required autocomplete="off" [(ngModel)]="usuario" />
+          </label>
+          <label
+            >Senha inicial
+            <input name="senha" type="password" minlength="8" required autocomplete="new-password" [(ngModel)]="senha" />
+          </label>
+        </div>
+        <p class="pagina-descricao">O aluno entra no sistema com este usuário e esta senha.</p>
+      </fieldset>
+    }
+
+    @if (erro()) {
+      <div class="aviso aviso-erro" role="alert">{{ erro() }}</div>
+    }
+    <div class="grupo-acoes">
+      <button type="submit" class="acao acao-principal" [disabled]="ocupado()">Salvar aluno</button>
+      <a class="acao acao-secundaria" routerLink="/core/aluno/gestao">Cancelar</a>
+    </div>
+  </form>
+</main>

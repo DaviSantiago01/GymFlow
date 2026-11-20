@@ -1,0 +1,169 @@
+<main class="pagina">
+  <header class="pagina-cabecalho">
+    <div>
+      <span class="pagina-sobretitulo">Administração · Alunos</span>
+      <h1>{{ ficha().nome }}</h1>
+      <p class="pagina-descricao">
+        <span class="marcador" [class.marcador-neutro]="ficha().situacao !== 'ATIVO'">{{
+          rotulosSituacao[ficha().situacao]
+        }}</span>
+        @if (ficha().presente) {
+          <span class="marcador">Na academia agora</span>
+        }
+      </p>
+    </div>
+    <div class="grupo-acoes">
+      <a class="acao acao-secundaria" routerLink="/core/aluno/gestao">Alunos</a>
+      @if (ficha().ativo) {
+        <a class="acao acao-secundaria" [routerLink]="['/core/aluno', ficha().identificador, 'alteracao']">Alterar dados</a>
+      }
+    </div>
+  </header>
+
+  @if (erro()) {
+    <div class="aviso aviso-erro" role="alert">{{ erro() }}</div>
+  }
+  @if (!ficha().cadastroCompleto) {
+    <div class="aviso" role="status">
+      Conta criada pelo autocadastro. Use “Alterar dados” para completar CPF, nascimento e contato.
+    </div>
+  }
+
+  <section class="bloco">
+    <h2>Entrada e saída</h2>
+    <div class="grupo-acoes">
+      @if (ficha().presente) {
+        <button type="button" class="acao acao-principal" [disabled]="ocupado()" (click)="saida()">Registrar saída</button>
+      } @else {
+        <button type="button" class="acao acao-principal" [disabled]="ocupado()" (click)="entrada()">
+          Registrar entrada
+        </button>
+      }
+    </div>
+  </section>
+
+  <section class="bloco">
+    <h2>Dados cadastrais</h2>
+    <dl class="formulario-grade">
+      <div><dt>Usuário</dt><dd>{{ ficha().usuario }}</dd></div>
+      <div><dt>CPF</dt><dd>{{ ficha().cpf ?? 'Não informado' }}</dd></div>
+      <div>
+        <dt>Nascimento</dt>
+        <dd>{{ ficha().nascimento ? data(ficha().nascimento!) + ' (' + ficha().idade + ' anos)' : 'Não informado' }}</dd>
+      </div>
+      <div><dt>E-mail</dt><dd>{{ ficha().email ?? '—' }}</dd></div>
+      <div><dt>Telefone</dt><dd>{{ ficha().telefone || '—' }}</dd></div>
+      <div><dt>Endereço</dt><dd>{{ ficha().endereco || '—' }}</dd></div>
+      @if (ficha().responsavel; as responsavel) {
+        <div>
+          <dt>Responsável legal</dt>
+          <dd>{{ responsavel.nome }} · {{ responsavel.cpf }} {{ responsavel.telefone ? '· ' + responsavel.telefone : '' }}</dd>
+        </div>
+      }
+    </dl>
+  </section>
+
+  <section class="bloco">
+    <h2>Matrícula</h2>
+    @if (ficha().matricula; as matricula) {
+      <p>
+        Plano <strong>{{ matricula.plano }}</strong> desde {{ data(matricula.inicio) }}, válido até
+        <strong>{{ data(matricula.validade) }}</strong>.
+      </p>
+      @if (ficha().mensalidadeAtrasada) {
+        <div class="aviso aviso-erro">Há mensalidade em atraso: a entrada fica bloqueada até o pagamento.</div>
+      }
+    } @else {
+      <p>Sem matrícula ativa. <a routerLink="/core/adesao-plano/pesquisa">Associar a um plano</a></p>
+    }
+  </section>
+
+  <section class="bloco">
+    <h2>Bloqueio e situação do cadastro</h2>
+    @if (ficha().motivoBloqueio) {
+      <p>
+        Bloqueado desde {{ dataHora(ficha().inicioBloqueio!) }}: <strong>{{ ficha().motivoBloqueio }}</strong>
+      </p>
+      <button type="button" class="acao acao-secundaria" [disabled]="ocupado()" (click)="desbloquear()">Desbloquear</button>
+    } @else if (ficha().ativo) {
+      <form class="formulario-grade" (ngSubmit)="bloquear()">
+        <label
+          >Motivo do bloqueio
+          <input name="motivo" maxlength="250" required [(ngModel)]="motivo" />
+        </label>
+        <div class="grupo-acoes">
+          <button type="submit" class="acao acao-secundaria" [disabled]="ocupado() || !motivo.trim()">Bloquear acesso</button>
+        </div>
+      </form>
+    }
+    <div class="grupo-acoes">
+      @if (ficha().ativo) {
+        <button type="button" class="acao acao-secundaria" [disabled]="ocupado()" (click)="remover()">Excluir aluno</button>
+      } @else {
+        <p>Cadastro inativo.</p>
+        <button type="button" class="acao acao-principal" [disabled]="ocupado()" (click)="reativar()">Reativar cadastro</button>
+      }
+    </div>
+  </section>
+
+  <section class="bloco">
+    <h2>Frequência</h2>
+    <form class="formulario-grade" (ngSubmit)="consultarFrequencia()">
+      <label>De <input name="inicio" type="date" [(ngModel)]="inicio" /></label>
+      <label>Até <input name="fim" type="date" [(ngModel)]="fim" /></label>
+      <div class="grupo-acoes"><button type="submit" class="acao acao-secundaria">Consultar</button></div>
+    </form>
+    <div class="indicadores">
+      <div><span>Dias com presença</span><strong>{{ frequencia().diasComparecidos }} de {{ frequencia().diasNoPeriodo }}</strong></div>
+      <div><span>Visitas</span><strong>{{ frequencia().visitas }}</strong></div>
+      <div><span>Tempo total</span><strong>{{ duracao(frequencia().minutosTotais) }}</strong></div>
+      <div><span>Média por visita</span><strong>{{ duracao(frequencia().mediaMinutosPorVisita) }}</strong></div>
+    </div>
+    <div class="tabela-dados">
+      <table>
+        <thead>
+          <tr><th>Entrada</th><th>Saída</th><th>Permanência</th><th></th></tr>
+        </thead>
+        <tbody>
+          @for (item of frequencia().registros; track item.registro.identificador) {
+            <tr>
+              <td>{{ dataHora(item.registro.entrada) }}</td>
+              <td>{{ item.registro.saida ? dataHora(item.registro.saida) : 'Na academia' }}</td>
+              <td>{{ duracao(item.minutos) }}</td>
+              <td>
+                @if (item.excedeuLimite) {
+                  <span class="marcador marcador-neutro">Verificar permanência</span>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="4" class="estado-vazio">Nenhuma entrada no período.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="bloco">
+    <h2>Histórico de alterações</h2>
+    <div class="tabela-dados">
+      <table>
+        <thead>
+          <tr><th>Data</th><th>Tipo</th><th>Descrição</th><th>Responsável</th></tr>
+        </thead>
+        <tbody>
+          @for (item of ficha().historico; track $index) {
+            <tr>
+              <td>{{ dataHora(item.instante) }}</td>
+              <td>{{ rotulosAlteracao[item.tipo] }}</td>
+              <td>{{ item.descricao }}</td>
+              <td>{{ item.responsavel }}</td>
+            </tr>
+          } @empty {
+            <tr><td colspan="4" class="estado-vazio">Nenhuma alteração registrada.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </section>
+</main>
