@@ -1,0 +1,66 @@
+<main class="pagina">
+  <header class="pagina-cabecalho">
+    <div>
+      <span class="pagina-sobretitulo">Administração</span>
+      <h1>Alunos</h1>
+    </div>
+    <div class="grupo-acoes">
+      <a class="acao acao-secundaria" routerLink="/core/registro-acesso/recepcao">Recepção</a>
+      <a class="acao acao-principal" routerLink="/core/aluno/inclusao">Novo aluno</a>
+    </div>
+  </header>
+
+  <form class="bloco formulario-grade" (ngSubmit)="filtrar()">
+    <label
+      >Nome, usuário, CPF ou e-mail
+      <input name="busca" [(ngModel)]="busca" placeholder="Buscar" />
+    </label>
+    <label
+      >Situação
+      <select name="situacao" [(ngModel)]="situacao">
+        <option value="">Todas</option>
+        @for (opcao of situacoes; track opcao) {
+          <option [value]="opcao">{{ rotulos[opcao] }}</option>
+        }
+      </select>
+    </label>
+    <div class="grupo-acoes">
+      <button type="submit" class="acao acao-secundaria">Filtrar</button>
+    </div>
+  </form>
+
+  <section class="bloco tabela-dados">
+    <table>
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Usuário</th>
+          <th>CPF</th>
+          <th>Contato</th>
+          <th>Plano</th>
+          <th>Situação</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (aluno of alunos(); track aluno.identificador) {
+          <tr>
+            <td>{{ aluno.nome }}</td>
+            <td>{{ aluno.usuario }}</td>
+            <td>{{ aluno.cpf ? cpfFormatado(aluno.cpf) : 'Não informado' }}</td>
+            <td>{{ aluno.email || aluno.telefone || '—' }}</td>
+            <td>{{ aluno.plano ?? '—' }}</td>
+            <td>
+              <span class="marcador" [class.marcador-neutro]="alerta(aluno.situacao)">{{ rotulos[aluno.situacao] }}</span>
+            </td>
+            <td><a [routerLink]="['/core/aluno', aluno.identificador, 'ficha']">Gerenciar</a></td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="7" class="estado-vazio">Nenhum aluno encontrado.</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </section>
+</main>

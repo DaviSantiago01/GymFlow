@@ -41,13 +41,16 @@ public class AutenticacaoControlador extends AutenticacaoControladorAbstrato {
     private final ProfissionalServico profissionais;
     private final VinculoPersonalAlunoServico vinculos;
     private final EquipamentoServico equipamentos;
+    private final br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.registroacesso.RegistroAcessoServico acessos;
     public AutenticacaoControlador(ISegurancaServico segurancaServico, ArmarioServico armarios, ReservaArmarioServico reservas,
             AlunoServico alunos, PlanoDeTreinoServico planos, ExecucaoDeExercicioServico execucoes,
             AvaliacaoFisicaServico avaliacoes, MetaServico metas,
             ProfessorServico professores, AvaliacaoProfessorServico avaliacoesProfessor,
             br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.grupotreino.GrupoTreinoServico grupos,
             PlanoServico planosAcademia, AdesaoPlanoServico adesoes, MensalidadeServico mensalidades,
-            ProfissionalServico profissionais, VinculoPersonalAlunoServico vinculos, EquipamentoServico equipamentos) {
+            ProfissionalServico profissionais, VinculoPersonalAlunoServico vinculos, EquipamentoServico equipamentos,
+            br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.registroacesso.RegistroAcessoServico acessos) {
+        this.acessos = acessos;
         super(segurancaServico); this.grupos=grupos; this.armarios=armarios; this.reservas=reservas;
         this.alunos=alunos; this.planos=planos; this.execucoes=execucoes; this.avaliacoes=avaliacoes; this.metas=metas;
         this.professores=professores; this.avaliacoesProfessor=avaliacoesProfessor;
@@ -67,6 +70,7 @@ public class AutenticacaoControlador extends AutenticacaoControladorAbstrato {
                 grupos.criarAutorizacoes(Optional.empty()),
                 planosAcademia.criarAutorizacoes(Optional.empty()),adesoes.criarAutorizacoes(Optional.empty()),
                 mensalidades.criarAutorizacoes(Optional.empty()),profissionais.criarAutorizacoes(Optional.empty()),
-                vinculos.criarAutorizacoes(Optional.empty()), equipamentos.criarAutorizacoes(Optional.empty()));
+                vinculos.criarAutorizacoes(Optional.empty()), equipamentos.criarAutorizacoes(Optional.empty()),
+                acessos.criarAutorizacoes(Optional.empty()));
     }
 }

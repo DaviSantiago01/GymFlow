@@ -86,4 +86,12 @@ public final class MensalidadeRepositorio
         Objects.requireNonNull(inicioPeriodo);
         return repositorioJpa.existePorAdesaoEPeriodo(Long.valueOf(adesao.toString()), inicioPeriodo);
     }
+
+    @Override
+    public boolean existeAtrasadaDoAluno(br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.aluno.AlunoIdentificador aluno,
+            LocalDate hoje) {
+        Objects.requireNonNull(aluno);
+        Objects.requireNonNull(hoje);
+        return repositorioJpa.existeAtrasadaDoAluno(Long.valueOf(aluno.toString()), hoje);
+    }
 }
