@@ -1,0 +1,549 @@
+@if (relatorio(); as relatorio) {
+  @let conteudo = relatorio.conteudo;
+  <main class="pagina pagina-larga">
+    <header class="pagina-cabecalho">
+      <div>
+        <span class="pagina-sobretitulo">Relatórios › {{ relatorio.titulo }}</span>
+        <h1>Relatório de {{ relatorio.titulo.toLowerCase() }}</h1>
+        <p class="pagina-descricao">
+          {{ data(relatorio.inicio) }} a {{ data(relatorio.fim) }}, {{ agrupamento() }} · Filtros:
+          {{ relatorio.descricaoFiltros }} · Gerado em {{ dataHora(relatorio.geracao) }} por {{ relatorio.usuarioNome }}
+          · versão {{ relatorio.versao }}
+        </p>
+      </div>
+      <div class="pagina-links nao-imprimir">
+        <a class="acao acao-secundaria" routerLink="/core/relatorio/historico">Histórico</a>
+        @if (relatorio.comparar && conteudo.indicadores.length > 0) {
+          <a class="acao acao-secundaria" [routerLink]="['/core/relatorio', relatorio.identificador, 'comparacao']">Comparar períodos</a>
+        }
+        @if (relatorio.autorizacoes.exportar) {
+          <button type="button" class="acao acao-principal" (click)="abrirExportacao()">Exportar</button>
+        }
+      </div>
+    </header>
+
+    @if (relatorio.situacao === 'SUBSTITUIDO') {
+      <div class="aviso" role="note">Uma versão mais recente deste relatório já foi gerada. Os valores abaixo são os da geração original.</div>
+    }
+    @if (relatorio.alteracoes.length > 0 && relatorio.situacao === 'ATUAL') {
+      <div class="aviso aviso-erro" role="alert">
+        <strong>Dados alterados depois da geração.</strong>
+        @for (alteracao of relatorio.alteracoes; track $index) {
+          <div>{{ alteracao }}</div>
+        }
+        <div>Este relatório continua com os valores originais.</div>
+        @if (relatorio.autorizacoes.gerarNovaVersao) {
+          <button type="button" class="acao acao-secundaria" style="margin-top: 8px" [disabled]="ocupado()" (click)="novaVersao()">
+            Gerar nova versão
+          </button>
+        }
+      </div>
+    }
+
+    @if (conteudo.indicadores.length > 0) {
+      <section class="cartoes" aria-label="Indicadores">
+        @for (item of conteudo.indicadores; track item.indicador) {
+          <div class="cartao">
+            <span class="rotulo">{{ indicadores[item.indicador].nome }}</span>
+            <strong class="valor">{{ valorIndicador(item.indicador, item.valor) }}</strong>
+            @if (item.variacao) {
+              <span [class]="classeVariacao(item)">{{ variacaoCurta(item.indicador, item.variacao) }}</span>
+            }
+          </div>
+        }
+      </section>
+    }
+
+    <!-- Desempenho geral e matrículas -->
+    @if (conteudo.movimento; as movimento) {
+      <div class="grade grade-2-iguais">
+        <section class="bloco">
+          <h2>Movimento de alunos no período</h2>
+          <p class="texto-suave texto-pequeno">
+            De {{ numero(movimento.inicio) }} para {{ numero(movimento.fim) }} alunos ativos. Renovações
+            ({{ numero(movimento.renovacoes) }}) e trancamentos ficam de fora das saídas.
+          </p>
+          <div class="colunas">
+            @for (barra of movimentoBarras(); track barra.rotulo) {
+              <div class="coluna-grafico">
+                <span class="valor-coluna">{{ barra.valor > 0 ? '+' : '' }}{{ barra.valor }}</span>
+                <span
+                  class="barra-grafico"
+                  [class.negativa]="barra.tipo === 'saida'"
+                  [class.neutra]="barra.tipo === 'saldo'"
+                  [style.height.%]="barra.altura"
+                ></span>
+              </div>
+            }
+          </div>
+          <div class="legenda-colunas">
+            @for (barra of movimentoBarras(); track barra.rotulo) {
+              <span>{{ barra.rotulo }}</span>
+            }
+          </div>
+        </section>
+        <section class="bloco">
+          <h2>Frequência média {{ agrupamento() }}</h2>
+          <p class="texto-suave texto-pequeno">Presenças por aluno por semana, proporcionais aos dias ativos.</p>
+          <div class="colunas">
+            @for (grupo of conteudo.grupos; track grupo.rotulo) {
+              <div class="coluna-grafico">
+                <span class="valor-coluna">{{ decimal(grupo.frequencia) }}</span>
+                <span class="barra-grafico" [style.height.%]="(grupo.frequencia / maiorFrequencia()) * 100"></span>
+              </div>
+            }
+          </div>
+          <div class="legenda-colunas">
+            @for (grupo of conteudo.grupos; track grupo.rotulo) {
+              <span>{{ grupo.rotulo }}</span>
+            }
+          </div>
+        </section>
+      </div>
+    }
+
+    @if (conteudo.planos.length > 0 && !conteudo.financeiro) {
+      <section class="bloco tabela-dados">
+        <h2>Resultados por plano contratado</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Plano</th>
+              <th class="numero">Alunos ativos</th>
+              <th class="numero">Novas matrículas</th>
+              <th class="numero">Taxa de evasão</th>
+              <th class="numero">Receita líquida</th>
+              <th>Participação na receita</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (plano of conteudo.planos; track plano.plano) {
+              <tr>
+                <td>{{ plano.nome }}</td>
+                <td class="numero">{{ numero(plano.alunosAtivos) }}</td>
+                <td class="numero">{{ numero(plano.novasMatriculas) }}</td>
+                <td class="numero">{{ percentual(plano.taxaEvasao) }}</td>
+                <td class="numero">{{ moeda(plano.receita) }}</td>
+                <td>
+                  <div style="display: flex; gap: 8px; align-items: center">
+                    <div class="trilho" style="flex: 1"><span [style.width.%]="plano.participacao"></span></div>
+                    <span class="numero">{{ percentual(plano.participacao) }}</span>
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </section>
+    }
+
+    <!-- Frequência e ocupação -->
+    @if (conteudo.ocupacao; as ocupacao) {
+      <div class="grade grade-lateral">
+        <section class="bloco">
+          <div class="cabecalho-bloco">
+            <h2>Ocupação média da sala de musculação</h2>
+            <span class="texto-suave texto-pequeno">capacidade: {{ ocupacao.capacidadeSala }} pessoas por faixa</span>
+          </div>
+          <div class="mapa" role="table" aria-label="Ocupação por dia e faixa de horário">
+            <span></span>
+            @for (dia of dias; track dia.valor) {
+              <span class="cabeca">{{ dia.curto }}</span>
+            }
+            @for (faixa of faixas(); track faixa) {
+              <span class="faixa">{{ hora(faixa) }} às {{ fimFaixa(faixa) }}</span>
+              @for (dia of dias; track dia.valor) {
+                @let atual = celula(dia.valor, faixa);
+                @if (!atual || atual.classificacao === 'FECHADO') {
+                  <span class="celula fechado">fechado</span>
+                } @else {
+                  <span class="celula" [class.pico]="atual.classificacao === 'PICO'" [style.background]="fundo(atual)">
+                    {{ atual.percentual }}%
+                    @if (atual.classificacao !== 'NORMAL') {
+                      <small>{{ atual.classificacao === 'PICO' ? 'pico' : 'baixa' }}</small>
+                    }
+                  </span>
+                }
+              }
+            }
+          </div>
+          <p class="texto-suave texto-pequeno">Pico: acima de 85% da capacidade. Baixa ocupação: abaixo de 30%.</p>
+          @if (picos().length > 0 || menorMovimento()) {
+            <div class="aviso" role="note">
+              @if (picos().length > 0) {
+                Pico em {{ picos().length }} faixa(s), como {{ diaCurto(picos()[0].dia) }} das {{ hora(picos()[0].inicio) }}, com
+                {{ picos()[0].percentual }}% da capacidade.
+              }
+              @if (menorMovimento(); as menor) {
+                O menor movimento é {{ diaCurto(menor.dia) }} a partir das {{ hora(menor.inicio) }}, com {{ menor.percentual }}%.
+              }
+            </div>
+          }
+        </section>
+        <aside>
+          <section class="bloco">
+            <div class="grade grade-2-iguais">
+              <div>
+                <span class="texto-suave texto-pequeno">Frequência média por aluno</span>
+                <div><strong style="font-size: 24px">{{ decimal(ocupacao.frequenciaMedia) }}</strong> por semana</div>
+              </div>
+              <div>
+                <span class="texto-suave texto-pequeno">Presenças registradas</span>
+                <div><strong style="font-size: 24px">{{ numero(ocupacao.presencas) }}</strong></div>
+              </div>
+            </div>
+            <p class="texto-suave texto-pequeno">Entradas no mesmo dia contam como uma presença.</p>
+          </section>
+          <section class="bloco">
+            <h2>Aulas coletivas mais procuradas</h2>
+            @for (aula of ocupacao.aulas; track aula.aula) {
+              <div class="linha-barra">
+                <div>
+                  <strong>{{ aula.nome }}</strong>
+                  <div class="texto-suave texto-pequeno">{{ diaCurto(aula.dia) }}, {{ hora(aula.inicio) }} · {{ aula.inscritos }} de {{ aula.capacidade }}</div>
+                </div>
+                <div class="trilho"><span [style.width.%]="aula.percentual"></span></div>
+                <span class="numero">
+                  @if (aula.percentual >= 100) {
+                    <span class="selo selo-alerta">Lotada</span>
+                  } @else {
+                    {{ aula.percentual }}%
+                  }
+                </span>
+              </div>
+            } @empty {
+              <p class="estado-vazio">Nenhuma aula para os filtros escolhidos.</p>
+            }
+          </section>
+          <section class="bloco">
+            <div class="cabecalho-bloco">
+              <h2>Estacionamento</h2>
+              <span class="texto-suave texto-pequeno">{{ ocupacao.estacionamento.vagas }} vagas</span>
+            </div>
+            <div class="trilho"><span [style.width.%]="ocupacao.estacionamento.percentualMedio"></span></div>
+            <p class="texto-pequeno"><strong>{{ ocupacao.estacionamento.percentualMedio }}% em média</strong></p>
+            @if (ocupacao.estacionamento.horarioPico; as pico) {
+              <p class="texto-suave texto-pequeno">
+                Pico às {{ hora(pico) }}, com {{ ocupacao.estacionamento.percentualPico }}% das vagas ocupadas.
+              </p>
+            }
+          </section>
+        </aside>
+      </div>
+    }
+
+    <!-- Receita e inadimplência -->
+    @if (conteudo.financeiro; as financeiro) {
+      <section class="cartoes">
+        <div class="cartao">
+          <span class="rotulo">Pagamentos confirmados</span>
+          <strong class="valor">{{ moeda(financeiro.receitaBruta) }}</strong>
+          <small>{{ financeiro.pagamentos }} pagamentos</small>
+        </div>
+        <div class="cartao">
+          <span class="rotulo">Estornos</span>
+          <strong class="valor">− {{ moeda(financeiro.estornos) }}</strong>
+          <small>{{ financeiro.quantidadeEstornos }} estornos no período</small>
+        </div>
+        <div class="cartao">
+          <span class="rotulo">Valor em aberto</span>
+          <strong class="valor">{{ moeda(financeiro.valorEmAberto) }}</strong>
+          <small>de {{ moeda(financeiro.totalComVencimento) }} com vencimento no período</small>
+        </div>
+      </section>
+      <div class="grade grade-2-iguais">
+        <section class="bloco">
+          <h2>Receita líquida {{ agrupamento() }}</h2>
+          <div class="colunas">
+            @for (grupo of conteudo.grupos; track grupo.rotulo) {
+              <div class="coluna-grafico">
+                <span class="valor-coluna">{{ moedaCurta(grupo.receita) }}</span>
+                <span class="barra-grafico" [style.height.%]="(grupo.receita / maiorReceita()) * 100"></span>
+              </div>
+            }
+          </div>
+          <div class="legenda-colunas">
+            @for (grupo of conteudo.grupos; track grupo.rotulo) {
+              <span>{{ grupo.rotulo }}</span>
+            }
+          </div>
+        </section>
+        <section class="bloco">
+          <h2>Valor em aberto por tempo de atraso</h2>
+          @for (faixa of financeiro.faixasAtraso; track faixa.rotulo) {
+            <div class="linha-barra" style="grid-template-columns: 110px minmax(0, 1fr) 150px">
+              <span class="texto-pequeno">{{ faixa.rotulo }}</span>
+              <div class="trilho ruim"><span [style.width.%]="(faixa.valor / maiorAtraso()) * 100"></span></div>
+              <span class="numero texto-pequeno">{{ moeda(faixa.valor) }} ({{ faixa.alunos }} alunos)</span>
+            </div>
+          }
+          <p class="texto-suave texto-pequeno">
+            Só entram mensalidades com mais de 5 dias de atraso (carência), na situação do dia da geração. Taxa:
+            {{ moeda(financeiro.valorEmAberto) }} em aberto ÷ {{ moeda(financeiro.totalComVencimento) }} com vencimento no
+            período = {{ percentual(financeiro.taxaInadimplencia) }}.
+          </p>
+        </section>
+      </div>
+      <section class="bloco tabela-dados">
+        <div class="cabecalho-bloco">
+          <h2>Mensalidades vencidas e não pagas</h2>
+          <span class="texto-suave texto-pequeno">{{ financeiro.atrasadas.length }} mensalidades</span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Aluno</th>
+              <th>Telefone</th>
+              <th>Plano</th>
+              <th>Vencimento</th>
+              <th class="numero">Atraso</th>
+              <th class="numero">Valor</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (item of financeiro.atrasadas; track item.aluno + item.vencimento) {
+              <tr>
+                <td>{{ item.nome }}</td>
+                <td>{{ contato(item.aluno)?.telefone ?? '—' }}</td>
+                <td>{{ item.plano }}</td>
+                <td>{{ data(item.vencimento) }}</td>
+                <td class="numero">{{ item.diasAtraso }} dias</td>
+                <td class="numero">{{ moeda(item.valor) }}</td>
+              </tr>
+            } @empty {
+              <tr><td colspan="6" class="estado-vazio">Nenhuma mensalidade vencida além da carência.</td></tr>
+            }
+          </tbody>
+        </table>
+      </section>
+    }
+
+    <!-- Desempenho dos personais e adesão -->
+    @if (conteudo.personais.length > 0) {
+      @let melhor = conteudo.personais[0];
+      @let pior = conteudo.personais[conteudo.personais.length - 1];
+      <section class="cartoes">
+        <div class="cartao">
+          <span class="rotulo">Alunos com plano de treino ativo</span>
+          <strong class="valor">{{ numero(conteudo.resumo.planosTreino) }}</strong>
+          <small>distribuídos entre {{ conteudo.personais.length }} personais</small>
+        </div>
+        <div class="cartao">
+          <span class="rotulo">Adesão média aos treinos</span>
+          <strong class="valor">{{ percentual(adesaoMedia()) }}</strong>
+          <small>dias com treino ÷ dias previstos nos planos</small>
+        </div>
+        <div class="cartao">
+          <span class="rotulo">Metas atingidas pelos alunos</span>
+          <strong class="valor">{{ totalMetas() }}</strong>
+          <small>metas de avaliação física no período</small>
+        </div>
+      </section>
+      <section class="bloco tabela-dados">
+        <table>
+          <thead>
+            <tr>
+              <th>Personal</th>
+              <th class="numero">Alunos com plano</th>
+              <th class="numero">Dias previstos</th>
+              <th class="numero">Dias com treino</th>
+              <th>Adesão aos treinos</th>
+              <th class="numero">Variação</th>
+              <th class="numero">Metas atingidas</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (personal of conteudo.personais; track personal.personal) {
+              <tr>
+                <td><strong>{{ personal.nome }}</strong></td>
+                <td class="numero">{{ personal.alunosComPlano }}</td>
+                <td class="numero">{{ numero(personal.diasPrevistos) }}</td>
+                <td class="numero">{{ numero(personal.diasComTreino) }}</td>
+                <td>
+                  <div style="display: flex; gap: 8px; align-items: center">
+                    <div class="trilho" style="flex: 1">
+                      <span [style.width.%]="personal.adesao"></span>
+                      <i class="marca" [style.left.%]="adesaoMedia()" title="média"></i>
+                    </div>
+                    <span class="numero">{{ numero(personal.adesao) }}%</span>
+                  </div>
+                </td>
+                <td class="numero">
+                  @if (personal.variacaoAdesao !== null) {
+                    <span class="selo" [class.selo-bom]="personal.variacaoAdesao > 0" [class.selo-ruim]="personal.variacaoAdesao < 0">
+                      {{ personal.variacaoAdesao > 0 ? '+' : personal.variacaoAdesao < 0 ? '−' : '' }}{{ decimal(personal.variacaoAdesao < 0 ? -personal.variacaoAdesao : personal.variacaoAdesao) }} p.p.
+                    </span>
+                  } @else {
+                    —
+                  }
+                </td>
+                <td class="numero">{{ personal.metasAtingidas }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+        @if (conteudo.personais.length > 1) {
+          <div class="grade grade-2-iguais" style="margin-top: 12px">
+            <div class="aviso aviso-sucesso"><strong>{{ melhor.nome }}</strong> teve a maior adesão: {{ numero(melhor.adesao) }}% dos treinos previstos foram feitos.</div>
+            <div class="aviso aviso-erro">
+              <strong>{{ pior.nome }}</strong> ficou {{ decimal(adesaoMedia() - pior.adesao) }} p.p. abaixo da adesão média.
+              @if (pior.alunosEmRisco > 0) {
+                {{ pior.alunosEmRisco }} aluno(s) acompanhados estão na lista de risco de evasão.
+              }
+            </div>
+          </div>
+        }
+      </section>
+    }
+
+    <!-- Alunos em risco -->
+    @if (relatorio.tipo === 'RISCO_EVASAO') {
+      <section class="cartoes">
+        <div class="cartao">
+          <span class="rotulo">Alunos em risco</span>
+          <strong class="valor">{{ conteudo.alunosEmRisco.length }}</strong>
+          <small>de {{ numero(conteudo.resumo.alunosAtivos) }} alunos ativos</small>
+        </div>
+        <div class="cartao">
+          <span class="rotulo">Sem entrada recente</span>
+          <strong class="valor">{{ semEntrada() }}</strong>
+          <small>mais de 14 dias sem entrar</small>
+        </div>
+        <div class="cartao">
+          <span class="rotulo">Com queda de frequência</span>
+          <strong class="valor">{{ conteudo.alunosEmRisco.length - semEntrada() }}</strong>
+          <small>queda acima de 50%</small>
+        </div>
+      </section>
+      <section class="bloco tabela-dados">
+        <table>
+          <thead>
+            <tr>
+              <th>Aluno</th>
+              <th>Plano</th>
+              <th>Personal</th>
+              <th>Última entrada</th>
+              <th class="numero">Dias sem entrar</th>
+              <th class="numero">Frequência semanal</th>
+              <th>Motivo do alerta</th>
+              <th>Contato</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (aluno of conteudo.alunosEmRisco; track aluno.aluno) {
+              <tr>
+                <td><strong>{{ aluno.nome }}</strong></td>
+                <td>{{ aluno.plano }}</td>
+                <td>{{ aluno.personal ?? '—' }}</td>
+                <td>{{ data(aluno.ultimaEntrada) }}</td>
+                <td class="numero">{{ aluno.diasSemEntrar }}</td>
+                <td class="numero">{{ decimal(aluno.frequenciaAnterior) }} → <strong>{{ decimal(aluno.frequenciaAtual) }}</strong></td>
+                <td>
+                  @if (aluno.motivo === 'SEM_ENTRADA') {
+                    <span class="selo selo-ruim">Sem entrada</span>
+                  } @else {
+                    <span class="selo selo-alerta">Queda de {{ aluno.queda }}%</span>
+                  }
+                </td>
+                <td class="texto-pequeno">{{ contato(aluno.aluno)?.telefone ?? '—' }}</td>
+              </tr>
+            } @empty {
+              <tr><td colspan="8" class="estado-vazio">Nenhum aluno em risco no período.</td></tr>
+            }
+          </tbody>
+        </table>
+        <p class="texto-suave texto-pequeno">
+          Critérios definidos pela academia: sem entrada há mais de 14 dias ou queda de frequência acima de 50% em relação ao
+          período anterior.
+        </p>
+      </section>
+    }
+
+    <!-- Metas -->
+    @if (relatorio.tipo === 'METAS_ACADEMIA') {
+      <section class="bloco tabela-dados">
+        <h2>Cumprimento das metas</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Indicador</th>
+              <th>Período</th>
+              <th class="numero">Meta</th>
+              <th class="numero">Realizado</th>
+              <th>Cumprimento</th>
+              <th>Situação</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (meta of conteudo.metas; track meta.meta) {
+              <tr>
+                <td>{{ indicadores[meta.indicador].nome }}</td>
+                <td>{{ data(meta.inicio) }} a {{ data(meta.fim) }}</td>
+                <td class="numero">{{ indicadores[meta.indicador].menorMelhor ? '≤' : '≥' }} {{ valorIndicador(meta.indicador, meta.desejado) }}</td>
+                <td class="numero">{{ valorIndicador(meta.indicador, meta.realizado) }}</td>
+                <td>
+                  <div style="display: flex; gap: 8px; align-items: center">
+                    <div class="trilho" style="flex: 1" [class.neutro]="!meta.atingida"><span [style.width.%]="meta.percentual > 100 ? 100 : meta.percentual"></span></div>
+                    <span class="numero">{{ percentual(meta.percentual) }}</span>
+                  </div>
+                </td>
+                <td><span class="selo" [class.selo-bom]="meta.atingida" [class.selo-ruim]="!meta.atingida">{{ meta.atingida ? 'Atingida' : 'Não atingida' }}</span></td>
+              </tr>
+            } @empty {
+              <tr><td colspan="6" class="estado-vazio">Nenhuma meta vigente no período.</td></tr>
+            }
+          </tbody>
+        </table>
+      </section>
+    }
+  </main>
+
+  @if (exportando()) {
+    <div class="fundo-dialogo" (click)="exportando.set(false)">
+      <div class="dialogo" role="dialog" aria-modal="true" aria-labelledby="titulo-exportar" (click)="$event.stopPropagation()">
+        <h2 id="titulo-exportar">Exportar relatório</h2>
+        <p class="texto-suave texto-pequeno">{{ relatorio.titulo }}, de {{ data(relatorio.inicio) }} a {{ data(relatorio.fim) }}</p>
+        <span class="texto-suave texto-pequeno">Formato do arquivo</span>
+        <div class="opcoes-cartao">
+          <label class="opcao-cartao" [class.selecionado]="formato() === 'PDF'">
+            <input type="radio" name="formato" [checked]="formato() === 'PDF'" (change)="formato.set('PDF')" />
+            <span><strong>PDF</strong><br /><small class="texto-suave">Para imprimir ou enviar.</small></span>
+          </label>
+          <label class="opcao-cartao" [class.selecionado]="formato() === 'PLANILHA'">
+            <input type="radio" name="formato" [checked]="formato() === 'PLANILHA'" (change)="formato.set('PLANILHA')" />
+            <span><strong>Planilha (.xlsx)</strong><br /><small class="texto-suave">Para analisar os dados.</small></span>
+          </label>
+        </div>
+        <span class="texto-suave texto-pequeno">O arquivo terá</span>
+        <ul class="lista-verificacao">
+          <li>Os mesmos valores do relatório na tela, sem recálculo</li>
+          <li>Período e critérios usados no relatório</li>
+          <li>Data e hora de geração: {{ dataHora(relatorio.geracao) }}</li>
+          <li>Usuário responsável: {{ relatorio.usuarioNome }}</li>
+        </ul>
+        @if (previaDadosPessoais(); as linhas) {
+          <div class="aviso aviso-sucesso">
+            <strong>Dados pessoais protegidos (LGPD).</strong> No sistema, o contato do aluno aparece só para quem tem
+            permissão. No arquivo, CPF e telefone saem mascarados e informações de saúde não são exportadas.
+          </div>
+          <div class="tabela-dados">
+            <table>
+              <thead><tr><th>Aluno</th><th>CPF</th><th>Telefone</th></tr></thead>
+              <tbody>
+                @for (linha of linhas; track $index) {
+                  <tr><td>{{ linha[0] }}</td><td>{{ linha[1] }}</td><td>{{ linha[2] }}</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+        <div class="grupo-acoes" style="justify-content: flex-end">
+          <button type="button" class="acao acao-secundaria" (click)="exportando.set(false)">Cancelar</button>
+          <button type="button" class="acao acao-principal" [disabled]="ocupado()" (click)="baixar()">
+            Baixar {{ formato() === 'PDF' ? 'PDF' : 'planilha' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+}

@@ -1,0 +1,78 @@
+<main class="pagina pagina-larga">
+  <header class="pagina-cabecalho">
+    <div>
+      <span class="pagina-sobretitulo">Recomendações › Para aprovar</span>
+      <h1>Recomendações para aprovar</h1>
+      <p class="pagina-descricao">Sugestões que mudam o plano de treino dos seus alunos só são aplicadas depois da sua aprovação.</p>
+    </div>
+  </header>
+
+  <nav class="abas" aria-label="Situação">
+    <button type="button" [class.ativa]="aba() === 'AGUARDANDO_APROVACAO'" (click)="aba.set('AGUARDANDO_APROVACAO')">Para aprovar {{ listas().AGUARDANDO_APROVACAO.length }}</button>
+    <button type="button" [class.ativa]="aba() === 'APROVADA'" (click)="aba.set('APROVADA')">Aprovadas</button>
+    <button type="button" [class.ativa]="aba() === 'REJEITADA'" (click)="aba.set('REJEITADA')">Rejeitadas</button>
+  </nav>
+
+  <section class="bloco tabela-dados">
+    <table>
+      <thead>
+        <tr>
+          <th>Aluno</th>
+          <th>Sugestão</th>
+          <th>Gerada em</th>
+          <th>{{ aba() === 'AGUARDANDO_APROVACAO' ? 'Expira em' : 'Respondida em' }}</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (item of listas()[aba()]; track item.identificador) {
+          <tr>
+            <td>
+              <span class="selo" style="margin-right: 6px">{{ iniciais(item.alunoNome) }}</span>
+              <strong>{{ item.alunoNome }}</strong>
+              <div class="texto-suave texto-pequeno">{{ item.planoTreinoNome }}, versão {{ item.planoTreinoVersao }}</div>
+            </td>
+            <td>
+              <span class="selo selo-info">{{ tipo(item) }}</span>
+              <div>
+                @if (item.exercicioAtual) {
+                  {{ item.exercicioAtual }} → <strong>{{ item.exercicioSugerido?.toLowerCase() }}</strong>
+                } @else {
+                  {{ item.titulo }}
+                }
+              </div>
+              <div class="texto-suave texto-pequeno">{{ item.justificativa }}</div>
+            </td>
+            <td>{{ data(item.geracao) }}</td>
+            <td>
+              @if (aba() === 'AGUARDANDO_APROVACAO') {
+                @if (item.validade === hoje) {
+                  <span class="selo selo-alerta">⧗ Hoje, {{ data(item.validade).substring(0, 5) }}</span>
+                } @else {
+                  {{ data(item.validade) }}
+                }
+              } @else {
+                {{ data(item.resposta) }}
+              }
+            </td>
+            <td>
+              @if (aba() === 'AGUARDANDO_APROVACAO') {
+                <a class="acao" [class.acao-principal]="$first" [class.acao-secundaria]="!$first" [routerLink]="['/core/recomendacao', item.identificador, 'analise']">Analisar</a>
+              } @else if (item.planoGerado) {
+                <a [routerLink]="['/core/recomendacao', item.identificador, 'versoes']">Ver versões</a>
+              } @else {
+                <a [routerLink]="['/core/recomendacao/historico']" [queryParams]="{ aluno: item.aluno }">Histórico</a>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="5" class="estado-vazio">Nenhuma sugestão nesta situação.</td></tr>
+        }
+      </tbody>
+    </table>
+    <div class="aviso" role="note" style="margin-top: 12px">
+      Recomendações sem resposta até a data de expiração deixam de valer e ficam no histórico do aluno. Mudanças aprovadas
+      criam uma nova versão do plano, e a anterior fica guardada.
+    </div>
+  </section>
+</main>

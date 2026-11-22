@@ -1,0 +1,119 @@
+/* Cartões de recomendação, preferências, dias da semana e linha do tempo das versões do plano. */
+:host {
+  display: block;
+}
+/* recomendações */
+.recomendacao {
+  display: grid;
+  grid-template-columns: 38px minmax(0, 1fr);
+  gap: var(--espaco-3);
+  margin-bottom: var(--espaco-3);
+  padding: var(--espaco-4);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  background: var(--cor-superficie);
+}
+.recomendacao .icone-categoria {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: var(--raio-pequeno);
+  background: var(--cor-destaque-suave);
+  color: var(--cor-destaque);
+  font-size: 16px;
+}
+.recomendacao h3 {
+  margin: var(--espaco-1) 0;
+  font-size: 16px;
+}
+.recomendacao p {
+  margin: 0 0 var(--espaco-2);
+  color: var(--cor-texto-suave);
+  font-size: 13px;
+  line-height: 1.55;
+}
+.linha-topo {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--espaco-2);
+  color: var(--cor-texto-suave);
+  font-size: 12px;
+}
+.alternador {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--espaco-2);
+  font-size: 12px;
+  color: var(--cor-texto-suave);
+}
+.item-preferencia {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr) auto;
+  gap: var(--espaco-3);
+  align-items: center;
+  padding: var(--espaco-3) 0;
+  border-bottom: 1px solid var(--cor-borda);
+}
+.item-preferencia:last-child {
+  border-bottom: 0;
+}
+.dias-semana {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-2);
+}
+.dias-semana button {
+  min-width: 46px;
+  padding: 7px 10px;
+  border: 1px solid var(--cor-borda-forte);
+  border-radius: var(--raio-pequeno);
+  background: var(--cor-superficie-alta);
+  color: var(--cor-texto-suave);
+  font-family: inherit;
+  cursor: pointer;
+}
+.dias-semana button.selecionado {
+  border-color: var(--cor-destaque);
+  background: var(--cor-destaque);
+  color: var(--cor-destaque-texto);
+  font-weight: 700;
+}
+.linha-tempo {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.linha-tempo li {
+  position: relative;
+  padding: 0 0 var(--espaco-4) var(--espaco-5);
+  border-left: 2px solid var(--cor-borda-forte);
+}
+.linha-tempo li::before {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: -7px;
+  width: 12px;
+  height: 12px;
+  border: 2px solid var(--cor-borda-forte);
+  border-radius: 50%;
+  background: var(--cor-superficie);
+}
+.linha-tempo li.atual::before {
+  border-color: var(--cor-destaque);
+  background: var(--cor-destaque);
+}
+.removido {
+  background: var(--cor-erro-fundo);
+}
+.removido td:first-child {
+  text-decoration: line-through;
+}
+.incluido {
+  background: var(--cor-sucesso-fundo);
+}

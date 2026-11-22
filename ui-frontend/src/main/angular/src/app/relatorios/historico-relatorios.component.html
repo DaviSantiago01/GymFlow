@@ -1,0 +1,141 @@
+<main class="pagina pagina-larga">
+  <header class="pagina-cabecalho">
+    <div>
+      <span class="pagina-sobretitulo">Relatórios › Histórico</span>
+      <h1>Histórico de relatórios</h1>
+      <p class="pagina-descricao">Os relatórios ficam guardados com os valores do momento em que foram gerados.</p>
+    </div>
+    <div class="pagina-links">
+      <a class="acao acao-principal" routerLink="/core/relatorio/novo">+ Novo relatório</a>
+    </div>
+  </header>
+
+  <form class="bloco formulario-grade" (ngSubmit)="filtrar()">
+    <label
+      >Buscar por usuário
+      <input name="termo" [(ngModel)]="termo" placeholder="Nome ou usuário" />
+    </label>
+    <label
+      >Tipo
+      <select name="tipo" [(ngModel)]="tipo" (change)="filtrar()">
+        <option value="">Todos</option>
+        @for (opcao of tipos; track opcao) {
+          <option [value]="opcao">{{ info[opcao].titulo }}</option>
+        }
+      </select>
+    </label>
+    <label
+      >Gerado por
+      <select name="usuario" [(ngModel)]="usuario" (change)="filtrar()">
+        <option value="">Todos</option>
+        @for (opcao of usuarios(); track opcao[0]) {
+          <option [value]="opcao[0]">{{ opcao[1] }}</option>
+        }
+      </select>
+    </label>
+    <label
+      >Gerados nos
+      <select name="dias" [(ngModel)]="dias" (change)="filtrar()">
+        <option value="7">Últimos 7 dias</option>
+        <option value="30">Últimos 30 dias</option>
+        <option value="60">Últimos 60 dias</option>
+        <option value="365">Últimos 12 meses</option>
+        <option value="todos">Todo o histórico</option>
+      </select>
+    </label>
+  </form>
+
+  <div class="grade grade-lateral">
+    <section class="bloco tabela-dados">
+      <table>
+        <thead>
+          <tr>
+            <th>Gerado em</th>
+            <th>Relatório</th>
+            <th>Gerado por</th>
+            <th>Situação</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of itens(); track item.identificador) {
+            <tr
+              (click)="selecionar(item)"
+              [style.cursor]="'pointer'"
+              [style.background]="selecionado()?.identificador === item.identificador ? 'var(--cor-superficie-alta)' : null"
+            >
+              <td>{{ dataHora(item.geracao) }}</td>
+              <td>
+                <strong>{{ item.titulo }}{{ item.versao > 1 ? ' (versão ' + item.versao + ')' : '' }}</strong>
+                <div class="texto-suave texto-pequeno">
+                  {{ data(item.inicio) }} a {{ data(item.fim) }}{{ item.descricaoFiltros === 'Nenhum' ? '' : ', ' + item.descricaoFiltros }}
+                </div>
+              </td>
+              <td>{{ item.usuarioNome }}</td>
+              <td>
+                @if (item.situacao === 'SUBSTITUIDO') {
+                  <span class="selo">↻ Nova versão gerada</span>
+                } @else {
+                  <span class="selo selo-bom">Guardado</span>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="4" class="estado-vazio">Nenhum relatório gerado com esses filtros.</td></tr>
+          }
+        </tbody>
+      </table>
+      <p class="texto-suave texto-pequeno">Mostrando {{ itens().length }} relatório(s).</p>
+    </section>
+
+    <aside>
+      @if (selecionado(); as relatorio) {
+        <section class="bloco">
+          <span class="texto-suave texto-pequeno">Relatório selecionado</span>
+          <h2>{{ relatorio.titulo }}</h2>
+          <dl class="definicoes">
+            <dt>Período</dt>
+            <dd>{{ data(relatorio.inicio) }} a {{ data(relatorio.fim) }}</dd>
+            <dt>Filtros</dt>
+            <dd>{{ relatorio.descricaoFiltros }}</dd>
+            <dt>Agrupamento</dt>
+            <dd>{{ relatorio.agrupamento === 'DIA' ? 'Diário' : relatorio.agrupamento === 'SEMANA' ? 'Semanal' : 'Mensal' }}</dd>
+            <dt>Gerado em</dt>
+            <dd>{{ dataHora(relatorio.geracao) }}</dd>
+            <dt>Gerado por</dt>
+            <dd>{{ relatorio.usuarioNome }} ({{ relatorio.perfil === 'ADMINISTRADOR' ? 'gestor' : 'personal' }})</dd>
+            <dt>Versão</dt>
+            <dd>{{ relatorio.versao }}</dd>
+          </dl>
+          @if (relatorio.conteudo.indicadores.length > 0) {
+            <h3>Valores guardados</h3>
+            <dl class="definicoes">
+              @for (item of relatorio.conteudo.indicadores.slice(0, 4); track item.indicador) {
+                <dt>{{ indicadores[item.indicador].nome }}</dt>
+                <dd>{{ valorIndicador(item.indicador, item.valor) }}</dd>
+              }
+            </dl>
+          }
+          @if (relatorio.alteracoes.length > 0 && relatorio.situacao === 'ATUAL') {
+            <div class="aviso aviso-erro" role="alert" style="margin-top: 12px">
+              <strong>Dados alterados depois da geração.</strong>
+              @for (alteracao of relatorio.alteracoes; track $index) {
+                <div>{{ alteracao }}</div>
+              }
+              <div>Este relatório continua com os valores originais.</div>
+            </div>
+          } @else if (relatorio.situacao === 'ATUAL') {
+            <div class="aviso aviso-sucesso" style="margin-top: 12px">Nenhum registro do período mudou depois da geração.</div>
+          }
+          <div class="grupo-acoes">
+            @if (relatorio.alteracoes.length > 0 && relatorio.situacao === 'ATUAL' && relatorio.autorizacoes.gerarNovaVersao) {
+              <button type="button" class="acao acao-principal acao-larga" [disabled]="ocupado()" (click)="novaVersao()">↻ Gerar nova versão</button>
+            }
+            <a class="acao acao-secundaria" [routerLink]="['/core/relatorio', relatorio.identificador, 'visualizacao']">Ver relatório</a>
+            <button type="button" class="acao acao-secundaria" (click)="exportar('PDF')">PDF</button>
+            <button type="button" class="acao acao-secundaria" (click)="exportar('PLANILHA')">Planilha</button>
+          </div>
+        </section>
+      }
+    </aside>
+  </div>
+</main>

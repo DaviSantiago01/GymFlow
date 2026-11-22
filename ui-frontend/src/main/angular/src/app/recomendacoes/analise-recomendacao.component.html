@@ -1,0 +1,163 @@
+@if (detalhe(); as detalhe) {
+  @let recomendacao = detalhe.recomendacao;
+  <main class="pagina pagina-larga">
+    <header class="pagina-cabecalho">
+      <div>
+        <span class="pagina-sobretitulo"><a routerLink="/core/recomendacao/aprovacoes">← Recomendações para aprovar</a></span>
+        <h1>{{ recomendacao.titulo }}</h1>
+        <p class="pagina-descricao">
+          {{ recomendacao.alunoNome }} · {{ recomendacao.planoTreinoNome }}, versão {{ recomendacao.planoTreinoVersao }}
+          @if (detalhe.sugestao?.treino) {
+            · {{ detalhe.sugestao?.treino }}
+          }
+          · <span class="selo selo-alerta">⧗ Expira em {{ data(recomendacao.validade) }}</span>
+        </p>
+      </div>
+    </header>
+
+    @if (recomendacao.situacao !== 'AGUARDANDO_APROVACAO') {
+      <div class="aviso" role="status">Esta sugestão já foi analisada: {{ recomendacao.situacao === 'APROVADA' ? 'aprovada' : recomendacao.situacao.toLowerCase() }}.</div>
+    }
+
+    <div class="grade grade-2-iguais">
+      <div>
+        <section class="bloco">
+          <h2>Por que esta sugestão foi gerada</h2>
+          <p class="texto-suave">{{ recomendacao.justificativa }}</p>
+          <div class="tabela-dados">
+            <table>
+              <thead>
+                <tr>
+                  <th>{{ detalhe.sugestao ? 'Execução' : 'Avaliação' }}</th>
+                  <th class="numero">{{ detalhe.sugestao ? 'Carga' : 'Valor' }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (evidencia of detalhe.evidencias; track $index) {
+                  <tr>
+                    <td>{{ evidencia.rotulo }}</td>
+                    <td class="numero"><strong>{{ numero(evidencia.valor) }}{{ detalhe.sugestao ? ' kg' : '' }}</strong></td>
+                  </tr>
+                } @empty {
+                  <tr><td colspan="2" class="estado-vazio">Sem dados detalhados.</td></tr>
+                }
+              </tbody>
+            </table>
+          </div>
+          @if (detalhe.sugestao?.serieAtual; as serie) {
+            <p class="texto-suave texto-pequeno">
+              Configuração atual: {{ serie.quantidade }} séries de {{ serie.repeticoesMinimas }} a {{ serie.repeticoesMaximas }}
+              repetições, {{ numero(serie.carga) }} kg, {{ serie.intervaloSegundos }} s de intervalo.
+            </p>
+          }
+        </section>
+        <section class="bloco">
+          <h2>Perfil {{ recomendacao.alunoNome.split(' ')[0] === recomendacao.alunoNome ? 'do aluno' : 'de ' + recomendacao.alunoNome.split(' ')[0] }}</h2>
+          <dl class="definicoes">
+            <dt>Objetivo</dt>
+            <dd>{{ detalhe.perfil.objetivo ?? 'não informado' }}</dd>
+            <dt>Nível</dt>
+            <dd>{{ detalhe.perfil.nivel ?? 'não informado' }}</dd>
+            <dt>Restrição</dt>
+            <dd>
+              @for (restricao of detalhe.perfil.restricoes; track restricao.regiao) {
+                <div>{{ restricao.regiao.charAt(0) + restricao.regiao.slice(1).toLowerCase() }}: {{ restricao.descricao }}</div>
+              } @empty {
+                Nenhuma
+              }
+            </dd>
+          </dl>
+          <p class="texto-suave texto-pequeno">
+            Se você rejeitar, esta sugestão não será feita de novo por {{ detalhe.carenciaRecusaDias }} dias, a menos que os dados
+            do aluno mudem.
+          </p>
+        </section>
+      </div>
+
+      <section class="bloco">
+        @if (detalhe.sugestao; as sugestao) {
+          <div class="cabecalho-bloco">
+            <h2>Sugestão de substituição</h2>
+            <span class="texto-suave texto-pequeno">você pode trocar o exercício</span>
+          </div>
+          <label
+            >Novo exercício
+            <select name="exercicio" [(ngModel)]="exercicio" [disabled]="recomendacao.situacao !== 'AGUARDANDO_APROVACAO'">
+              @for (opcao of detalhe.alternativas; track opcao.identificador) {
+                <option [value]="opcao.identificador">{{ opcao.nome }}</option>
+              }
+            </select>
+          </label>
+          @if (outrasOpcoes()) {
+            <p class="texto-suave texto-pequeno">Outras opções compatíveis: {{ outrasOpcoes() }}.</p>
+          }
+          <ul class="lista-verificacao">
+            <li>Trabalha o mesmo grupo muscular</li>
+            <li>Sem contraindicação para as restrições do aluno</li>
+            <li>Adequado ao nível e ao objetivo do aluno</li>
+          </ul>
+          <div class="formulario-grade">
+            <label>Séries <input type="number" name="series" min="1" [(ngModel)]="series" /></label>
+            <label
+              >Repetições
+              @if (sugestao.repeticoesMinimas !== minimas || sugestao.repeticoesMaximas !== maximas) {
+                <span class="selo selo-alerta">sugerido: {{ sugestao.repeticoesMinimas }} a {{ sugestao.repeticoesMaximas }}</span>
+              }
+              <span style="display: flex; gap: 6px; align-items: center">
+                <input type="number" name="minimas" min="1" [(ngModel)]="minimas" /> a
+                <input type="number" name="maximas" min="1" [(ngModel)]="maximas" />
+              </span>
+            </label>
+            <label>Carga (kg) <input type="number" name="carga" min="0" step="0.5" [(ngModel)]="carga" /></label>
+            <label>Intervalo (s) <input type="number" name="intervalo" min="15" [(ngModel)]="intervalo" /></label>
+          </div>
+          @if (sugestao.faixa; as faixa) {
+            <p class="texto-suave texto-pequeno">
+              Para {{ faixa.objetivo.toLowerCase() }}, a academia indica de {{ faixa.seriesMinimas }} a {{ faixa.seriesMaximas }}
+              séries e de {{ faixa.repeticoesMinimas }} a {{ faixa.repeticoesMaximas }} repetições. O intervalo deve ficar entre 15 e
+              300 segundos.
+            </p>
+          }
+          <div class="aviso" role="note">
+            Ao aprovar, o sistema cria a <strong>versão {{ (recomendacao.planoTreinoVersao ?? 0) + 1 }}</strong> do plano e guarda a
+            versão {{ recomendacao.planoTreinoVersao }}. Os treinos já registrados não mudam.
+          </div>
+        } @else {
+          <h2>Revisão do plano</h2>
+          <p>{{ recomendacao.descricao }}</p>
+          <p class="texto-suave texto-pequeno">
+            Ao aprovar, o aluno é avisado de que você vai revisar o plano. Use a tela de planos de treino para fazer a revisão.
+          </p>
+        }
+        <label style="margin-top: 12px"
+          >Observação para o aluno (opcional)
+          <input name="observacao" maxlength="250" [(ngModel)]="observacao" placeholder="Ex.: comece com carga leve" />
+        </label>
+        @if (rejeitando()) {
+          <label style="margin-top: 12px"
+            >Motivo da rejeição (opcional)
+            <input name="motivo" maxlength="250" [(ngModel)]="motivo" />
+          </label>
+        }
+        @if (erro(); as erro) {
+          <div class="aviso aviso-erro" role="alert">{{ erro }}</div>
+        }
+        @if (recomendacao.situacao === 'AGUARDANDO_APROVACAO') {
+          <div class="grupo-acoes" style="justify-content: space-between">
+            @if (rejeitando()) {
+              <button type="button" class="acao acao-perigo" [disabled]="ocupado()" (click)="rejeitar()">Confirmar rejeição</button>
+            } @else {
+              <button type="button" class="acao acao-perigo" (click)="rejeitando.set(true)">× Rejeitar</button>
+            }
+            <span>
+              <a class="acao acao-secundaria" routerLink="/core/recomendacao/aprovacoes">Cancelar</a>
+              <button type="button" class="acao acao-principal" [disabled]="ocupado()" (click)="aprovar()">
+                ✓ {{ ajustado() ? 'Aprovar com ajustes' : 'Aprovar' }}
+              </button>
+            </span>
+          </div>
+        }
+      </section>
+    </div>
+  </main>
+}

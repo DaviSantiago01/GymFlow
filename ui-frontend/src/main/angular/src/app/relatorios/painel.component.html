@@ -1,0 +1,100 @@
+@if (painel(); as painel) {
+  <main class="pagina pagina-larga">
+    <header class="pagina-cabecalho">
+      <div>
+        <span class="pagina-sobretitulo">Relatórios</span>
+        <h1>Painel de indicadores</h1>
+        <p class="pagina-descricao">
+          {{ nomeMes(painel.periodo.inicio.substring(0, 7)) }} até {{ data(painel.periodo.fim) }}, comparado ao período
+          anterior equivalente ({{ data(painel.anterior.inicio) }} a {{ data(painel.anterior.fim) }}).
+        </p>
+      </div>
+      <div class="pagina-links">
+        <label
+          >Mês
+          <select name="mes" [(ngModel)]="mes" (change)="trocarMes()">
+            @for (opcao of meses; track opcao) {
+              <option [value]="opcao">{{ nomeMes(opcao) }}</option>
+            }
+          </select>
+        </label>
+        <a class="acao acao-secundaria" routerLink="/core/relatorio/historico">Histórico</a>
+        <a class="acao acao-principal" routerLink="/core/relatorio/novo">Gerar relatório</a>
+      </div>
+    </header>
+
+    <section class="cartoes" aria-label="Indicadores principais">
+      @for (indicador of principais; track indicador) {
+        @let item = valor(indicador);
+        <div class="cartao">
+          <span class="rotulo">{{ indicadores[indicador].nome }}</span>
+          <strong class="valor">{{ valorIndicador(indicador, item?.valor) }}</strong>
+          <span [class]="classeVariacao(item)">{{ variacaoCurta(indicador, item?.variacao ?? null) }}</span>
+          <small> anterior: {{ valorIndicador(indicador, item?.anterior) }}</small>
+        </div>
+      }
+    </section>
+    <section class="cartoes" aria-label="Outros indicadores">
+      @for (indicador of secundarios; track indicador) {
+        @let item = valor(indicador);
+        <div class="cartao">
+          <span class="rotulo">{{ indicadores[indicador].nome }}</span>
+          <strong class="valor">{{ valorIndicador(indicador, item?.valor) }}</strong>
+          <span [class]="classeVariacao(item)">{{ variacaoCurta(indicador, item?.variacao ?? null) }}</span>
+        </div>
+      }
+    </section>
+
+    <div class="grade grade-2">
+      <section class="bloco">
+        <div class="cabecalho-bloco">
+          <h2>Alunos ativos no fim de cada mês</h2>
+          <span class="texto-suave texto-pequeno">últimos 6 meses</span>
+        </div>
+        @if (grafico(); as grafico) {
+          <svg viewBox="0 0 600 210" role="img" aria-label="Evolução dos alunos ativos" style="width: 100%; height: auto">
+            <line x1="40" y1="180" x2="580" y2="180" stroke="var(--cor-borda-forte)" />
+            <line x1="40" y1="20" x2="580" y2="20" stroke="var(--cor-borda)" stroke-dasharray="4 4" />
+            <text x="34" y="24" text-anchor="end" font-size="11" fill="var(--cor-texto-fraco)">{{ grafico.teto }}</text>
+            <text x="34" y="184" text-anchor="end" font-size="11" fill="var(--cor-texto-fraco)">{{ grafico.piso }}</text>
+            <polyline [attr.points]="grafico.linha" fill="none" stroke="var(--cor-destaque)" stroke-width="2.5" />
+            @for (ponto of grafico.pontos; track ponto.x) {
+              <circle [attr.cx]="ponto.x" [attr.cy]="ponto.y" r="4" fill="var(--cor-destaque)" />
+              <text [attr.x]="ponto.x" [attr.y]="ponto.y - 10" text-anchor="middle" font-size="12" font-weight="700" fill="var(--cor-texto)">
+                {{ ponto.valor }}
+              </text>
+              <text [attr.x]="ponto.x" y="200" text-anchor="middle" font-size="11" fill="var(--cor-texto-suave)">{{ ponto.rotulo }}</text>
+            }
+          </svg>
+        }
+      </section>
+
+      <section class="bloco">
+        <div class="cabecalho-bloco">
+          <h2>Metas de {{ nomeMes(painel.periodo.inicio.substring(0, 7), false) }}</h2>
+          <span class="texto-suave texto-pequeno">{{ metasAtingidas() }} de {{ painel.metas.length }} atingidas</span>
+        </div>
+        @for (meta of painel.metas; track meta.meta) {
+          <div class="meta-item">
+            <span class="icone-meta" [class.icone-ok]="meta.atingida" [class.icone-falha]="!meta.atingida">{{
+              meta.atingida ? '✓' : '×'
+            }}</span>
+            <div>
+              <strong>{{ indicadores[meta.indicador].nome }}</strong>
+              <div class="texto-suave texto-pequeno">
+                meta: {{ indicadores[meta.indicador].menorMelhor ? 'até' : '' }}
+                {{ valorIndicador(meta.indicador, meta.desejado) }}{{ indicadores[meta.indicador].menorMelhor ? '' : ' ou mais' }}
+              </div>
+            </div>
+            <div class="numero">
+              <strong>{{ valorIndicador(meta.indicador, meta.realizado) }}</strong>
+              <div class="texto-suave texto-pequeno">{{ meta.percentual.toLocaleString('pt-BR') }}% da meta</div>
+            </div>
+          </div>
+        } @empty {
+          <p class="estado-vazio">Nenhuma meta definida para o mês. <a routerLink="/core/meta-academia">Cadastrar metas</a></p>
+        }
+      </section>
+    </div>
+  </main>
+}

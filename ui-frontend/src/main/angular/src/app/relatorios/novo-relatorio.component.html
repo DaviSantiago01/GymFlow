@@ -1,0 +1,182 @@
+@if (formulario(); as formulario) {
+  <main class="pagina pagina-larga">
+    <header class="pagina-cabecalho">
+      <div>
+        <span class="pagina-sobretitulo">Relatórios › Novo relatório</span>
+        <h1>{{ passo() === 1 ? 'Novo relatório' : 'Novo relatório de ' + info[tipo()].titulo.toLowerCase() }}</h1>
+        <p class="pagina-descricao">
+          {{
+            passo() === 1
+              ? 'Escolha o tipo de relatório. Na próxima etapa, você define o período e os filtros.'
+              : 'Defina o período de análise, como agrupar os resultados e, se quiser, filtros.'
+          }}
+        </p>
+      </div>
+      <div class="pagina-links">
+        <a class="acao acao-secundaria" routerLink="/core/relatorio/historico">Histórico de relatórios</a>
+      </div>
+    </header>
+
+    <div class="passos" aria-label="Etapas">
+      <span [class.ativo]="passo() === 1">1 · Tipo de relatório</span>
+      <span [class.ativo]="passo() === 2">2 · Período e filtros</span>
+      <span>3 · Relatório gerado</span>
+    </div>
+
+    @if (passo() === 1) {
+      <section class="tipos" aria-label="Tipos de relatório">
+        @for (opcao of tipos; track opcao) {
+          <button
+            type="button"
+            class="tipo"
+            [class.selecionado]="tipo() === opcao"
+            [disabled]="!permitidos().has(opcao)"
+            [attr.aria-pressed]="tipo() === opcao"
+            (click)="escolher(opcao)"
+          >
+            <span class="icone-tipo" aria-hidden="true">{{ info[opcao].icone }}</span>
+            <strong>{{ info[opcao].titulo }}</strong>
+            <span>{{ info[opcao].descricao }}</span>
+            <small class="texto-suave">{{ info[opcao].personal ? 'Gestor e personal' : 'Somente gestor' }}</small>
+          </button>
+        }
+      </section>
+      <div class="aviso" role="note" style="margin-top: 16px">
+        @if (formulario.personalRestrito) {
+          Você está como <strong>personal</strong>: gera relatórios apenas dos alunos sob sua responsabilidade.
+        } @else {
+          Você está como <strong>gestor</strong> e pode gerar todos os tipos. Personais geram apenas relatórios dos
+          próprios alunos, e alunos não têm acesso aos relatórios gerenciais.
+        }
+      </div>
+      <div class="grupo-acoes">
+        <a class="acao acao-secundaria" routerLink="/core/relatorio/historico">Cancelar</a>
+        <button type="button" class="acao acao-principal" (click)="continuar()">Continuar</button>
+      </div>
+    } @else {
+      <div class="grade grade-lateral">
+        <form class="bloco" (ngSubmit)="gerar()">
+          <h2>Período de análise</h2>
+          <div class="botoes-segmentados" role="group" aria-label="Atalhos de período">
+            <button type="button" [class.selecionado]="atalho === 'ULTIMOS_30'" (click)="aplicarAtalho('ULTIMOS_30')">Últimos 30 dias</button>
+            <button type="button" [class.selecionado]="atalho === 'MES_ANTERIOR'" (click)="aplicarAtalho('MES_ANTERIOR')">Mês anterior</button>
+            <button type="button" [class.selecionado]="atalho === 'TRIMESTRE_ANTERIOR'" (click)="aplicarAtalho('TRIMESTRE_ANTERIOR')">Trimestre anterior</button>
+            <button type="button" [class.selecionado]="atalho === 'PERSONALIZADO'" (click)="atalho = 'PERSONALIZADO'">Personalizado</button>
+          </div>
+          <div class="formulario-grade" style="margin-top: 12px">
+            <label
+              >Data inicial
+              <input type="date" name="inicio" [(ngModel)]="inicio" [max]="formulario.hoje" (change)="alterarPeriodo()" required />
+            </label>
+            <label
+              >Data final
+              <input type="date" name="fim" [(ngModel)]="fim" [max]="formulario.hoje" (change)="alterarPeriodo()" required />
+            </label>
+          </div>
+          <p class="texto-suave texto-pequeno">
+            {{ dias() }} dias. O período pode ter até 12 meses e não pode terminar depois de hoje ({{ data(formulario.hoje) }}).
+          </p>
+
+          <h2 style="margin-top: 20px">Agrupar resultados por</h2>
+          <div class="botoes-segmentados" role="group" aria-label="Agrupamento">
+            <button type="button" [class.selecionado]="agrupamento === 'DIA'" [disabled]="!agrupamentoPermitido('DIA')" (click)="agrupamento = 'DIA'; verificar()">Dia</button>
+            <button type="button" [class.selecionado]="agrupamento === 'SEMANA'" [disabled]="!agrupamentoPermitido('SEMANA')" (click)="agrupamento = 'SEMANA'; verificar()">Semana</button>
+            <button type="button" [class.selecionado]="agrupamento === 'MES'" [disabled]="!agrupamentoPermitido('MES')" (click)="agrupamento = 'MES'; verificar()">Mês</button>
+          </div>
+          <p class="texto-suave texto-pequeno">
+            O agrupamento não pode ser maior que o período. Por dia, só em períodos de até
+            {{ formulario.agrupamentoDiarioMaximoDias }} dias.
+          </p>
+
+          <h2 style="margin-top: 20px">Filtros <span class="texto-suave texto-pequeno">(opcional)</span></h2>
+          <div class="formulario-grade">
+            <label
+              >Plano contratado
+              <select name="plano" [(ngModel)]="plano" [disabled]="!aceita('PLANO')" (change)="verificar()">
+                <option value="">{{ aceita('PLANO') ? 'Todos os planos' : 'Não se aplica a este relatório' }}</option>
+                @for (opcao of formulario.planos; track opcao.identificador) {
+                  <option [value]="opcao.identificador">{{ opcao.nome }}</option>
+                }
+              </select>
+            </label>
+            <label
+              >Modalidade
+              <select name="modalidade" [(ngModel)]="modalidade" [disabled]="!aceita('MODALIDADE')" (change)="verificar()">
+                <option value="">{{ aceita('MODALIDADE') ? 'Todas as modalidades' : 'Não se aplica a este relatório' }}</option>
+                @for (opcao of formulario.modalidades; track opcao) {
+                  <option [value]="opcao">{{ opcao }}</option>
+                }
+              </select>
+            </label>
+            <label
+              >Personal
+              <select
+                name="personal"
+                [(ngModel)]="personal"
+                [disabled]="!aceita('PERSONAL') || formulario.personalRestrito"
+                (change)="verificar()"
+              >
+                @if (!formulario.personalRestrito) {
+                  <option value="">{{ aceita('PERSONAL') ? 'Todos os personais' : 'Não se aplica a este relatório' }}</option>
+                }
+                @for (opcao of formulario.personais; track opcao.identificador) {
+                  <option [value]="opcao.identificador">{{ opcao.nome }}</option>
+                }
+              </select>
+            </label>
+            <label
+              >Aula coletiva
+              <select name="aula" [(ngModel)]="aula" [disabled]="!aceita('AULA_COLETIVA')" (change)="verificar()">
+                <option value="">{{ aceita('AULA_COLETIVA') ? 'Todas as aulas' : 'Não se aplica a este relatório' }}</option>
+                @for (opcao of formulario.aulas; track opcao.identificador) {
+                  <option [value]="opcao.identificador">{{ opcao.nome }}</option>
+                }
+              </select>
+            </label>
+          </div>
+
+          <h2 style="margin-top: 20px">Comparação</h2>
+          <label style="display: flex; gap: 8px; align-items: center; font-size: 13px">
+            <input type="checkbox" name="comparar" [(ngModel)]="comparar" />
+            Comparar com o período anterior equivalente
+          </label>
+          <p class="texto-suave texto-pequeno">{{ periodoAnterior() }}, também com {{ dias() }} dias.</p>
+        </form>
+
+        <aside>
+          <section class="bloco">
+            <h2>Resumo do relatório</h2>
+            <dl class="definicoes">
+              <dt>Tipo</dt>
+              <dd>{{ info[tipo()].titulo }}</dd>
+              <dt>Período</dt>
+              <dd>{{ data(inicio) }} a {{ data(fim) }}<br /><small class="texto-suave">{{ dias() }} dias</small></dd>
+              <dt>Agrupamento</dt>
+              <dd>{{ agrupamento === 'DIA' ? 'Diário' : agrupamento === 'SEMANA' ? 'Semanal' : 'Mensal' }}, em {{ quantidadeDeGrupos() }} grupos</dd>
+              <dt>Filtros</dt>
+              <dd>{{ plano || modalidade || aula || (personal && !formulario.personalRestrito) ? 'Aplicados' : 'Nenhum' }}</dd>
+              <dt>Comparação</dt>
+              <dd>{{ comparar ? periodoAnterior() : 'Sem comparação' }}</dd>
+            </dl>
+          </section>
+          @if (resumo(); as resumo) {
+            <div class="aviso aviso-sucesso" role="status">
+              Há dados para gerar o relatório: <strong>{{ numero(resumo.alunosAtivos) }}</strong> alunos ativos,
+              <strong>{{ numero(resumo.presencas) }}</strong> presenças e <strong>{{ numero(resumo.pagamentos) }}</strong>
+              pagamentos no período.
+            </div>
+          }
+          @if (aviso(); as aviso) {
+            <div class="aviso aviso-erro" role="alert">{{ aviso }}</div>
+          }
+          <div class="grupo-acoes">
+            <button type="button" class="acao acao-principal acao-larga" [disabled]="ocupado() || !!aviso()" (click)="gerar()">
+              Gerar relatório
+            </button>
+            <button type="button" class="acao acao-secundaria acao-larga" (click)="passo.set(1)">Voltar</button>
+          </div>
+        </aside>
+      </div>
+    }
+  </main>
+}

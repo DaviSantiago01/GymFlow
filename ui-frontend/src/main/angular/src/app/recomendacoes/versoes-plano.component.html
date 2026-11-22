@@ -1,0 +1,97 @@
+@if (comparacao(); as comparacao) {
+  <main class="pagina pagina-larga">
+    <header class="pagina-cabecalho">
+      <div>
+        <span class="pagina-sobretitulo">
+          <a [routerLink]="aluno ? '/core/recomendacao/minhas' : '/core/recomendacao/aprovacoes'">← Recomendações</a>
+        </span>
+        <h1>Versões do plano de {{ comparacao.atual.plano.alunoNome }}</h1>
+        <p class="pagina-descricao">
+          {{ comparacao.atual.plano.nome }}. Compare o que mudou entre a versão {{ comparacao.anterior.plano.versao }} e a versão
+          {{ comparacao.atual.plano.versao }}.
+        </p>
+      </div>
+    </header>
+
+    <div class="aviso" role="note">
+      A versão {{ comparacao.atual.plano.versao }} foi criada a partir da recomendação
+      <strong>{{ comparacao.recomendacao.titulo }}</strong>, aprovada por {{ comparacao.recomendacao.respondente }} em
+      {{ data(comparacao.recomendacao.resposta) }}.
+    </div>
+
+    <div class="grade grade-lateral">
+      <section class="bloco">
+        @for (item of treinos(); track item.treino.dia) {
+          <div class="cabecalho-bloco" [style.margin-top.px]="$first ? 0 : 24">
+            <h2>{{ item.treino.nome }}</h2>
+            @if (alterados(item.linhas) > 0) {
+              <span class="selo selo-alerta">1 exercício substituído</span>
+            } @else {
+              <span class="selo">Sem alterações, {{ item.treino.series.length }} exercícios</span>
+            }
+          </div>
+          <div class="tabela-dados">
+            <table>
+              <thead>
+                <tr>
+                  <th>Exercício</th>
+                  <th>Versão {{ comparacao.anterior.plano.versao }}</th>
+                  <th>Versão {{ comparacao.atual.plano.versao }} (ativa)</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (linha of item.linhas; track linha.nome) {
+                  <tr [class.removido]="!linha.atual" [class.incluido]="!linha.anterior">
+                    <td>
+                      <strong>{{ linha.nome }}</strong>
+                      @if (!linha.atual) {
+                        <div class="texto-pequeno">− Removido na versão {{ comparacao.atual.plano.versao }}</div>
+                      }
+                      @if (!linha.anterior) {
+                        <div class="texto-pequeno">+ Novo, por recomendação aprovada</div>
+                      }
+                    </td>
+                    <td>{{ serie(linha.anterior) }}</td>
+                    <td>{{ serie(linha.atual) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        }
+        @if (comparacao.recomendacao.ajuste) {
+          <p class="texto-suave texto-pequeno">Ajuste feito por {{ comparacao.recomendacao.respondente }} na aprovação: {{ comparacao.recomendacao.ajuste }}</p>
+        }
+      </section>
+
+      <aside>
+        <section class="bloco">
+          <h2>Histórico de versões</h2>
+          <ul class="linha-tempo">
+            @for (versao of comparacao.versoes; track versao.identificador) {
+              <li [class.atual]="versao.situacao === 'ATIVO'">
+                <strong>Versão {{ versao.versao }}</strong>&nbsp;<span class="texto-suave texto-pequeno">{{ data(versao.criacao) }}</span>
+                @if (versao.situacao === 'ATIVO') {
+                  <span class="selo selo-bom">Ativa</span>
+                }
+                <div class="texto-suave texto-pequeno">
+                  @if (versao.recomendacaoTitulo) {
+                    {{ versao.recomendacaoTitulo }}, por recomendação aprovada.
+                  } @else if (versao.versao === 1) {
+                    Plano criado.
+                  } @else {
+                    Revisão feita pelo personal.
+                  }
+                </div>
+                <div class="texto-suave texto-pequeno">{{ versao.execucoes }} dias de treino registrados nesta versão</div>
+              </li>
+            }
+          </ul>
+        </section>
+        <div class="aviso aviso-sucesso">
+          Os treinos registrados nas versões anteriores continuam ligados a elas e podem ser consultados no histórico.
+        </div>
+      </aside>
+    </div>
+  </main>
+}

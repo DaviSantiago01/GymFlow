@@ -64,6 +64,18 @@ export class App {
     return /^\/core\/(armario|reserva-armario)\//.test(this.router.url);
   }
 
+  protected relatoriosAtivos() {
+    return /^\/core\/relatorio\/(?!painel)/.test(this.router.url);
+  }
+
+  protected recomendacoesAtivas() {
+    return /^\/core\/recomendacao\/(minhas|historico|\d+\/(visualizacao|versoes))/.test(this.router.url);
+  }
+
+  protected perfilAtivo() {
+    return this.router.url.startsWith('/core/perfil-aluno/');
+  }
+
   protected sair() {
     this.menuAberto.set(false);
     this.servicoAutenticacao.sair().subscribe(() => this.router.navigateByUrl('/login'));

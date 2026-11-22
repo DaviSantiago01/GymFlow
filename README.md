@@ -45,6 +45,14 @@ A conta `aluno` já tem plano de treino, histórico de cargas, avaliações fís
 
 No perfil Gestor, o módulo de equipamentos inclui exemplos com prazos de inspeção diferentes e uma ordem de manutenção em andamento.
 
+Os [relatórios de desempenho](docs/core/funcionalidades/F015-relatorios-desempenho.md) e as [recomendações personalizadas](docs/core/funcionalidades/F016-recomendacoes-personalizadas.md) ficam nos menus **Análises** (gestor), **Recomendações e relatórios** (professor) e **Para você** (aluno). Para que os relatórios tenham movimento suficiente, acrescente o perfil `demonstracao`, que carrega 48 alunos fictícios com matrículas, mensalidades e quatro meses de entradas:
+
+```powershell
+java -jar ui-backend/target/treinoconectacore-ui-backend-1.0.0-SNAPSHOT.jar --spring.profiles.active=desenvolvimento,demonstracao
+```
+
+Se o banco local já tiver sido criado sem esse perfil, os dados são acrescentados na próxima inicialização com ele.
+
 Em produção, o backend recebe `TREINO_BANCO_URL`, `TREINO_BANCO_USUARIO` e `TREINO_BANCO_SENHA` pelo ambiente. A aplicação usa HTTPS para enviar os cookies seguros. As migrações desta versão foram verificadas com H2.
 
 ## Arquitetura e documentação

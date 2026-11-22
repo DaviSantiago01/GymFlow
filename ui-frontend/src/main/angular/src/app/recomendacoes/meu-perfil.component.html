@@ -1,0 +1,198 @@
+@if (perfil(); as perfil) {
+  <main class="pagina pagina-larga">
+    <header class="pagina-cabecalho">
+      <div>
+        <span class="pagina-sobretitulo">Meu perfil</span>
+        <h1>Meu perfil</h1>
+      </div>
+      <div class="pagina-links">
+        <a class="acao acao-secundaria" routerLink="/core/recomendacao/minhas">Ver recomendações</a>
+      </div>
+    </header>
+
+    <nav class="abas" aria-label="Seções do perfil">
+      <a routerLink="/core/perfil-aluno/meu" [class.ativa]="aba() === 'dados'">Dados de treino</a>
+      <a routerLink="/core/perfil-aluno/preferencias" [class.ativa]="aba() === 'preferencias'">Preferências de recomendação</a>
+    </nav>
+
+    @if (perfil.completo && perfil.resumo.matriculaAtiva) {
+      <div class="aviso aviso-sucesso" role="status">
+        <strong>Seu perfil está completo e sua matrícula está ativa.</strong> Você está recebendo recomendações personalizadas de
+        treino, aulas e horários.
+      </div>
+    } @else if (!perfil.completo) {
+      <div class="aviso aviso-erro" role="status">
+        Para receber recomendações personalizadas, informe: <strong>{{ perfil.pendentes.join(', ') }}</strong>.
+      </div>
+    } @else {
+      <div class="aviso" role="status">Sua matrícula não está ativa. Recomendações são geradas apenas para alunos matriculados.</div>
+    }
+    @if (erro(); as erro) {
+      <div class="aviso aviso-erro" role="alert">{{ erro }}</div>
+    }
+
+    <div class="grade grade-lateral">
+      @if (aba() === 'dados') {
+        <form class="bloco" (ngSubmit)="salvarDados()">
+          <h2>Objetivo principal</h2>
+          <div class="opcoes-cartao" style="grid-template-columns: repeat(3, minmax(0, 1fr))">
+            @for (opcao of perfil.objetivos; track opcao.valor) {
+              <label class="opcao-cartao" [class.selecionado]="objetivo === opcao.valor">
+                <input type="radio" name="objetivo" [value]="opcao.valor" [(ngModel)]="objetivo" />
+                <span><strong>{{ opcao.descricao }}</strong></span>
+              </label>
+            }
+          </div>
+
+          <h2 style="margin-top: 20px">Nível de experiência</h2>
+          <div class="botoes-segmentados" role="group" aria-label="Nível de experiência">
+            @for (opcao of perfil.niveis; track opcao.valor) {
+              <button type="button" [class.selecionado]="nivel === opcao.valor" (click)="nivel = opcao.valor">{{ opcao.descricao }}</button>
+            }
+          </div>
+          <p class="texto-suave texto-pequeno">{{ descricaoNivel() }}</p>
+
+          <h2 style="margin-top: 20px">Disponibilidade semanal</h2>
+          <div class="dias-semana" role="group" aria-label="Dias disponíveis">
+            @for (dia of dias; track dia.valor) {
+              <button type="button" [class.selecionado]="diasEscolhidos.has(dia.valor)" [attr.aria-pressed]="diasEscolhidos.has(dia.valor)" (click)="alternarDia(dia.valor)">
+                {{ dia.curto }}
+              </button>
+            }
+          </div>
+          <div class="formulario-grade" style="margin-top: 12px; max-width: 360px">
+            <label>Das <input type="time" name="inicio" [(ngModel)]="inicio" /></label>
+            <label>até <input type="time" name="fim" [(ngModel)]="fim" /></label>
+          </div>
+          <p class="texto-suave texto-pequeno">{{ resumoDisponibilidade() }}</p>
+
+          <div class="cabecalho-bloco" style="margin-top: 20px">
+            <h2>Restrições físicas</h2>
+            <button type="button" class="acao acao-secundaria" (click)="novaRestricao()">+ Adicionar restrição</button>
+          </div>
+          @for (restricao of perfil.restricoes; track restricao.regiao) {
+            <div class="cartao" style="display: flex; justify-content: space-between; gap: 12px; margin-bottom: 8px">
+              <div>
+                <strong>⚠ {{ nomeRegiao(restricao.regiao) }}</strong>
+                <div class="texto-suave texto-pequeno">{{ restricao.descricao }}</div>
+                <small>Registrada em {{ data(restricao.registro) }}.</small>
+              </div>
+              <div>
+                <button type="button" class="acao acao-secundaria" (click)="editarRestricao(restricao.regiao, restricao.descricao)">Editar</button>
+                <button type="button" class="acao acao-perigo" (click)="removerRestricao(restricao.regiao)">Remover</button>
+              </div>
+            </div>
+          } @empty {
+            <p class="estado-vazio">Nenhuma restrição registrada.</p>
+          }
+          @if (editandoRestricao()) {
+            <div class="cartao formulario-grade">
+              <label
+                >Região
+                <select name="regiao" [(ngModel)]="regiao">
+                  <option value="">Escolha</option>
+                  @for (opcao of perfil.regioes; track opcao.valor) {
+                    <option [value]="opcao.valor">{{ opcao.descricao }}</option>
+                  }
+                </select>
+              </label>
+              <label
+                >Descrição
+                <input name="descricao" [(ngModel)]="descricao" maxlength="250" placeholder="Ex.: dor ao agachar" />
+              </label>
+              <div class="grupo-acoes">
+                <button type="button" class="acao acao-principal" [disabled]="ocupado()" (click)="salvarRestricao()">Salvar restrição</button>
+                <button type="button" class="acao acao-secundaria" (click)="editandoRestricao.set(false)">Cancelar</button>
+              </div>
+            </div>
+          }
+
+          <div class="grupo-acoes">
+            <button type="submit" class="acao acao-principal" [disabled]="ocupado()">Salvar alterações</button>
+          </div>
+        </form>
+      } @else {
+        <section class="bloco">
+          <div class="cabecalho-bloco">
+            <h2>Quais recomendações você quer receber</h2>
+            <span class="texto-suave texto-pequeno">Mude quando quiser.</span>
+          </div>
+          @for (opcao of perfil.categorias; track opcao.categoria) {
+            <div class="item-preferencia">
+              <span class="icone-categoria" style="display: inline-flex; width: 32px; height: 32px; align-items: center; justify-content: center; border-radius: 8px; background: var(--cor-destaque-suave); color: var(--cor-destaque)">
+                {{ categorias[opcao.categoria].icone }}
+              </span>
+              <div>
+                <strong>{{ categorias[opcao.categoria].nome }}</strong>
+                <div class="texto-suave texto-pequeno">{{ categorias[opcao.categoria].descricao }}</div>
+              </div>
+              <label class="alternador">
+                @if (!opcao.opcional) {
+                  <span class="selo">🔒 Sempre ativa</span>
+                } @else {
+                  {{ desativadas.has(opcao.categoria) ? 'Desativada' : 'Ativada' }}
+                }
+                <input
+                  type="checkbox"
+                  [checked]="!desativadas.has(opcao.categoria)"
+                  [disabled]="!opcao.opcional"
+                  (change)="alternarCategoria(opcao.categoria, opcao.opcional)"
+                  [attr.aria-label]="categorias[opcao.categoria].nome"
+                />
+              </label>
+            </div>
+          }
+          <p class="texto-suave texto-pequeno">
+            As mudanças valem para as próximas recomendações. As que já estão na sua lista continuam até expirar ou serem respondidas.
+          </p>
+          <div class="grupo-acoes">
+            <button type="button" class="acao acao-principal" [disabled]="ocupado()" (click)="salvarPreferencias()">Salvar preferências</button>
+          </div>
+        </section>
+      }
+
+      <aside>
+        @if (aba() === 'dados') {
+          <section class="bloco">
+            <h2>Seu personal</h2>
+            @if (perfil.resumo.plano; as plano) {
+              <dl class="definicoes">
+                <dt>Personal</dt>
+                <dd>{{ plano.personalNome }}</dd>
+                <dt>Plano de treino</dt>
+                <dd>{{ plano.nome }}</dd>
+                <dt>Frequência</dt>
+                <dd>{{ plano.frequenciaSemanal }} treinos por semana</dd>
+              </dl>
+            } @else {
+              <p class="estado-vazio">Você ainda não tem plano de treino ativo.</p>
+            }
+          </section>
+          <section class="bloco">
+            <h2>Como usamos esses dados</h2>
+            <p class="texto-pequeno"><strong>Objetivo e nível</strong> — escolhemos exercícios e aulas adequados para você.</p>
+            <p class="texto-pequeno"><strong>Disponibilidade</strong> — sugerimos só aulas e horários que cabem na sua rotina.</p>
+            <p class="texto-pequeno"><strong>Restrições</strong> — nunca recomendamos exercícios ou aulas contraindicados.</p>
+          </section>
+        } @else {
+          <section class="bloco">
+            <h2>Ordem em que aparecem</h2>
+            <ol>
+              <li>Acompanhamento físico</li>
+              <li>Frequência e horários</li>
+              <li>Ajustes no treino e aulas coletivas</li>
+              <li>Planos e serviços</li>
+            </ol>
+            <p class="texto-suave texto-pequeno">
+              Você vê até {{ perfil.maximoExibidas }} recomendações por vez. Se duas tiverem a mesma prioridade, a mais recente aparece primeiro.
+            </p>
+          </section>
+          <div class="aviso" role="note">
+            <strong>Recusou uma recomendação?</strong> Ela não volta a aparecer por {{ perfil.carenciaRecusaDias }} dias, a menos
+            que seus dados mudem, por exemplo depois de uma nova avaliação física.
+          </div>
+        }
+      </aside>
+    </div>
+  </main>
+}

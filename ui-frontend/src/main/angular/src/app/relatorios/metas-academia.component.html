@@ -1,0 +1,159 @@
+<main class="pagina pagina-larga">
+  <header class="pagina-cabecalho">
+    <div>
+      <span class="pagina-sobretitulo">Metas da academia</span>
+      <h1>Metas da academia</h1>
+      <p class="pagina-descricao">Acompanhe o cumprimento das metas de cada período e cadastre novas metas.</p>
+    </div>
+    <div class="pagina-links">
+      <label
+        >Mês
+        <select name="mes" [(ngModel)]="mes" (change)="carregar()">
+          @for (opcao of meses; track opcao) {
+            <option [value]="opcao">{{ nomeMes(opcao) }}</option>
+          }
+        </select>
+      </label>
+      <a class="acao acao-secundaria" routerLink="/core/relatorio/painel">Painel</a>
+    </div>
+  </header>
+
+  <div class="grade grade-lateral">
+    <div>
+      @if (acompanhamento(); as acompanhamento) {
+        <section class="bloco tabela-dados">
+          <div class="cabecalho-bloco">
+            <h2>
+              {{ acompanhamento.encerrado ? 'Metas de ' : 'Em andamento: ' }}{{ nomeMes(acompanhamento.mes) }}
+            </h2>
+            <span class="texto-suave texto-pequeno">
+              {{ acompanhamento.encerrado ? atingidas() + ' de ' + acompanhamento.metas.length + ' atingidas' : 'parcial até ' + data(acompanhamento.apuradoAte) }}
+            </span>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Indicador</th>
+                <th class="numero">Meta</th>
+                <th class="numero">Realizado</th>
+                <th>Cumprimento</th>
+                <th>Situação</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (meta of acompanhamento.metas; track meta.meta) {
+                <tr>
+                  <td>
+                    <strong>{{ indicadores[meta.indicador].nome }}</strong>
+                    <div class="texto-suave texto-pequeno">{{ indicadores[meta.indicador].menorMelhor ? '↘ menor é melhor' : '↗ maior é melhor' }}</div>
+                  </td>
+                  <td class="numero">{{ indicadores[meta.indicador].menorMelhor ? '≤' : '≥' }} {{ valorIndicador(meta.indicador, meta.desejado) }}</td>
+                  <td class="numero"><strong>{{ valorIndicador(meta.indicador, meta.realizado) }}</strong></td>
+                  <td>
+                    <div style="display: flex; gap: 8px; align-items: center">
+                      <div class="trilho" style="flex: 1" [class.neutro]="!meta.atingida">
+                        <span [style.width.%]="meta.percentual > 100 ? 100 : meta.percentual"></span>
+                      </div>
+                      <span class="numero">{{ percentual(meta.percentual) }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    @if (meta.atingida) {
+                      <span class="selo selo-bom">✓ Atingida</span>
+                    } @else if (acompanhamento.encerrado) {
+                      <span class="selo selo-ruim">× Não atingida</span>
+                    } @else {
+                      <span class="selo">Em andamento</span>
+                    }
+                  </td>
+                </tr>
+              } @empty {
+                <tr><td colspan="5" class="estado-vazio">Nenhuma meta definida para este mês.</td></tr>
+              }
+            </tbody>
+          </table>
+        </section>
+      }
+
+      <section class="bloco tabela-dados">
+        <h2>Todas as metas</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Indicador</th>
+              <th>Período</th>
+              <th class="numero">Valor desejado</th>
+              <th>Situação</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (meta of metas(); track meta.identificador) {
+              <tr>
+                <td>{{ meta.descricao }}</td>
+                <td>{{ data(meta.inicio) }} a {{ data(meta.fim) }}</td>
+                <td class="numero">{{ valorIndicador(meta.indicador, meta.valorDesejado) }}</td>
+                <td>
+                  <span class="selo" [class.selo-bom]="meta.situacao === 'ATIVA'">{{
+                    meta.situacao === 'ATIVA' ? 'Ativa' : meta.situacao === 'ENCERRADA' ? 'Encerrada' : 'Substituída'
+                  }}</span>
+                </td>
+                <td>
+                  @if (meta.situacao === 'ATIVA') {
+                    <button type="button" class="acao acao-secundaria" (click)="editar(meta)">Substituir</button>
+                    <button type="button" class="acao acao-perigo" (click)="encerrar(meta)">Encerrar</button>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="5" class="estado-vazio">Nenhuma meta cadastrada.</td></tr>
+            }
+          </tbody>
+        </table>
+      </section>
+    </div>
+
+    <form class="bloco" (ngSubmit)="salvar()">
+      <h2>{{ substituindo() ? 'Substituir meta' : 'Nova meta' }}</h2>
+      <label
+        >Indicador
+        <select name="indicador" [(ngModel)]="indicador" [disabled]="!!substituindo()">
+          @for (opcao of lista; track opcao) {
+            <option [value]="opcao">{{ indicadores[opcao].nome }}</option>
+          }
+        </select>
+      </label>
+      <label style="margin-top: 12px"
+        >Sentido do indicador
+        <input name="sentido" [value]="(indicadores[indicador].menorMelhor ? '↘ ' : '↗ ') + sentido(indicador)" disabled />
+      </label>
+      <p class="texto-suave texto-pequeno">
+        Definido pelo indicador. A meta é atingida quando o realizado for igual ou
+        {{ indicadores[indicador].menorMelhor ? 'menor' : 'maior' }} que o valor desejado.
+      </p>
+      <label
+        >Valor desejado
+        <input name="valor" type="number" step="0.1" min="0" [(ngModel)]="valorDesejado" required />
+      </label>
+      <div class="formulario-grade" style="margin-top: 12px">
+        <label>Início <input name="inicio" type="date" [(ngModel)]="inicio" required /></label>
+        <label>Fim <input name="fim" type="date" [(ngModel)]="fim" required /></label>
+      </div>
+      <div class="aviso" role="note" style="margin-top: 12px">
+        Só pode haver uma meta ativa para cada indicador no mesmo período. Se já existir, você poderá encerrar ou substituir
+        a meta atual.
+      </div>
+      @if (erro(); as erro) {
+        <div class="aviso aviso-erro" role="alert">{{ erro }}</div>
+      }
+      <div class="grupo-acoes">
+        <button type="submit" class="acao acao-principal acao-larga" [disabled]="ocupado()">
+          {{ substituindo() ? 'Substituir meta' : '+ Cadastrar meta' }}
+        </button>
+        @if (substituindo()) {
+          <button type="button" class="acao acao-secundaria acao-larga" (click)="cancelarEdicao()">Cancelar</button>
+        }
+      </div>
+    </form>
+  </div>
+</main>

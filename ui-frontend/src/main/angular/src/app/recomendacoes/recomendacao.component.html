@@ -1,0 +1,131 @@
+@if (detalhe(); as detalhe) {
+  @let recomendacao = detalhe.recomendacao;
+  <main class="pagina pagina-larga">
+    <header class="pagina-cabecalho">
+      <div>
+        <span class="pagina-sobretitulo"><a routerLink="/core/recomendacao/minhas">← Recomendações</a></span>
+        <h1>{{ recomendacao.titulo }}</h1>
+        <p class="pagina-descricao">
+          <span class="selo">{{ categorias[recomendacao.categoria].nome }}</span>
+          <span [class]="situacoes[recomendacao.situacao].classe">{{ recomendacao.situacao === 'PENDENTE' ? 'Aguardando sua resposta' : situacoes[recomendacao.situacao].nome }}</span>
+          Gerada em {{ data(recomendacao.geracao) }} · Válida até {{ data(recomendacao.validade) }}
+        </p>
+      </div>
+    </header>
+
+    <div class="grade grade-lateral">
+      <div>
+        <section class="bloco">
+          <h2>O que sugerimos</h2>
+          <p>{{ recomendacao.descricao }}</p>
+        </section>
+        <section class="bloco">
+          <h2>Por que você está vendo esta recomendação</h2>
+          <p class="texto-suave">{{ recomendacao.justificativa }}.</p>
+          @if (detalhe.evidencias.length > 0) {
+            <span class="texto-suave texto-pequeno">{{ frequencia() ? 'Treinos registrados por semana' : 'Dados considerados' }}</span>
+            <div class="colunas">
+              @for (evidencia of detalhe.evidencias; track $index) {
+                <div class="coluna-grafico">
+                  <span class="valor-coluna">{{ numero(evidencia.valor) }}</span>
+                  <span class="barra-grafico" [class.negativa]="evidencia.destaque" [style.height.%]="(evidencia.valor / maior()) * 100"></span>
+                </div>
+              }
+            </div>
+            <div class="legenda-colunas">
+              @for (evidencia of detalhe.evidencias; track $index) {
+                <span>{{ evidencia.rotulo }}</span>
+              }
+            </div>
+            @if (frequencia()) {
+              <p class="texto-suave texto-pequeno">
+                Previsto no plano: {{ previstos() }} por semana · mínimo esperado: {{ numero(previstos() / 2) }}. Em vermelho, as
+                semanas seguidas abaixo do mínimo.
+              </p>
+            }
+          }
+        </section>
+      </div>
+
+      <aside>
+        <section class="bloco">
+          <h2>Responder</h2>
+          @if (pendente()) {
+            <p class="texto-suave texto-pequeno">{{ rotuloAceite() }}</p>
+            <div class="grupo-acoes">
+              <button type="button" class="acao acao-principal acao-larga" (click)="abrir('aceitar')">✓ Aceitar</button>
+              <button type="button" class="acao acao-secundaria acao-larga" (click)="abrir('recusar')">× Recusar</button>
+            </div>
+            <p class="texto-suave texto-pequeno">
+              Sem resposta até {{ data(recomendacao.validade) }}, a recomendação expira e sai da sua lista.
+            </p>
+          } @else {
+            <p class="texto-pequeno">
+              {{ situacoes[recomendacao.situacao].nome }}
+              @if (recomendacao.resposta) {
+                em {{ data(recomendacao.resposta) }} por {{ recomendacao.respondente }}
+              }
+            </p>
+          }
+        </section>
+        @if (detalhe.aluno.plano; as plano) {
+          <section class="bloco">
+            <h2>Seu plano de treino</h2>
+            <dl class="definicoes">
+              <dt>Plano</dt>
+              <dd>{{ plano.nome }}</dd>
+              <dt>Personal</dt>
+              <dd>{{ plano.personalNome }}</dd>
+              <dt>Frequência</dt>
+              <dd>{{ plano.frequenciaSemanal }} treinos por semana</dd>
+              <dt>Dias</dt>
+              <dd>
+                @for (dia of plano.dias; track dia; let ultimo = $last) {
+                  {{ diaCurto(dia).toLowerCase() }}{{ ultimo ? '' : ', ' }}
+                }
+              </dd>
+            </dl>
+          </section>
+        }
+      </aside>
+    </div>
+  </main>
+
+  @if (respondendo()) {
+    <div class="fundo-dialogo" (click)="respondendo.set(false)">
+      <div class="dialogo" role="dialog" aria-modal="true" aria-labelledby="titulo-responder" (click)="$event.stopPropagation()">
+        <h2 id="titulo-responder">Responder recomendação</h2>
+        <p class="texto-suave texto-pequeno">{{ recomendacao.titulo }}</p>
+        <div class="opcoes-cartao">
+          <label class="opcao-cartao" [class.selecionado]="escolha() === 'aceitar'">
+            <input type="radio" name="escolha" [checked]="escolha() === 'aceitar'" (change)="escolha.set('aceitar')" />
+            <span><strong>Aceitar</strong><br /><small class="texto-suave">{{ rotuloAceite() }}</small></span>
+          </label>
+          <label class="opcao-cartao" [class.selecionado]="escolha() === 'recusar'">
+            <input type="radio" name="escolha" [checked]="escolha() === 'recusar'" (change)="escolha.set('recusar')" />
+            <span><strong>Recusar</strong><br /><small class="texto-suave">A recomendação sai da sua lista.</small></span>
+          </label>
+        </div>
+        @if (escolha() === 'recusar') {
+          <span class="texto-suave texto-pequeno">Por que você está recusando? (opcional)</span>
+          @for (opcao of motivos; track opcao) {
+            <label style="display: flex; gap: 8px; align-items: center; margin: 6px 0; font-size: 13px">
+              <input type="radio" name="motivo" [value]="opcao" [(ngModel)]="motivo" /> {{ opcao }}
+            </label>
+          }
+          <div class="aviso" role="note">
+            Esta recomendação não aparece de novo pelos próximos {{ detalhe.carenciaRecusaDias }} dias. Ela pode voltar antes se
+            seus dados mudarem, por exemplo depois de uma nova avaliação física. Sua resposta também ajuda a ajustar as próximas
+            recomendações.
+          </div>
+        }
+        <div class="grupo-acoes" style="justify-content: flex-end">
+          <button type="button" class="acao acao-secundaria" (click)="respondendo.set(false)">Cancelar</button>
+          <button type="button" class="acao acao-principal" [disabled]="ocupado()" (click)="confirmar()">
+            {{ escolha() === 'aceitar' ? 'Aceitar recomendação' : 'Recusar recomendação' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  }
+}

@@ -1,0 +1,79 @@
+@if (relatorio(); as relatorio) {
+  <main class="pagina pagina-larga">
+    <header class="pagina-cabecalho">
+      <div>
+        <span class="pagina-sobretitulo">
+          <a [routerLink]="['/core/relatorio', relatorio.identificador, 'visualizacao']">← Relatório de {{ relatorio.titulo.toLowerCase() }}</a>
+        </span>
+        <h1>Comparação com o período anterior</h1>
+      </div>
+    </header>
+
+    <div class="grade grade-2-iguais" style="margin-bottom: 16px">
+      <div class="cartao">
+        <span class="rotulo">Período atual</span>
+        <strong class="valor" style="font-size: 18px">{{ data(relatorio.inicio) }} a {{ data(relatorio.fim) }}</strong>
+        <small>{{ relatorio.dias }} dias</small>
+      </div>
+      <div class="cartao">
+        <span class="rotulo">Período anterior equivalente</span>
+        <strong class="valor" style="font-size: 18px">{{ data(relatorio.anteriorInicio) }} a {{ data(relatorio.anteriorFim) }}</strong>
+        <small>{{ relatorio.dias }} dias, imediatamente antes do período atual</small>
+      </div>
+    </div>
+
+    <section class="bloco tabela-dados">
+      <table>
+        <thead>
+          <tr>
+            <th>Indicador</th>
+            <th class="numero">Período atual</th>
+            <th class="numero">Período anterior</th>
+            <th class="numero">Variação absoluta</th>
+            <th class="numero">Variação percentual</th>
+            <th></th>
+            <th>Resultado</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of relatorio.conteudo.indicadores; track item.indicador) {
+            <tr>
+              <td><strong>{{ indicadores[item.indicador].nome }}</strong></td>
+              <td class="numero">{{ valorIndicador(item.indicador, item.valor) }}</td>
+              <td class="numero">{{ item.anterior === null ? 'sem dados' : valorIndicador(item.indicador, item.anterior) }}</td>
+              <td class="numero">{{ variacaoAbsoluta(item.indicador, item.variacao, item.anterior) }}</td>
+              <td class="numero">{{ percentual(item) }}</td>
+              <td style="width: 120px">
+                @if (item.variacao?.percentual !== null && item.variacao?.percentual !== undefined) {
+                  <div class="trilho" [class.ruim]="item.variacao?.resultado === 'PIOROU'">
+                    <span [style.width.%]="largura(item)"></span>
+                  </div>
+                }
+              </td>
+              <td>
+                @switch (item.variacao?.resultado) {
+                  @case ('MELHOROU') {
+                    <span class="selo selo-bom">✓ Melhorou</span>
+                  }
+                  @case ('PIOROU') {
+                    <span class="selo selo-ruim">! Piorou</span>
+                  }
+                  @case ('ESTAVEL') {
+                    <span class="selo">= Estável</span>
+                  }
+                  @default {
+                    <span class="selo">Sem base</span>
+                  }
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+      <div class="aviso" role="note" style="margin-top: 12px">
+        Em taxas, a variação absoluta é em pontos percentuais (p.p.). Em evasão, inadimplência e alunos em risco, cair é
+        melhorar. Quando o valor anterior é zero ou não há dados, a variação percentual não é calculada.
+      </div>
+    </section>
+  </main>
+}

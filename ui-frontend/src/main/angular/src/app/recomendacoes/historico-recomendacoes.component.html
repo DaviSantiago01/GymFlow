@@ -1,0 +1,121 @@
+<main class="pagina pagina-larga">
+  <header class="pagina-cabecalho">
+    <div>
+      <span class="pagina-sobretitulo">Recomendações › Histórico</span>
+      <h1>Histórico de recomendações</h1>
+      @if (aluno(); as aluno) {
+        <p class="pagina-descricao">
+          {{ aluno.nome }}{{ aluno.plano ? ' · ' + aluno.plano.nome : '' }}{{ aluno.matriculaAtiva ? '' : ' · matrícula inativa' }}
+        </p>
+      } @else {
+        <p class="pagina-descricao">Recomendações dos alunos que você acompanha.</p>
+      }
+    </div>
+    <form class="pagina-links" (ngSubmit)="filtrar()">
+      <label
+        >Categoria
+        <select name="categoria" [(ngModel)]="categoria" (change)="filtrar()">
+          <option value="">Todas</option>
+          @for (opcao of listaCategorias; track opcao) {
+            <option [value]="opcao">{{ categorias[opcao].nome }}</option>
+          }
+        </select>
+      </label>
+      <label
+        >Período
+        <select name="dias" [(ngModel)]="dias" (change)="filtrar()">
+          <option value="30">Últimos 30 dias</option>
+          <option value="180">Últimos 6 meses</option>
+          <option value="365">Últimos 12 meses</option>
+          <option value="todos">Todo o histórico</option>
+        </select>
+      </label>
+    </form>
+  </header>
+
+  <div class="grade grade-lateral">
+    <section class="bloco tabela-dados">
+      <table>
+        <thead>
+          <tr>
+            <th>Gerada em</th>
+            @if (!aluno()) {
+              <th>Aluno</th>
+            }
+            <th>Recomendação</th>
+            <th>Situação</th>
+            <th>Resposta</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (item of itens(); track item.identificador) {
+            <tr>
+              <td>{{ data(item.geracao) }}</td>
+              @if (!aluno()) {
+                <td><a [routerLink]="[]" [queryParams]="{ aluno: item.aluno }">{{ item.alunoNome }}</a></td>
+              }
+              <td>
+                <strong>{{ item.titulo }}</strong>
+                <div class="texto-suave texto-pequeno">{{ categorias[item.categoria].nome }}</div>
+              </td>
+              <td><span [class]="situacoes[item.situacao].classe">{{ situacoes[item.situacao].nome }}</span></td>
+              <td>
+                {{ respondente(item) }}
+                <div class="texto-suave texto-pequeno">
+                  @if (item.situacao === 'EXPIRADA') {
+                    expirou em {{ data(item.validade) }}
+                  } @else if (item.resposta) {
+                    {{ data(item.resposta) }}
+                  }
+                </div>
+                @if (item.motivo) {
+                  <div class="texto-suave texto-pequeno">“{{ item.motivo }}”</div>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="5" class="estado-vazio">Nenhuma recomendação no período.</td></tr>
+          }
+        </tbody>
+      </table>
+      <p class="texto-suave texto-pequeno">Mostrando {{ itens().length }} recomendação(ões). Nenhuma recomendação é excluída.</p>
+    </section>
+
+    @if (aluno()) {
+      <aside>
+        <section class="bloco">
+          <h2>Aceitação por categoria</h2>
+          <p class="texto-suave texto-pequeno">Últimas 10 recomendações respondidas de cada categoria.</p>
+          @for (taxa of taxas(); track taxa.categoria) {
+            @if (taxa.categoria !== 'AJUSTES_TREINO') {
+              <div style="margin-bottom: 12px">
+                <div class="linha-topo">
+                  <strong style="color: var(--cor-texto)">{{ categorias[taxa.categoria].nome }}</strong>
+                  <span><strong>{{ taxa.percentual }}%</strong> ({{ taxa.aceitas }} de {{ taxa.respondidas }})</span>
+                </div>
+                <div class="trilho" [class.ruim]="taxa.prioridadeReduzida"><span [style.width.%]="taxa.percentual"></span></div>
+                @if (taxa.categoria === 'ACOMPANHAMENTO_FISICO') {
+                  <small class="texto-suave">🔒 Prioridade fixa</small>
+                } @else if (taxa.prioridadeReduzida) {
+                  <span class="selo selo-ruim">↓ Prioridade reduzida desde {{ data(taxa.reduzidaDesde) }}</span>
+                }
+              </div>
+            }
+          }
+          @for (taxa of taxas(); track taxa.categoria) {
+            @if (taxa.categoria === 'AJUSTES_TREINO' && taxa.respondidas > 0) {
+              <div class="aviso" role="note">
+                <strong>Ajustes no treino</strong> são decididos pelo personal: {{ taxa.aceitas }} aprovado(s) e
+                {{ taxa.respondidas - taxa.aceitas }} rejeitado(s) nas últimas respostas.
+              </div>
+            }
+          }
+          <p class="texto-suave texto-pequeno">
+            Quando a aceitação fica abaixo de 30%, a categoria perde prioridade para este aluno. Acompanhamento físico nunca perde
+            prioridade.
+          </p>
+        </section>
+      </aside>
+    }
+  </div>
+</main>

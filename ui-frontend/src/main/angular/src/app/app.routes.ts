@@ -10,6 +10,8 @@ import { rotasPlanos } from './planos/planos.rotas';
 import { rotasProfissionais } from './profissionais/profissionais.rotas';
 import { rotasAlunos } from './alunos/alunos.rotas';
 import { rotasAulasDesafios } from './aulas-desafios/aulas-desafios.rotas';
+import { rotasRelatorios } from './relatorios/relatorios.rotas';
+import { rotasRecomendacoes } from './recomendacoes/recomendacoes.rotas';
 const tela = () => import('./armarios/armarios.component').then((m) => m.ArmariosComponent);
 const somenteAluno = guardaPerfis('USUARIO');
 export const routes: Routes = [
@@ -78,6 +80,8 @@ export const routes: Routes = [
   ...rotasProfissionais,
   ...rotasAlunos,
   ...rotasAulasDesafios,
+  ...rotasRelatorios,
+  ...rotasRecomendacoes,
   ...[
     { path: 'core/treino/pesquisa', modo: 'treinos' },
     { path: 'core/treino/:id/avaliacao', modo: 'nova' },

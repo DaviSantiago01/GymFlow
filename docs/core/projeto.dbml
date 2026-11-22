@@ -318,3 +318,149 @@ Table OMT_ORDEM_MANUTENCAO {
   OMT_JUSTIFICATIVA varchar(800)
   OMT_PROBLEMA_ATIVO bigint [unique, note: 'PEQ_ID quando aberta ou em andamento']
 }
+
+// F015 - Relatórios e análise de desempenho. As entradas vêm de RAC_REGISTRO_ACESSO (F006).
+Table TRC_TRANCAMENTO {
+  TRC_ID bigint [pk, increment]
+  ADP_ID bigint [not null, note: 'adesão ao plano trancada']
+  TRC_INICIO date [not null]
+  TRC_FIM date [not null]
+}
+
+Table EST_USO_ESTACIONAMENTO {
+  EST_ID bigint [pk, increment]
+  ALU_ID bigint [ref: > ALU_ALUNO.ALU_ID]
+  EST_ENTRADA timestamp [not null]
+  EST_SAIDA timestamp [not null]
+}
+
+Table MAC_META_ACADEMIA {
+  MAC_ID bigint [pk, increment]
+  MAC_INDICADOR varchar(30) [not null]
+  MAC_VALOR_DESEJADO decimal(12,2) [not null]
+  MAC_INICIO date [not null]
+  MAC_FIM date [not null]
+  MAC_SITUACAO varchar(12) [not null, note: 'ATIVA, ENCERRADA ou SUBSTITUIDA']
+  MAC_CRIACAO timestamptz [not null]
+  MAC_RESPONSAVEL varchar(100) [not null]
+}
+
+Table RLT_RELATORIO {
+  RLT_ID bigint [pk, increment]
+  RLT_TIPO varchar(30) [not null]
+  RLT_INICIO date [not null]
+  RLT_FIM date [not null]
+  RLT_AGRUPAMENTO varchar(10) [not null]
+  RLT_COMPARAR boolean [not null]
+  RLT_FILTRO_PLANO bigint
+  RLT_FILTRO_MODALIDADE varchar(40)
+  RLT_FILTRO_PERSONAL bigint [ref: > PER_PERSONAL.PER_ID]
+  RLT_FILTRO_AULA bigint [ref: > AUC_AULA_COLETIVA.AUC_ID]
+  RLT_GERACAO timestamptz [not null]
+  RLT_USUARIO varchar(100) [not null]
+  RLT_USUARIO_NOME varchar(100) [not null]
+  RLT_PERFIL varchar(20) [not null]
+  RLT_VERSAO int [not null]
+  RLT_ANTERIOR bigint [ref: > RLT_RELATORIO.RLT_ID]
+  RLT_SITUACAO varchar(12) [not null, note: 'ATUAL ou SUBSTITUIDO']
+  RLT_CONTEUDO clob [not null, note: 'valores calculados na geração, em JSON']
+}
+
+// F016 - Recomendações personalizadas.
+Table AUC_AULA_COLETIVA {
+  AUC_ID bigint [pk, increment]
+  AUC_NOME varchar(60) [not null]
+  AUC_MODALIDADE varchar(40) [not null]
+  AUC_INSTRUTOR varchar(100) [not null]
+  AUC_SALA varchar(40) [not null]
+  AUC_DIA varchar(10) [not null]
+  AUC_INICIO varchar(8) [not null, note: 'HH:mm:ss']
+  AUC_FIM varchar(8) [not null, note: 'HH:mm:ss']
+  AUC_CAPACIDADE int [not null]
+  AUC_NIVEL varchar(15) [not null]
+  AUC_IMPACTO varchar(10) [not null]
+  AUC_OBJETIVOS varchar(60) [not null]
+  AUC_CONTRAINDICACOES varchar(120) [not null]
+  AUC_ATIVA boolean [not null]
+}
+
+Table IAC_INSCRICAO_AULA {
+  IAC_ID bigint [pk, increment]
+  AUC_ID bigint [not null, ref: > AUC_AULA_COLETIVA.AUC_ID]
+  ALU_ID bigint [not null, ref: > ALU_ALUNO.ALU_ID]
+  IAC_DATA timestamptz [not null]
+
+  Indexes {
+    (AUC_ID, ALU_ID) [unique]
+  }
+}
+
+Table CEX_CLASSIFICACAO_EXERCICIO {
+  EXE_ID bigint [pk, ref: - EXE_EXERCICIO.EXE_ID]
+  CEX_NIVEL varchar(15) [not null]
+  CEX_OBJETIVOS varchar(60) [not null]
+  CEX_CONTRAINDICACOES varchar(120) [not null]
+}
+
+Table PFA_PERFIL_ALUNO {
+  ALU_ID bigint [pk, ref: - ALU_ALUNO.ALU_ID]
+  PFA_OBJETIVO varchar(15)
+  PFA_NIVEL varchar(15)
+  PFA_DIAS varchar(70)
+  PFA_HORA_INICIO varchar(8)
+  PFA_HORA_FIM varchar(8)
+  PFA_CATEGORIAS_DESATIVADAS varchar(120) [not null]
+  PFA_ATUALIZACAO timestamptz [not null]
+}
+
+Table RFI_RESTRICAO_FISICA {
+  RFI_ID bigint [pk, increment]
+  ALU_ID bigint [not null, ref: > PFA_PERFIL_ALUNO.ALU_ID]
+  RFI_INDICE int [not null]
+  RFI_REGIAO varchar(15) [not null]
+  RFI_DESCRICAO varchar(250) [not null]
+  RFI_REGISTRO date [not null]
+}
+
+Table REC_RECOMENDACAO {
+  REC_ID bigint [pk, increment]
+  ALU_ID bigint [not null, ref: > ALU_ALUNO.ALU_ID]
+  REC_CATEGORIA varchar(25) [not null]
+  REC_CRITERIO varchar(30) [not null]
+  REC_ITEM varchar(60) [not null]
+  REC_TITULO varchar(120) [not null]
+  REC_DESCRICAO varchar(500) [not null]
+  REC_JUSTIFICATIVA varchar(500) [not null]
+  PER_ID bigint [ref: > PER_PERSONAL.PER_ID]
+  PLT_ID bigint [ref: > PLT_PLANO_TREINO.PLT_ID]
+  EXE_ATUAL bigint [ref: > EXE_EXERCICIO.EXE_ID]
+  EXE_SUGERIDO bigint [ref: > EXE_EXERCICIO.EXE_ID]
+  REC_SERIES int
+  REC_REPETICOES_MINIMAS int
+  REC_REPETICOES_MAXIMAS int
+  REC_CARGA decimal(7,2)
+  REC_INTERVALO_SEGUNDOS int
+  AUC_ID bigint [ref: > AUC_AULA_COLETIVA.AUC_ID]
+  PLA_ID bigint
+  REC_GERACAO timestamptz [not null]
+  REC_VALIDADE date [not null]
+  REC_SITUACAO varchar(25) [not null]
+  REC_RESPOSTA timestamptz
+  REC_RESPONDENTE varchar(100)
+  REC_MOTIVO varchar(250)
+  REC_AJUSTE varchar(250)
+  PLT_GERADO bigint [ref: > PLT_PLANO_TREINO.PLT_ID, note: 'nova versão do plano criada na aprovação']
+  REC_CIENCIA timestamptz
+}
+
+Table REV_EVIDENCIA {
+  REC_ID bigint [not null, ref: > REC_RECOMENDACAO.REC_ID]
+  REV_INDICE int [not null]
+  REV_ROTULO varchar(40) [not null]
+  REV_VALOR decimal(10,2) [not null]
+  REV_DESTAQUE boolean [not null]
+
+  Indexes {
+    (REC_ID, REV_INDICE) [pk]
+  }
+}

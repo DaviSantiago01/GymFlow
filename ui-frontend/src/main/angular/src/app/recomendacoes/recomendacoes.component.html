@@ -1,0 +1,109 @@
+<main class="pagina pagina-larga">
+  <header class="pagina-cabecalho">
+    <div>
+      <span class="pagina-sobretitulo">Recomendações</span>
+      <h1>Recomendações para você</h1>
+      <p class="pagina-descricao">Baseadas no seu objetivo, na sua frequência e nas suas avaliações, das mais importantes para as menos.</p>
+    </div>
+    <div class="pagina-links">
+      <a class="acao acao-secundaria" routerLink="/core/perfil-aluno/preferencias">Preferências</a>
+    </div>
+  </header>
+
+  @if (aviso(); as aviso) {
+    <div class="aviso aviso-erro" role="status">
+      {{ aviso }} <a routerLink="/core/perfil-aluno/meu">Completar perfil</a>
+    </div>
+  }
+
+  @if (visiveis(); as visiveis) {
+    <div class="grade grade-lateral">
+      <section aria-label="Recomendações">
+        @for (recomendacao of visiveis.recomendacoes; track recomendacao.identificador) {
+          <article class="recomendacao">
+            <span class="icone-categoria" aria-hidden="true">{{ categorias[recomendacao.categoria].icone }}</span>
+            <div>
+              <div class="linha-topo">
+                <span>{{ categorias[recomendacao.categoria].nome }}</span>
+                @if (recomendacao.situacao === 'APROVADA') {
+                  <span class="selo selo-bom">✓ Aprovada pelo seu personal</span>
+                } @else {
+                  <span>◷ Válida até {{ data(recomendacao.validade) }}</span>
+                }
+              </div>
+              @if (recomendacao.situacao === 'APROVADA' && recomendacao.criterio === 'SUBSTITUICAO_EXERCICIO') {
+                <h3>Novo exercício no seu treino</h3>
+                <p>
+                  {{ recomendacao.personalNome }} trocou o {{ recomendacao.exercicioAtual?.toLowerCase() }} pelo
+                  {{ recomendacao.exercicioSugerido?.toLowerCase() }}, porque a carga não evoluía nos últimos treinos.
+                  @if (recomendacao.ajuste) {
+                    {{ recomendacao.ajuste }}
+                  }
+                </p>
+                <div class="grupo-acoes" style="margin-top: 0">
+                  <a class="acao acao-secundaria" [routerLink]="['/core/recomendacao', recomendacao.identificador, 'versoes']">Ver meu treino</a>
+                  <button type="button" class="acao acao-secundaria" (click)="ciente(recomendacao)">Entendi</button>
+                </div>
+              } @else if (recomendacao.situacao === 'APROVADA') {
+                <h3>Seu personal vai revisar seu plano</h3>
+                <p>{{ recomendacao.descricao }} {{ recomendacao.ajuste ?? '' }}</p>
+                <div class="grupo-acoes" style="margin-top: 0">
+                  <button type="button" class="acao acao-secundaria" (click)="ciente(recomendacao)">Entendi</button>
+                </div>
+              } @else {
+                <h3>{{ recomendacao.titulo }}</h3>
+                <p>{{ recomendacao.descricao }}</p>
+                <div class="grupo-acoes" style="margin-top: 0">
+                  <button type="button" class="acao acao-principal" [disabled]="ocupado()" (click)="aceitar(recomendacao)">
+                    {{ rotuloAceite(recomendacao) }}
+                  </button>
+                  <button type="button" class="acao acao-secundaria" (click)="responder(recomendacao)">Recusar</button>
+                  <a [routerLink]="['/core/recomendacao', recomendacao.identificador, 'visualizacao']">Por que estou vendo isso?</a>
+                </div>
+              }
+            </div>
+          </article>
+        } @empty {
+          <div class="bloco estado-vazio">Nenhuma recomendação no momento. Volte depois de alguns treinos.</div>
+        }
+      </section>
+
+      <aside>
+        <section class="bloco">
+          <h2>Respondidas recentemente</h2>
+          @for (item of respondidas(); track item.identificador) {
+            <div class="meta-item" style="grid-template-columns: minmax(0, 1fr) auto">
+              <div>
+                <strong class="texto-pequeno">{{ item.titulo }}</strong>
+                <div class="texto-suave texto-pequeno">
+                  @if (item.situacao === 'EXPIRADA') {
+                    Sem resposta até {{ data(item.validade) }}
+                  } @else {
+                    {{ situacoes[item.situacao].nome }} em {{ data(item.resposta) }}
+                  }
+                </div>
+              </div>
+              <span [class]="situacoes[item.situacao].classe">{{ situacoes[item.situacao].nome }}</span>
+            </div>
+          } @empty {
+            <p class="estado-vazio">Nenhuma ainda.</p>
+          }
+          <a routerLink="/core/recomendacao/historico">Ver histórico completo</a>
+        </section>
+        <section class="bloco">
+          <div class="cabecalho-bloco">
+            <h2>Suas preferências</h2>
+            <a routerLink="/core/perfil-aluno/preferencias">Alterar</a>
+          </div>
+          @for (taxa of desativadas(); track taxa.categoria) {
+            <p class="texto-pequeno">
+              Você aceitou poucas recomendações de <strong>{{ categorias[taxa.categoria].nome.toLowerCase() }}</strong>
+              ({{ taxa.percentual }}%), então elas aparecem por último.
+            </p>
+          }
+          <p class="texto-suave texto-pequeno">Você vê até {{ visiveis.maximoExibidas }} recomendações por vez.</p>
+        </section>
+      </aside>
+    </div>
+  }
+</main>

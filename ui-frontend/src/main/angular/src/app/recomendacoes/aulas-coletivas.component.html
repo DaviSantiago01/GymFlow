@@ -1,0 +1,103 @@
+<main class="pagina pagina-larga">
+  <header class="pagina-cabecalho">
+    <div>
+      <span class="pagina-sobretitulo">Aulas coletivas › Para você</span>
+      <h1>Aulas coletivas para você</h1>
+      <p class="pagina-descricao">Escolhidas pelo seu objetivo, nível, disponibilidade e pelas suas restrições físicas.</p>
+    </div>
+  </header>
+
+  @if (aulas(); as aulas) {
+    <nav class="abas" aria-label="Aulas">
+      <button type="button" [class.ativa]="aba() === 'recomendadas'" (click)="aba.set('recomendadas')">Recomendadas {{ aulas.recomendadas.length }}</button>
+      <button type="button" [class.ativa]="aba() === 'todas'" (click)="aba.set('todas')">Todas as aulas</button>
+      <button type="button" [class.ativa]="aba() === 'inscricoes'" (click)="aba.set('inscricoes')">Minhas inscrições {{ aulas.inscricoes.length }}</button>
+    </nav>
+
+    @if (!aulas.perfilCompleto) {
+      <div class="aviso aviso-erro">
+        Para ver aulas recomendadas, informe no seu perfil: {{ aulas.pendentes.join(', ') }}.
+        <a routerLink="/core/perfil-aluno/meu">Completar perfil</a>
+      </div>
+    }
+
+    @if (aba() === 'recomendadas') {
+      <section class="cartoes" style="grid-template-columns: repeat(auto-fill, minmax(260px, 1fr))">
+        @for (aula of aulas.recomendadas; track aula.identificador) {
+          <article class="cartao">
+            <div class="linha-topo">
+              <strong style="font-size: 20px; color: var(--cor-texto)">{{ diaCurto(aula.dia) }} {{ hora(aula.inicio) }}</strong>
+              <span class="selo" [class.selo-bom]="aula.baixoImpacto">{{ aula.baixoImpacto ? '✓ ' : '' }}{{ aula.impacto }}</span>
+            </div>
+            <small>{{ hora(aula.inicio) }} às {{ hora(aula.fim) }}, {{ aula.sala }}</small>
+            <h3 style="margin: 8px 0 0">{{ aula.nome }}</h3>
+            <small>Com {{ aula.instrutor }} · nível {{ aula.nivel.toLowerCase() }}</small>
+            <div class="linha-topo" style="margin-top: 10px">
+              <span>{{ aula.ocupacao }}% ocupada</span>
+              <strong>{{ aula.vagas }} vagas de {{ aula.capacidade }}</strong>
+            </div>
+            <div class="trilho"><span [style.width.%]="aula.ocupacao"></span></div>
+            <div class="grupo-acoes">
+              <button type="button" class="acao acao-principal" [disabled]="ocupado()" (click)="inscrever(aula)">Inscrever-me</button>
+              @if (aula.recomendacao) {
+                <button type="button" class="acao acao-secundaria" [disabled]="ocupado()" (click)="recusar(aula)">Recusar</button>
+              }
+            </div>
+          </article>
+        } @empty {
+          @if (aulas.perfilCompleto) {
+            <p class="estado-vazio">Nenhuma aula compatível com vagas no momento.</p>
+          }
+        }
+      </section>
+
+      @if (aulas.indisponiveis.length > 0) {
+        <section class="bloco tabela-dados">
+          <h2>Por que algumas aulas não aparecem para você</h2>
+          <table>
+            <thead>
+              <tr><th>Aula</th><th>Dia e horário</th><th>Motivo</th></tr>
+            </thead>
+            <tbody>
+              @for (aula of aulas.indisponiveis; track aula.identificador) {
+                <tr>
+                  <td><strong>{{ aula.nome }}</strong></td>
+                  <td>{{ diaCurto(aula.dia).toLowerCase() }}, {{ hora(aula.inicio) }}</td>
+                  <td class="texto-suave">{{ aula.motivo }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </section>
+      }
+    } @else {
+      <section class="bloco tabela-dados">
+        <table>
+          <thead>
+            <tr><th>Aula</th><th>Dia e horário</th><th>Instrutor</th><th>Nível</th><th class="numero">Vagas</th><th></th></tr>
+          </thead>
+          <tbody>
+            @for (aula of aba() === 'todas' ? aulas.todas : aulas.inscricoes; track aula.identificador) {
+              <tr>
+                <td><strong>{{ aula.nome }}</strong><div class="texto-suave texto-pequeno">{{ aula.modalidade }} · {{ aula.impacto.toLowerCase() }}</div></td>
+                <td>{{ diaCurto(aula.dia) }}, {{ hora(aula.inicio) }} às {{ hora(aula.fim) }}</td>
+                <td>{{ aula.instrutor }}</td>
+                <td>{{ aula.nivel }}</td>
+                <td class="numero">{{ aula.vagas }} de {{ aula.capacidade }}</td>
+                <td>
+                  @if (aula.inscrito) {
+                    <span class="selo selo-bom">Inscrito</span>
+                  } @else if (aula.motivo) {
+                    <span class="texto-suave texto-pequeno">{{ aula.motivo }}</span>
+                  }
+                </td>
+              </tr>
+            } @empty {
+              <tr><td colspan="6" class="estado-vazio">Nenhuma aula.</td></tr>
+            }
+          </tbody>
+        </table>
+      </section>
+    }
+  }
+</main>

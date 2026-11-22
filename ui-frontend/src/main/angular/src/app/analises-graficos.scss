@@ -1,0 +1,214 @@
+/* Gráficos e componentes das telas de relatórios: colunas, mapa de ocupação, metas e seleção de tipo. */
+:host {
+  display: block;
+}
+/* gráfico de colunas */
+.colunas {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--espaco-3);
+  height: 190px;
+  padding-top: var(--espaco-4);
+  border-bottom: 1px solid var(--cor-borda-forte);
+}
+.colunas .coluna-grafico {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  height: 100%;
+  min-width: 0;
+}
+.colunas .barra-grafico {
+  width: 70%;
+  max-width: 54px;
+  border-radius: 4px 4px 0 0;
+  background: var(--cor-destaque);
+}
+.colunas .barra-grafico.negativa {
+  background: var(--cor-erro-borda);
+}
+.colunas .barra-grafico.neutra {
+  background: var(--cor-info-borda);
+}
+.colunas .valor-coluna {
+  margin-bottom: 4px;
+  font-size: 11.5px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.legenda-colunas {
+  display: flex;
+  gap: var(--espaco-3);
+  margin-top: var(--espaco-2);
+}
+.legenda-colunas span {
+  flex: 1;
+  min-width: 0;
+  color: var(--cor-texto-suave);
+  font-size: 11px;
+  text-align: center;
+}
+/* mapa de calor de ocupação por horário */
+.mapa {
+  display: grid;
+  grid-template-columns: 92px repeat(7, minmax(44px, 1fr));
+  gap: 4px;
+  font-size: 12px;
+}
+.mapa .cabeca {
+  color: var(--cor-texto-suave);
+  font-weight: 650;
+  text-align: center;
+}
+.mapa .faixa {
+  align-self: center;
+  color: var(--cor-texto-suave);
+}
+.mapa .celula {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  border-radius: 6px;
+  color: var(--cor-texto);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.mapa .celula small {
+  font-size: 9.5px;
+  font-weight: 600;
+  opacity: 0.85;
+}
+.mapa .fechado {
+  background: repeating-linear-gradient(45deg, var(--cor-superficie-alta), var(--cor-superficie-alta) 4px, var(--cor-superficie) 4px, var(--cor-superficie) 8px);
+  color: var(--cor-texto-fraco);
+  font-weight: 500;
+}
+.mapa .pico {
+  outline: 2px solid var(--cor-texto);
+  outline-offset: -2px;
+}
+/* lista de metas */
+.meta-item {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) auto;
+  gap: var(--espaco-2);
+  align-items: start;
+  padding: var(--espaco-2) 0;
+  border-bottom: 1px solid var(--cor-borda);
+}
+.meta-item:last-child {
+  border-bottom: 0;
+}
+.meta-item .icone-meta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  font-size: 12px;
+  font-weight: 800;
+}
+.icone-ok {
+  background: var(--cor-sucesso-fundo);
+  color: var(--cor-sucesso-texto);
+}
+.icone-falha {
+  background: var(--cor-erro-fundo);
+  color: var(--cor-erro-texto);
+}
+/* seleção de tipo */
+.tipos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: var(--espaco-3);
+}
+.tipo {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espaco-2);
+  padding: var(--espaco-4);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  background: var(--cor-superficie);
+  color: var(--cor-texto);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.tipo:hover:not(:disabled) {
+  border-color: var(--cor-destaque);
+}
+.tipo.selecionado {
+  border-color: var(--cor-destaque);
+  box-shadow: var(--sombra-foco);
+}
+.tipo:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+.tipo .icone-tipo {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--raio-pequeno);
+  background: var(--cor-destaque-suave);
+  color: var(--cor-destaque);
+  font-size: 16px;
+}
+.tipo strong {
+  font-size: 14px;
+}
+.tipo span {
+  color: var(--cor-texto-suave);
+  font-size: 12.5px;
+  line-height: 1.5;
+}
+.passos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espaco-4);
+  margin-bottom: var(--espaco-4);
+  color: var(--cor-texto-suave);
+  font-size: 13px;
+}
+.passos .ativo {
+  color: var(--cor-destaque);
+  font-weight: 700;
+}
+.botoes-segmentados {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 0;
+  border: 1px solid var(--cor-borda-forte);
+  border-radius: var(--raio-pequeno);
+  overflow: hidden;
+}
+.botoes-segmentados button {
+  padding: 8px 14px;
+  border: 0;
+  border-right: 1px solid var(--cor-borda-forte);
+  background: var(--cor-superficie-alta);
+  color: var(--cor-texto-suave);
+  font-family: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.botoes-segmentados button:last-child {
+  border-right: 0;
+}
+.botoes-segmentados button.selecionado {
+  background: var(--cor-destaque);
+  color: var(--cor-destaque-texto);
+  font-weight: 700;
+}
+.botoes-segmentados button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
