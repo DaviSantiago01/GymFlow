@@ -43,18 +43,21 @@
         @if (aluno) {
           <div class="secao-menu" role="group" aria-labelledby="secao-academia">
             <span class="titulo-secao" id="secao-academia">Academia</span>
-            <button
-              class="item-menu indisponivel"
-              type="button"
-              disabled
-              aria-describedby="aviso-aulas"
-            >
+            <a class="item-menu" routerLink="/core/aulas/grade" routerLinkActive="ativo" ariaCurrentWhenActive="page">
               <svg viewBox="0 0 24 24" aria-hidden="true">
                 <rect x="3" y="5" width="18" height="16" rx="3" />
                 <path d="M7 3v4m10-4v4M3 11h18m-14 4h3m4 0h3" />
               </svg>
-              <span>Marcar aula</span><small id="aviso-aulas">Ilustrativo</small>
-            </button>
+              <span>Grade de aulas</span>
+            </a>
+            <a class="item-menu" routerLink="/core/aulas/minhas" routerLinkActive="ativo" ariaCurrentWhenActive="page">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v16H4zM8 3v4m8-4v4M4 10h16m-11 4h6m-6 3h4" /></svg>
+              <span>Meus agendamentos</span>
+            </a>
+            <a class="item-menu" routerLink="/core/desafios/inscricao" routerLinkActive="ativo" ariaCurrentWhenActive="page">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l4 2"/></svg>
+              <span>Desafios e metas</span>
+            </a>
             @if (servicoAutenticacao.autorizacoesDe('grupoTreino')?.buscar) {
               <a
                 class="item-menu"
@@ -308,6 +311,15 @@
                 <span>Mensalidades</span>
               </a>
             }
+          </div>
+        }
+
+        @if (gestor || professor) {
+          <div class="secao-menu" role="group" aria-labelledby="secao-aulas-desafios">
+            <span class="titulo-secao" id="secao-aulas-desafios">Aulas e desafios</span>
+            <a class="item-menu" routerLink="/core/aulas/gestao" routerLinkActive="ativo" ariaCurrentWhenActive="page"><span>Gestão de aulas</span></a>
+            <a class="item-menu" routerLink="/core/desafios" routerLinkActive="ativo" ariaCurrentWhenActive="page"><span>Desafios fitness</span></a>
+            <a class="item-menu" routerLink="/core/desafios/avaliacoes" routerLinkActive="ativo" ariaCurrentWhenActive="page"><span>Avaliações do desafio</span></a>
           </div>
         }
 

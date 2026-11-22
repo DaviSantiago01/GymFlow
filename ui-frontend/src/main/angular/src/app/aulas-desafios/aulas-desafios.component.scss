@@ -1,0 +1,106 @@
+:host {
+  display: block;
+  color: var(--cor-texto, #e5e8ef);
+}
+
+.pagina.aulas-desafios {
+  max-width: 1180px;
+  margin: auto;
+  padding: 2.5rem 3rem 4rem;
+  color: var(--cor-texto, #e5e8ef);
+}
+
+.sobretitulo { color: var(--cor-destaque, #c5ff78); font-size: .75rem; font-weight: 800; letter-spacing: .14em; }
+.pagina.aulas-desafios h1 { margin: .35rem 0; color: #f8fafc; font-size: clamp(1.7rem, 3vw, 2.3rem); font-weight: 750; line-height: 1.2; }
+h2 { margin: 0; color: var(--cor-texto, #e5e8ef); font-size: 1.2rem; }
+h3 { margin: .25rem 0 0; color: var(--cor-texto, #e5e8ef); font-size: 1.08rem; }
+.pagina.aulas-desafios .pagina-descricao { margin: .3rem 0 0; color: #94a3b8; }
+.titulo-painel p { margin: .3rem 0 0; color: var(--cor-texto-suave, #aab3a3); }
+
+.secundario, .perigo, .primario {
+  flex: 0 0 auto;
+  border: 1px solid var(--cor-borda, #29313b);
+  border-radius: 9px;
+  padding: .62rem .85rem;
+  background: var(--cor-superficie-alta, #1f2631);
+  color: var(--cor-texto, #e5e8ef);
+  font: inherit;
+  font-size: .88rem;
+  font-weight: 650;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.pagina.aulas-desafios a.secundario, .secundario:hover { border-color: var(--cor-borda-forte, #3d473b); background: var(--cor-superficie-alta, #1f2631); color: var(--cor-texto, #e5e8ef); }
+.pagina.aulas-desafios a.secundario:hover, .secundario:hover { border-color: var(--cor-destaque, #c5ff78); }
+.primario { border-color: var(--cor-destaque, #c5ff78); background: var(--cor-destaque, #c5ff78); color: var(--cor-destaque-texto, #17200e); }
+.primario:hover { background: var(--cor-destaque-forte, #b1ed65); }
+.perigo { border-color: var(--cor-perigo-borda, #6a2a37); background: var(--cor-perigo-fundo, #3e1420); color: var(--cor-perigo-texto, #ffbfc9); }
+button:disabled { opacity: .55; cursor: not-allowed; }
+
+.titulo-painel { display: flex; align-items: center; justify-content: space-between; gap: 1rem; margin-bottom: 1rem; }
+.form-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .9rem; }
+.pagina.aulas-desafios label { display: flex; flex-direction: column; gap: .4rem; color: var(--cor-texto-suave, #aab3a3); font-size: .87rem; font-weight: 650; }
+.pagina.aulas-desafios input:not([type='checkbox']):not([type='radio']), .pagina.aulas-desafios select, .pagina.aulas-desafios textarea {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid var(--cor-borda-forte, #3d473b);
+  border-radius: 8px;
+  padding: .6rem .7rem;
+  background: var(--cor-campo, #101720);
+  color: var(--cor-texto, #e5e8ef);
+  font: inherit;
+  font-weight: 400;
+}
+.pagina.aulas-desafios input:focus, .pagina.aulas-desafios select:focus, .pagina.aulas-desafios textarea:focus { border-color: var(--cor-destaque, #c5ff78); outline: 0; box-shadow: var(--sombra-foco, 0 0 0 3px #c5ff7840); }
+.pagina.aulas-desafios input::placeholder, .pagina.aulas-desafios textarea::placeholder { color: var(--cor-texto-fraco, #8f9aa8); }
+.pagina.aulas-desafios option { background: var(--cor-superficie, #171d27); color: var(--cor-texto, #e5e8ef); }
+textarea { resize: vertical; }
+.amplo { grid-column: 1 / -1; }
+.acoes, .filtros { display: flex; align-items: center; flex-wrap: wrap; gap: .55rem; }
+.filtros { margin-bottom: 1rem; }
+.filtros label { min-width: 190px; }
+
+.tabela { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; background: var(--cor-superficie, #171d27); color: var(--cor-texto, #e5e8ef); text-align: left; }
+th, td { padding: .8rem .65rem; border-bottom: 1px solid var(--cor-borda, #29313b); vertical-align: middle; }
+th { color: var(--cor-texto-suave, #aab3a3); font-size: .75rem; text-transform: uppercase; letter-spacing: .04em; }
+td small, .cartao small, .linha-evolucao small { display: block; margin-top: .25rem; color: var(--cor-texto-fraco, #8f9aa8); }
+.ocupacao { display: flex; min-width: 115px; flex-direction: column; gap: .25rem; font-size: .82rem; }
+progress { width: 100%; height: 9px; accent-color: var(--cor-destaque, #c5ff78); }
+.estado { display: inline-block; padding: .28rem .55rem; border-radius: 99px; background: var(--cor-sucesso-fundo, #213425); color: var(--cor-sucesso-texto, #d0fbb5); font-size: .76rem; font-weight: 750; white-space: nowrap; }
+.estado.fechado { background: var(--cor-perigo-fundo, #3e1420); color: var(--cor-perigo-texto, #ffbfc9); }
+.cartoes { display: grid; grid-template-columns: repeat(auto-fit, minmax(255px, 1fr)); gap: .85rem; }
+.pagina.aulas-desafios .cartao { display: flex; align-items: flex-start; flex-direction: column; gap: .55rem; padding: 1rem; border: 1px solid var(--cor-borda, #29313b); border-radius: 12px; background: var(--cor-superficie-alta, #1f2631); }
+.pagina.aulas-desafios .cartao p { margin: .1rem 0; color: var(--cor-texto-suave, #aab3a3); }
+.pagina.aulas-desafios .cartao .primario { margin-top: .35rem; }
+.cartao-topo { display: flex; align-items: center; gap: .55rem; color: var(--cor-texto-suave, #aab3a3); font-size: .83rem; }
+.vazio { padding: 1rem; color: var(--cor-texto-fraco, #8f9aa8); text-align: center; }
+.aviso { margin: .8rem 0; padding: .8rem 1rem; border-radius: 9px; }
+.erro { border: 1px solid var(--cor-erro-borda, #ff8fa3); background: var(--cor-erro-fundo, #3d1a23); color: var(--cor-erro-texto, #ffd7de); }
+.sucesso { border: 1px solid var(--cor-sucesso-borda, #8fd16a); background: var(--cor-sucesso-fundo, #213425); color: var(--cor-sucesso-texto, #d0fbb5); }
+.alerta-texto { color: var(--cor-perigo-texto, #ffbfc9) !important; }
+.notificacao { display: flex; flex-wrap: wrap; gap: .5rem; padding: .7rem 0; border-bottom: 1px solid var(--cor-borda, #29313b); }
+.notificacao small { margin-left: auto; color: var(--cor-texto-fraco, #8f9aa8); }
+.linha-evolucao { display: grid; grid-template-columns: minmax(130px, .8fr) 2fr minmax(130px, .7fr); align-items: center; gap: 1rem; padding: 1rem 0; border-bottom: 1px solid var(--cor-borda, #29313b); }
+.metricas { display: flex; flex-wrap: wrap; gap: .7rem; color: var(--cor-texto-suave, #aab3a3); font-size: .85rem; }
+.link-botao { display: inline-flex; align-items: center; }
+.indicadores { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .75rem; margin: 1rem 0; }
+.indicadores article { display: flex; flex-direction: column; gap: .35rem; padding: 1rem; border: 1px solid var(--cor-borda, #29313b); border-radius: 12px; background: var(--cor-superficie, #171d27); }
+.indicadores small { color: var(--cor-texto-fraco, #8f9aa8); }
+.indicadores strong { color: var(--cor-destaque, #c5ff78); font-size: 1.25rem; }
+
+@media (max-width: 850px) {
+  .pagina.aulas-desafios { padding: 1.5rem 1.1rem 3rem; }
+  .form-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .linha-evolucao { grid-template-columns: 1fr; gap: .6rem; }
+}
+
+@media (max-width: 540px) {
+  .pagina.aulas-desafios { padding: 1.25rem .9rem 2.5rem; }
+  .form-grid { grid-template-columns: 1fr; }
+  .amplo { grid-column: auto; }
+  .bloco { padding: 1rem; }
+  .titulo-painel { align-items: flex-start; flex-direction: column; }
+  .indicadores { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

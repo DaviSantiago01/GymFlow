@@ -1,0 +1,3 @@
+package br.edu.cesar.treinoconecta.treinoconectacore.infraestrutura.core.desafio;
+import java.util.List;import java.util.Optional;import org.springframework.data.jpa.repository.JpaRepository;import org.springframework.data.jpa.repository.Query;
+public interface IAvaliacaoDesafioRepositorioJpa extends JpaRepository<AvaliacaoDesafioJpa,Long>{boolean existsByDesafioAndAlunoAndTipo(Long desafio,Long aluno,String tipo);Optional<AvaliacaoDesafioJpa> findFirstByDesafioAndAlunoAndTipoOrderByRegistroAsc(Long desafio,Long aluno,String tipo);Optional<AvaliacaoDesafioJpa> findByIdentificador(Long id);List<AvaliacaoDesafioJpa> findByDesafioAndAlunoOrderByRegistroAsc(Long desafio,Long aluno);}
