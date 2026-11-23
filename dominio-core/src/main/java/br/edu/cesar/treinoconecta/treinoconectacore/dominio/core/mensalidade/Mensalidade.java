@@ -55,8 +55,12 @@ public final class Mensalidade implements IAgregado<MensalidadeIdentificador> {
         Objects.requireNonNull(adesao);
         Objects.requireNonNull(periodo);
         return new Mensalidade(Optional.empty(), adesao.getIdentificador().orElseThrow(), adesao.getAluno(), periodo,
-                periodo.inicio().plusDays(ParametrosFinanceiros.PRAZO_PAGAMENTO_DIAS), valor, SituacaoMensalidade.ABERTA,
-                List.of());
+                vencimentoDo(periodo), valor, SituacaoMensalidade.ABERTA, List.of());
+    }
+
+    /** O vencimento é contado a partir do início do período de cobrança. */
+    public static LocalDate vencimentoDo(PeriodoCobranca periodo) {
+        return Objects.requireNonNull(periodo).inicio().plusDays(ParametrosFinanceiros.PRAZO_PAGAMENTO_DIAS);
     }
 
     public SituacaoMensalidade situacaoEm(LocalDate hoje) {

@@ -51,7 +51,7 @@ public class AdesaoPlanoControlador extends AgregadoControladorAbstrato<AdesaoPl
         var adesao = consultas.projetar(identificador);
         var gerenciavel = servico.criarAutorizacoes(Optional.of(identificador)).getTrocar();
         return new AdesaoVisualizacao(adesao, mensalidades.listarDaAdesao(identificador),
-                gerenciavel ? planos.listarAtivos() : List.of());
+                gerenciavel ? planos.listarAtivos() : List.of(), consultas.cronograma(identificador));
     }
 
     @GetMapping("meu-plano")
@@ -61,14 +61,16 @@ public class AdesaoPlanoControlador extends AgregadoControladorAbstrato<AdesaoPl
 
     @PostMapping("aderir")
     public AdesaoPlanoProjecao aderir(@RequestBody AdesaoRequisicao requisicao) {
-        var adesao = servico.aderir(requisicao.aluno(), requisicao.plano());
+        var adesao = servico.aderir(requisicao.aluno(), requisicao.plano(),
+                Optional.ofNullable(requisicao.quantidadePeriodos()));
         return consultas.projetar(adesao.getIdentificador().orElseThrow());
     }
 
     @PostMapping("{identificador}/trocar")
     public AdesaoPlanoProjecao trocar(@PathVariable AdesaoPlanoIdentificador identificador,
             @RequestBody TrocaRequisicao requisicao) {
-        var nova = servico.trocar(identificador, requisicao.plano());
+        var nova = servico.trocar(identificador, requisicao.plano(),
+                Optional.ofNullable(requisicao.quantidadePeriodos()));
         return consultas.projetar(nova.getIdentificador().orElseThrow());
     }
 

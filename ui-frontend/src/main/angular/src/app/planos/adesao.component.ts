@@ -5,20 +5,21 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Observable, finalize } from 'rxjs';
 import { ServicoAutenticacao, ServicoNotificacao } from '../../d5';
 import { data, mensagemDeErro } from '../formatacao';
+import { CronogramaComponent } from './cronograma.component';
 import {
   Adesao,
   AutorizacoesAdesao,
   PlanosService,
   ROTULOS_SITUACAO_ADESAO,
-  ROTULOS_SITUACAO_MENSALIDADE,
   VisualizacaoAdesao,
   duracao,
   moeda,
+  recorrencia,
 } from './planos.service';
 
 @Component({
   selector: 'app-adesao',
-  imports: [FormsModule, RouterLink],
+  imports: [FormsModule, RouterLink, CronogramaComponent],
   templateUrl: './adesao.component.html',
   styleUrl: '../telas.scss',
 })
@@ -30,7 +31,7 @@ export class AdesaoComponent {
   private readonly autenticacao = inject(ServicoAutenticacao);
   private readonly destroy = inject(DestroyRef);
   readonly rotulosAdesao = ROTULOS_SITUACAO_ADESAO;
-  readonly rotulosMensalidade = ROTULOS_SITUACAO_MENSALIDADE;
+  readonly recorrencia = recorrencia;
   readonly moeda = moeda;
   readonly duracao = duracao;
   readonly data = data;
@@ -46,6 +47,7 @@ export class AdesaoComponent {
     (this.tela()?.planos ?? []).filter((plano) => plano.identificador !== this.tela()?.adesao.plano),
   );
   novoPlano = '';
+  quantidadePeriodos: number | null = null;
 
   constructor() {
     this.rota.data.pipe(takeUntilDestroyed()).subscribe((dados) => this.tela.set(dados['tela']));
@@ -57,7 +59,12 @@ export class AdesaoComponent {
       return;
     }
     if (window.confirm('A adesão atual será encerrada hoje e a nova começará em seguida. Confirmar a troca?')) {
-      this.executar(this.api.trocar(this.tela()!.adesao.identificador, this.novoPlano), 'Plano trocado.');
+      const troca = this.api.trocar(
+        this.tela()!.adesao.identificador,
+        this.novoPlano,
+        this.quantidadePeriodos ?? null,
+      );
+      this.executar(troca, 'Plano trocado.');
     }
   }
 
@@ -80,6 +87,7 @@ export class AdesaoComponent {
         next: (adesao) => {
           this.notificacoes.publicar('sucesso', sucesso);
           this.novoPlano = '';
+          this.quantidadePeriodos = null;
           this.router.navigate(['/core/adesao-plano', adesao.identificador, 'visualizacao'], {
             onSameUrlNavigation: 'reload',
           });

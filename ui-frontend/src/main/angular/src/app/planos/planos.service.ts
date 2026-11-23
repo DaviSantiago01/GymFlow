@@ -4,7 +4,8 @@ import { ResolveFn } from '@angular/router';
 import { IAgregadoAutorizacoes } from '../../d5';
 
 export type SituacaoPlano = 'ATIVO' | 'INATIVO';
-export type SituacaoAdesao = 'ATIVA' | 'ENCERRADA' | 'CANCELADA';
+export type SituacaoAdesao = 'ATIVA' | 'ENCERRADA' | 'CANCELADA' | 'CONCLUIDA';
+export type SituacaoParcela = 'PAGA' | 'ABERTA' | 'ATRASADA' | 'PREVISTA';
 export type SituacaoMensalidade = 'ABERTA' | 'ATRASADA' | 'PAGA';
 export type SituacaoPagamento = 'CONFIRMADO' | 'ESTORNADO';
 export type FormaPagamento = 'DINHEIRO' | 'PIX' | 'CARTAO_DEBITO' | 'CARTAO_CREDITO' | 'BOLETO';
@@ -17,6 +18,13 @@ export const ROTULOS_SITUACAO_ADESAO: Record<SituacaoAdesao, string> = {
   ATIVA: 'Ativa',
   ENCERRADA: 'Encerrada por troca',
   CANCELADA: 'Cancelada',
+  CONCLUIDA: 'Concluída',
+};
+export const ROTULOS_SITUACAO_PARCELA: Record<SituacaoParcela, string> = {
+  PAGA: 'Paga',
+  ABERTA: 'Em aberto',
+  ATRASADA: 'Em atraso',
+  PREVISTA: 'A vencer',
 };
 export const ROTULOS_SITUACAO_MENSALIDADE: Record<SituacaoMensalidade, string> = {
   ABERTA: 'Em aberto',
@@ -43,6 +51,13 @@ export function moeda(valor: number | null | undefined): string {
 
 export function duracao(meses: number): string {
   return meses === 1 ? '1 mês' : `${meses} meses`;
+}
+
+/** Descreve a recorrência da adesão: quantas cobranças e quantos meses no total, ou cobrança contínua. */
+export function recorrencia(quantidade: number | null, periodicidadeMeses: number): string {
+  if (quantidade === null) return 'Contínua, até o cancelamento';
+  const cobrancas = quantidade === 1 ? '1 cobrança' : `${quantidade} cobranças`;
+  return `${cobrancas} (${duracao(quantidade * periodicidadeMeses)})`;
 }
 
 export interface Pesquisa<T> {
@@ -77,6 +92,28 @@ export interface Adesao {
   inicio: string;
   encerramento: string | null;
   situacao: SituacaoAdesao;
+  quantidadePeriodos: number | null;
+  terminoPrevisto: string | null;
+}
+export interface Parcela {
+  numero: number;
+  mensalidade: string | null;
+  periodoInicio: string;
+  periodoFim: string;
+  vencimento: string;
+  valor: number;
+  situacao: SituacaoParcela;
+}
+export interface Cronograma {
+  totalParcelas: number | null;
+  terminoPrevisto: string | null;
+  parcelas: Parcela[];
+  pagas: number;
+  abertas: number;
+  atrasadas: number;
+  previstas: number;
+  restantes: number;
+  valorRestante: number;
 }
 export interface Mensalidade {
   identificador: string;
@@ -114,6 +151,7 @@ export interface VisualizacaoAdesao {
   adesao: Adesao;
   mensalidades: Mensalidade[];
   planos: Plano[];
+  cronograma: Cronograma;
 }
 export interface DetalheMensalidade {
   mensalidade: Mensalidade;
@@ -123,6 +161,7 @@ export interface MeuPlano {
   adesao: Adesao | null;
   mensalidades: Mensalidade[];
   hoje: string;
+  cronograma: Cronograma | null;
 }
 export interface AutorizacoesPlano extends IAgregadoAutorizacoes {
   cadastrar: boolean;
@@ -187,11 +226,11 @@ export class PlanosService {
   meuPlano() {
     return this.http.get<MeuPlano>(`${this.adesoes}/meu-plano`);
   }
-  aderir(aluno: string, plano: string) {
-    return this.http.post<Adesao>(`${this.adesoes}/aderir`, { aluno, plano });
+  aderir(aluno: string, plano: string, quantidadePeriodos: number | null = null) {
+    return this.http.post<Adesao>(`${this.adesoes}/aderir`, { aluno, plano, quantidadePeriodos });
   }
-  trocar(id: string, plano: string) {
-    return this.http.post<Adesao>(`${this.adesoes}/${id}/trocar`, { plano });
+  trocar(id: string, plano: string, quantidadePeriodos: number | null = null) {
+    return this.http.post<Adesao>(`${this.adesoes}/${id}/trocar`, { plano, quantidadePeriodos });
   }
   cancelar(id: string) {
     return this.http.post<Adesao>(`${this.adesoes}/${id}/cancelar`, null);

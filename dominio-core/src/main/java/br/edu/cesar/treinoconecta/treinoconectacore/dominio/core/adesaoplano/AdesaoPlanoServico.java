@@ -28,6 +28,9 @@ public final class AdesaoPlanoServico
     public static final String ADESAO_ATIVA_EXISTENTE = "O aluno já possui um plano ativo. Troque ou cancele o plano atual antes de aderir a outro";
     public static final String ADESAO_NAO_ATIVA = "Somente uma adesão ativa pode ser trocada ou cancelada";
     public static final String MESMO_PLANO = "Escolha um plano diferente do plano atual";
+    public static final String RECORRENCIA_INVALIDA = "A recorrência deve ter de " + AdesaoPlano.RECORRENCIA_MINIMA + " a "
+            + AdesaoPlano.RECORRENCIA_MAXIMA + " cobranças";
+    public static final String PRAZO_NAO_CUMPRIDO = "A adesão só é concluída depois do último período contratado";
 
     private final IAdesaoPlanoRepositorio repositorio;
     private final IPlanoRepositorio planos;
@@ -59,19 +62,38 @@ public final class AdesaoPlanoServico
     }
 
     public AdesaoPlano aderir(AlunoIdentificador aluno, PlanoIdentificador plano) {
+        return aderir(aluno, plano, Optional.empty());
+    }
+
+    /**
+     * A recorrência opcional define quantas cobranças a adesão terá. Uma adesão anterior cuja recorrência já terminou é
+     * concluída antes, liberando o aluno para o novo plano.
+     */
+    public AdesaoPlano aderir(AlunoIdentificador aluno, PlanoIdentificador plano, Optional<Integer> quantidadePeriodos) {
         Objects.requireNonNull(aluno);
         Objects.requireNonNull(plano);
+        Objects.requireNonNull(quantidadePeriodos);
         validarAutorizacao(Optional.empty(), AdesaoPlanoAutorizacoes::getAderir);
+        validarRecorrencia(quantidadePeriodos);
         validarExistencia(alunos::existePorIdentificador, aluno, ALUNO_INEXISTENTE_MODELO);
         validarExistencia(planos::existePorIdentificador, plano, PLANO_INEXISTENTE_MODELO);
         bloquearAluno(aluno);
+        repositorio.buscarAtivaDoAluno(aluno).filter(atual -> atual.prazoCumpridoEm(hoje()))
+                .ifPresent(atual -> concluirComPendentes(repositorio.bloquear(atual.getIdentificador().orElseThrow())));
         Validate.validState(repositorio.buscarAtivaDoAluno(aluno).isEmpty(), ADESAO_ATIVA_EXISTENTE);
-        return incluirComPrimeiraMensalidade(aluno, planos.bloquear(plano));
+        return incluirComPrimeiraMensalidade(aluno, planos.bloquear(plano), quantidadePeriodos);
     }
 
     public AdesaoPlano trocar(AdesaoPlanoIdentificador identificador, PlanoIdentificador novoPlano) {
+        return trocar(identificador, novoPlano, Optional.empty());
+    }
+
+    public AdesaoPlano trocar(AdesaoPlanoIdentificador identificador, PlanoIdentificador novoPlano,
+            Optional<Integer> quantidadePeriodos) {
         Objects.requireNonNull(identificador);
         Objects.requireNonNull(novoPlano);
+        Objects.requireNonNull(quantidadePeriodos);
+        validarRecorrencia(quantidadePeriodos);
         validarAutorizacao(Optional.of(identificador), AdesaoPlanoAutorizacoes::getTrocar);
         validarExistencia(identificador);
         validarExistencia(planos::existePorIdentificador, novoPlano, PLANO_INEXISTENTE_MODELO);
@@ -82,7 +104,7 @@ public final class AdesaoPlanoServico
         var plano = planos.bloquear(novoPlano);
         Validate.validState(plano.ativo(), PLANO_INDISPONIVEL);
         repositorio.alterar(atual.encerrarPorTroca(hoje()));
-        return incluirComPrimeiraMensalidade(atual.getAluno(), plano);
+        return incluirComPrimeiraMensalidade(atual.getAluno(), plano, quantidadePeriodos);
     }
 
     public AdesaoPlano cancelar(AdesaoPlanoIdentificador identificador) {
@@ -94,18 +116,52 @@ public final class AdesaoPlanoServico
         return cancelada;
     }
 
-    /** Gera as mensalidades dos períodos já iniciados de todas as adesões ativas, sem duplicar períodos. */
+    /**
+     * Gera as mensalidades dos períodos já iniciados de todas as adesões ativas, sem duplicar períodos, e conclui as
+     * adesões cuja recorrência terminou.
+     */
     public int gerarMensalidades() {
         validarAutorizacao(Optional.empty(), AdesaoPlanoAutorizacoes::getGerarMensalidades);
         int geradas = 0;
         for (var adesao : repositorio.buscarAtivas()) {
-            geradas += gerarPendentes(repositorio.bloquear(adesao.getIdentificador().orElseThrow()));
+            var bloqueada = repositorio.bloquear(adesao.getIdentificador().orElseThrow());
+            geradas += gerarPendentes(bloqueada);
+            if (bloqueada.prazoCumpridoEm(hoje())) {
+                repositorio.alterar(bloqueada.concluir(hoje()));
+            }
         }
         return geradas;
     }
 
-    private AdesaoPlano incluirComPrimeiraMensalidade(AlunoIdentificador aluno, Plano plano) {
-        var nova = repositorio.incluir(AdesaoPlano.aderir(aluno, plano, hoje()));
+    /**
+     * Rotina do sistema, sem usuário autenticado: conclui as adesões ativas cuja recorrência terminou, gerando antes as
+     * mensalidades que faltarem. Adesões sem recorrência não são alteradas.
+     */
+    public int concluirPrazosCumpridos() {
+        int concluidas = 0;
+        for (var adesao : repositorio.buscarAtivas()) {
+            if (adesao.prazoCumpridoEm(hoje())) {
+                concluirComPendentes(repositorio.bloquear(adesao.getIdentificador().orElseThrow()));
+                concluidas++;
+            }
+        }
+        return concluidas;
+    }
+
+    private void concluirComPendentes(AdesaoPlano adesao) {
+        gerarPendentes(adesao);
+        repositorio.alterar(adesao.concluir(hoje()));
+    }
+
+    private void validarRecorrencia(Optional<Integer> quantidadePeriodos) {
+        quantidadePeriodos.ifPresent(quantidade -> Validate.isTrue(
+                quantidade >= AdesaoPlano.RECORRENCIA_MINIMA && quantidade <= AdesaoPlano.RECORRENCIA_MAXIMA,
+                RECORRENCIA_INVALIDA));
+    }
+
+    private AdesaoPlano incluirComPrimeiraMensalidade(AlunoIdentificador aluno, Plano plano,
+            Optional<Integer> quantidadePeriodos) {
+        var nova = repositorio.incluir(AdesaoPlano.aderir(aluno, plano, hoje(), quantidadePeriodos));
         gerarPendentes(nova);
         return nova;
     }

@@ -67,6 +67,7 @@ public final class PlanosMensalidadesStepDefinitions {
     private long proximoPagamento = 1;
     private AdesaoPlano ultimaAdesao;
     private int geradas;
+    private int concluidas;
     private RuntimeException falha;
 
     public PlanosMensalidadesStepDefinitions() {
@@ -123,7 +124,7 @@ public final class PlanosMensalidadesStepDefinitions {
             AdesaoPlano nova = chamada.getArgument(0);
             var salva = new AdesaoPlano(Optional.of(new AdesaoPlanoIdentificador(String.valueOf(proximoIdentificador++))),
                     nova.getAluno(), nova.getPlano(), nova.getPeriodicidadeMeses(), nova.getInicio(), nova.getEncerramento(),
-                    nova.getSituacao());
+                    nova.getSituacao(), nova.getQuantidadePeriodos());
             adesoesCadastradas.put(salva.getIdentificador().orElseThrow().toString(), salva);
             return salva;
         });
@@ -322,6 +323,58 @@ public final class PlanosMensalidadesStepDefinitions {
         var mensalidade = mensalidadeAtual();
         var pagamento = mensalidade.getPagamentos().get(0).getIdentificador().orElseThrow();
         executar(() -> servicoMensalidade.estornarPagamento(mensalidade.getIdentificador().orElseThrow(), pagamento, motivo));
+    }
+
+    @Dado("que o aluno {string} aderiu ao plano {string} com recorrência de {int} cobranças")
+    public void aderirComRecorrenciaExistente(String aluno, String plano, int quantidade) {
+        ultimaAdesao = servicoAdesao.aderir(new AlunoIdentificador(aluno), planoPorNome(plano).getIdentificador().orElseThrow(),
+                Optional.of(quantidade));
+    }
+
+    @Quando("o aluno {string} aderir ao plano {string} com recorrência de {int} cobranças")
+    public void aderirComRecorrencia(String aluno, String plano, int quantidade) {
+        executar(() -> ultimaAdesao = servicoAdesao.aderir(new AlunoIdentificador(aluno),
+                planoPorNome(plano).getIdentificador().orElseThrow(), Optional.of(quantidade)));
+    }
+
+    @Quando("eu trocar o plano do aluno {string} para {string} com recorrência de {int} cobranças")
+    public void trocarComRecorrencia(String aluno, String plano, int quantidade) {
+        var adesao = adesaoAtivaDoAluno(aluno).getIdentificador().orElseThrow();
+        executar(() -> ultimaAdesao = servicoAdesao.trocar(adesao, planoPorNome(plano).getIdentificador().orElseThrow(),
+                Optional.of(quantidade)));
+    }
+
+    @Quando("a rotina do sistema concluir as adesões com prazo cumprido")
+    public void concluirPrazosCumpridos() {
+        executar(() -> concluidas = servicoAdesao.concluirPrazosCumpridos());
+    }
+
+    @Então("a adesão ao plano {string} prevê {int} cobranças até {string}")
+    public void verificarRecorrencia(String plano, int quantidade, String termino) {
+        assertNull(falha, () -> falha.getMessage());
+        var adesao = adesaoAoPlano(plano);
+        assertEquals(Optional.of(quantidade), adesao.getQuantidadePeriodos());
+        assertEquals(Optional.of(LocalDate.parse(termino)), adesao.terminoPrevisto());
+        assertEquals(quantidade, adesao.periodosContratados().size());
+    }
+
+    @Então("a adesão ao plano {string} não tem recorrência")
+    public void verificarSemRecorrencia(String plano) {
+        var adesao = adesaoAoPlano(plano);
+        assertEquals(Optional.empty(), adesao.getQuantidadePeriodos());
+        assertEquals(Optional.empty(), adesao.terminoPrevisto());
+    }
+
+    @Então("a adesão ao plano {string} está {string}")
+    public void verificarSituacaoAdesao(String plano, String situacao) {
+        assertNull(falha, () -> falha.getMessage());
+        assertEquals(SituacaoAdesao.valueOf(situacao), adesaoAoPlano(plano).getSituacao());
+    }
+
+    @Então("foram concluídas {int} adesões")
+    public void verificarConcluidas(int quantidade) {
+        assertNull(falha, () -> falha.getMessage());
+        assertEquals(quantidade, concluidas);
     }
 
     @Então("o plano {string} fica ativo com valor {string} e duração de {int} meses")

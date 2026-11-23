@@ -40,7 +40,8 @@ public final class AdesaoPlanoRepositorio
         var identificador = agregado.getIdentificador().map(this::paraIdentificadorJpa).orElse(null);
         return new AdesaoPlanoJpa(identificador, alunos.getReferenceById(Long.valueOf(agregado.getAluno().toString())),
                 planos.getReferenceById(Long.valueOf(agregado.getPlano().toString())), agregado.getPeriodicidadeMeses(),
-                agregado.getInicio(), agregado.getEncerramento().orElse(null), agregado.getSituacao());
+                agregado.getInicio(), agregado.getEncerramento().orElse(null), agregado.getSituacao(),
+                agregado.getQuantidadePeriodos().orElse(null));
     }
 
     @Override
@@ -49,7 +50,8 @@ public final class AdesaoPlanoRepositorio
                 new AlunoIdentificador(entidadeJpa.getAluno().getIdentificador().toString()),
                 new PlanoIdentificador(entidadeJpa.getPlano().getIdentificador().toString()),
                 entidadeJpa.getPeriodicidadeMeses(), entidadeJpa.getInicio(),
-                Optional.ofNullable(entidadeJpa.getEncerramento()), entidadeJpa.getSituacao());
+                Optional.ofNullable(entidadeJpa.getEncerramento()), entidadeJpa.getSituacao(),
+                Optional.ofNullable(entidadeJpa.getQuantidadePeriodos()));
     }
 
     /** Na troca, o encerramento é gravado antes da inclusão da nova adesão, respeitando a unicidade do aluno ativo. */

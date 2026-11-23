@@ -1,0 +1,14 @@
+-- Recorrência da adesão: quantidade de cobranças contratadas. Nula mantém a cobrança contínua das adesões existentes.
+-- Os comandos usam IF [NOT] EXISTS para que a migração também possa ser aplicada a bancos de desenvolvimento em que
+-- essas alterações já existam.
+ALTER TABLE ADP_ADESAO_PLANO ADD COLUMN IF NOT EXISTS ADP_QUANTIDADE_PERIODOS INT;
+ALTER TABLE ADP_ADESAO_PLANO ADD CONSTRAINT IF NOT EXISTS CK_ADP_QUANTIDADE_PERIODOS CHECK (
+    ADP_QUANTIDADE_PERIODOS IS NULL OR ADP_QUANTIDADE_PERIODOS BETWEEN 1 AND 60);
+
+-- CONCLUIDA: a recorrência terminou. Só existe em adesões com quantidade de cobranças.
+-- A lista usa REGEXP_LIKE pelo mesmo motivo explicado na V7 (CHECK com IN no H2 2.4).
+ALTER TABLE ADP_ADESAO_PLANO DROP CONSTRAINT IF EXISTS CK_ADP_SITUACAO;
+ALTER TABLE ADP_ADESAO_PLANO ADD CONSTRAINT CK_ADP_SITUACAO CHECK (
+    REGEXP_LIKE(ADP_SITUACAO, '^(ATIVA|ENCERRADA|CANCELADA|CONCLUIDA)$'));
+ALTER TABLE ADP_ADESAO_PLANO ADD CONSTRAINT IF NOT EXISTS CK_ADP_CONCLUSAO CHECK (
+    ADP_SITUACAO <> 'CONCLUIDA' OR ADP_QUANTIDADE_PERIODOS IS NOT NULL);

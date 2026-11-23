@@ -36,10 +36,23 @@
           }
         </select>
       </label>
+      <label
+        >Recorrência (quantidade de cobranças)
+        <input
+          name="quantidadePeriodos"
+          type="number"
+          min="1"
+          max="60"
+          step="1"
+          placeholder="Em branco: contínua"
+          [(ngModel)]="quantidadePeriodos"
+        />
+      </label>
       <div class="grupo-acoes">
         <button type="submit" class="acao acao-principal" [disabled]="ocupado()">Registrar adesão</button>
       </div>
     </form>
+    <p class="pagina-descricao">{{ previa() }}</p>
     @if (erro()) {
       <div class="aviso aviso-erro" role="alert">{{ erro() }}</div>
     }
@@ -62,6 +75,7 @@
         <option value="ATIVA">Ativas</option>
         <option value="ENCERRADA">Encerradas por troca</option>
         <option value="CANCELADA">Canceladas</option>
+        <option value="CONCLUIDA">Concluídas</option>
       </select>
     </label>
     <div class="grupo-acoes">
@@ -76,6 +90,7 @@
           <th>Aluno</th>
           <th>Plano</th>
           <th>Início</th>
+          <th>Recorrência</th>
           <th>Encerramento</th>
           <th>Situação</th>
           <th></th>
@@ -87,6 +102,12 @@
             <td>{{ adesao.alunoNome }}</td>
             <td>{{ adesao.planoNome }}</td>
             <td>{{ data(adesao.inicio) }}</td>
+            <td>
+              {{ recorrencia(adesao.quantidadePeriodos, adesao.periodicidadeMeses) }}
+              @if (adesao.terminoPrevisto; as termino) {
+                <small>até {{ data(termino) }}</small>
+              }
+            </td>
             <td>{{ adesao.encerramento ? data(adesao.encerramento) : '—' }}</td>
             <td>
               <span class="marcador" [class.marcador-neutro]="adesao.situacao !== 'ATIVA'">{{
@@ -99,7 +120,7 @@
           </tr>
         } @empty {
           <tr>
-            <td colspan="6" class="estado-vazio">Nenhuma adesão encontrada.</td>
+            <td colspan="7" class="estado-vazio">Nenhuma adesão encontrada.</td>
           </tr>
         }
       </tbody>

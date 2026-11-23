@@ -20,11 +20,13 @@ public class AdesaoPlanoJpa implements IAgregadoJpa<AdesaoPlano> {
     @NotNull @Column(name="ADP_INICIO") private LocalDate inicio;
     @Column(name="ADP_ENCERRAMENTO") private @Nullable LocalDate encerramento;
     @NotNull @Enumerated(EnumType.STRING) @Column(name="ADP_SITUACAO") private SituacaoAdesao situacao;
+    @Column(name="ADP_QUANTIDADE_PERIODOS") private @Nullable Integer quantidadePeriodos;
 
     protected AdesaoPlanoJpa() { }
 
     public AdesaoPlanoJpa(@Nullable Long identificador, AlunoJpa aluno, PlanoJpa plano, int periodicidadeMeses,
-            LocalDate inicio, @Nullable LocalDate encerramento, SituacaoAdesao situacao) {
+            LocalDate inicio, @Nullable LocalDate encerramento, SituacaoAdesao situacao,
+            @Nullable Integer quantidadePeriodos) {
         this.identificador = identificador;
         this.aluno = aluno;
         this.plano = plano;
@@ -32,6 +34,7 @@ public class AdesaoPlanoJpa implements IAgregadoJpa<AdesaoPlano> {
         this.inicio = inicio;
         this.encerramento = encerramento;
         this.situacao = situacao;
+        this.quantidadePeriodos = quantidadePeriodos;
     }
 
     public Long getIdentificador() { return java.util.Objects.requireNonNull(identificador); }
@@ -41,4 +44,5 @@ public class AdesaoPlanoJpa implements IAgregadoJpa<AdesaoPlano> {
     public LocalDate getInicio() { return inicio; }
     public @Nullable LocalDate getEncerramento() { return encerramento; }
     public SituacaoAdesao getSituacao() { return situacao; }
+    public @Nullable Integer getQuantidadePeriodos() { return quantidadePeriodos; }
 }

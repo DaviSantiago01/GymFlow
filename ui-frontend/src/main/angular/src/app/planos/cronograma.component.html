@@ -1,0 +1,77 @@
+<div class="indicadores">
+  <div>
+    <span>Mensalidades restantes</span>
+    <strong>{{ cronograma().restantes }}</strong>
+    @if (cronograma().totalParcelas; as total) {
+      <small>&nbsp;de {{ total }}</small>
+    }
+  </div>
+  <div>
+    <span>Valor restante</span>
+    <strong>{{ moeda(cronograma().valorRestante) }}</strong>
+  </div>
+  <div>
+    <span>Pagas</span>
+    <strong>{{ cronograma().pagas }}</strong>
+  </div>
+  <div>
+    <span>Em aberto</span>
+    <strong>{{ cronograma().abertas }}</strong>
+  </div>
+  <div>
+    <span>Em atraso</span>
+    <strong>{{ cronograma().atrasadas }}</strong>
+  </div>
+  <div>
+    <span>A vencer</span>
+    <strong>{{ cronograma().previstas }}</strong>
+  </div>
+</div>
+@if (cronograma().terminoPrevisto; as termino) {
+  <p class="pagina-descricao">O plano termina em {{ data(termino) }}.</p>
+}
+
+<div class="tabela-dados">
+  <table>
+    <thead>
+      <tr>
+        <th>Parcela</th>
+        <th>Período</th>
+        <th>Vencimento</th>
+        <th>Valor</th>
+        <th>Situação</th>
+        @if (detalharMensalidades()) {
+          <th></th>
+        }
+      </tr>
+    </thead>
+    <tbody>
+      @for (parcela of cronograma().parcelas; track parcela.numero) {
+        <tr>
+          <td>
+            {{ parcela.numero }}{{ cronograma().totalParcelas ? ' de ' + cronograma().totalParcelas : '' }}
+          </td>
+          <td>{{ data(parcela.periodoInicio) }} a {{ data(parcela.periodoFim) }}</td>
+          <td>{{ data(parcela.vencimento) }}</td>
+          <td>{{ moeda(parcela.valor) }}</td>
+          <td>
+            <span class="marcador" [class.marcador-neutro]="parcela.situacao === 'PAGA' || parcela.situacao === 'PREVISTA'">{{
+              rotulos[parcela.situacao]
+            }}</span>
+          </td>
+          @if (detalharMensalidades()) {
+            <td>
+              @if (parcela.mensalidade; as mensalidade) {
+                <a [routerLink]="['/core/mensalidade', mensalidade, 'visualizacao']">Ver</a>
+              }
+            </td>
+          }
+        </tr>
+      } @empty {
+        <tr>
+          <td [attr.colspan]="detalharMensalidades() ? 6 : 5" class="estado-vazio">Nenhuma parcela registrada.</td>
+        </tr>
+      }
+    </tbody>
+  </table>
+</div>

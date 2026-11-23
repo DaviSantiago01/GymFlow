@@ -1,7 +1,7 @@
 <main class="pagina">
   <header class="pagina-cabecalho">
     <div>
-      <span class="pagina-sobretitulo">Academia</span>
+      <span class="pagina-sobretitulo">Financeiro</span>
       <h1>Meu plano</h1>
     </div>
   </header>
@@ -19,15 +19,29 @@
           <small>&nbsp;a cada {{ duracao(adesao.periodicidadeMeses) }}</small>
         </div>
         <div>
+          <span>Duração</span>
+          <strong>{{ recorrencia(adesao.quantidadePeriodos, adesao.periodicidadeMeses) }}</strong>
+        </div>
+        <div>
           <span>Desde</span>
           <strong>{{ data(adesao.inicio) }}</strong>
         </div>
-        <div>
-          <span>Mensalidades pendentes</span>
-          <strong>{{ pendentes.length }}</strong>
-        </div>
+        @if (proxima; as parcela) {
+          <div>
+            <span>Próximo pagamento</span>
+            <strong>{{ moeda(parcela.valor) }}</strong>
+            <small>&nbsp;em {{ data(parcela.vencimento) }}</small>
+          </div>
+        }
       </div>
     </section>
+
+    @if (tela.cronograma; as cronograma) {
+      <section class="bloco">
+        <h2>Parcelas do plano</h2>
+        <app-cronograma [cronograma]="cronograma" />
+      </section>
+    }
   } @else {
     <div class="aviso" role="status">
       Você não possui plano ativo. Procure a recepção da academia para aderir a um plano.
@@ -35,7 +49,7 @@
   }
 
   <section class="bloco tabela-dados">
-    <h2>Minhas mensalidades</h2>
+    <h2>Histórico de mensalidades</h2>
     <table>
       <thead>
         <tr>

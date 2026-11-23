@@ -14,7 +14,7 @@ import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.adesaoplano.Sit
 
 public interface IAdesaoPlanoRepositorioJpa extends JpaRepository<AdesaoPlanoJpa, Long> {
     String PROJECAO = """
-            select new br.edu.cesar.treinoconecta.treinoconectacore.aplicacao.core.adesaoplano.AdesaoPlanoProjecao(a.identificador, al.identificador, al.nome, p.identificador, p.nome, p.valor, a.periodicidadeMeses, a.inicio, a.encerramento, a.situacao)
+            select new br.edu.cesar.treinoconecta.treinoconectacore.aplicacao.core.adesaoplano.AdesaoPlanoProjecao(a.identificador, al.identificador, al.nome, p.identificador, p.nome, p.valor, a.periodicidadeMeses, a.inicio, a.encerramento, a.situacao, a.quantidadePeriodos)
               from AdesaoPlanoJpa a
               join a.aluno al
               join a.plano p

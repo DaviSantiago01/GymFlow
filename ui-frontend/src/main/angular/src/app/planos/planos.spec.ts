@@ -1,4 +1,22 @@
-import { FORMAS_PAGAMENTO, ROTULOS_SITUACAO_MENSALIDADE, duracao, moeda } from './planos.service';
+import {
+  FORMAS_PAGAMENTO,
+  ROTULOS_SITUACAO_MENSALIDADE,
+  ROTULOS_SITUACAO_PARCELA,
+  duracao,
+  moeda,
+  recorrencia,
+} from './planos.service';
+
+describe('Recorrência da adesão', () => {
+  it('descreve a adesão sem recorrência como contínua', () =>
+    expect(recorrencia(null, 1)).toBe('Contínua, até o cancelamento'));
+  it('mostra cobranças e duração total do plano mensal', () =>
+    expect(recorrencia(5, 1)).toBe('5 cobranças (5 meses)'));
+  it('multiplica a duração pelas cobranças do plano trimestral', () =>
+    expect(recorrencia(2, 3)).toBe('2 cobranças (6 meses)'));
+  it('usa o singular para uma única cobrança', () => expect(recorrencia(1, 1)).toBe('1 cobrança (1 mês)'));
+  it('rotula as parcelas que ainda vão vencer', () => expect(ROTULOS_SITUACAO_PARCELA.PREVISTA).toBe('A vencer'));
+});
 import { cpfFormatado, horario, horas } from '../profissionais/profissionais.service';
 
 describe('Planos e mensalidades', () => {

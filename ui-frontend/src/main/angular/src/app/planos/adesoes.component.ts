@@ -12,6 +12,7 @@ import {
   ROTULOS_SITUACAO_ADESAO,
   duracao,
   moeda,
+  recorrencia,
 } from './planos.service';
 
 @Component({
@@ -29,6 +30,7 @@ export class AdesoesComponent {
   readonly rotulosSituacao = ROTULOS_SITUACAO_ADESAO;
   readonly moeda = moeda;
   readonly duracao = duracao;
+  readonly recorrencia = recorrencia;
   readonly data = data;
   readonly adesoes = signal<Adesao[]>([]);
   readonly formulario = signal<FormularioAdesao>({ alunos: [], planos: [] });
@@ -36,6 +38,7 @@ export class AdesoesComponent {
   readonly erro = signal('');
   aluno = '';
   plano = '';
+  quantidadePeriodos: number | null = null;
   filtroAluno = '';
   filtroSituacao = '';
 
@@ -48,6 +51,18 @@ export class AdesoesComponent {
       this.filtroAluno = parametros.get('aluno') ?? '';
       this.filtroSituacao = parametros.get('situacao') ?? '';
     });
+  }
+
+  /** Resumo do que será cobrado com o plano e a recorrência escolhidos. */
+  previa(): string {
+    const plano = this.formulario().planos.find((opcao) => opcao.identificador === this.plano);
+    if (!plano) return 'Sem recorrência, a cobrança continua até a troca ou o cancelamento do plano.';
+    const quantidade = this.quantidadePeriodos;
+    if (!quantidade) {
+      return `${moeda(plano.valor)} a cada ${duracao(plano.duracaoMeses)}, até a troca ou o cancelamento do plano.`;
+    }
+    const meses = quantidade * plano.duracaoMeses;
+    return `${quantidade} cobrança(s) de ${moeda(plano.valor)}, uma a cada ${duracao(plano.duracaoMeses)}: o plano dura ${duracao(meses)}.`;
   }
 
   filtrar() {
@@ -66,7 +81,7 @@ export class AdesoesComponent {
     this.ocupado.set(true);
     this.erro.set('');
     this.api
-      .aderir(this.aluno, this.plano)
+      .aderir(this.aluno, this.plano, this.quantidadePeriodos ?? null)
       .pipe(
         takeUntilDestroyed(this.destroy),
         finalize(() => this.ocupado.set(false)),

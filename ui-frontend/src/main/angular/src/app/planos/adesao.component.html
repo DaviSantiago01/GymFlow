@@ -30,6 +30,16 @@
           <strong>{{ moeda(tela.adesao.valor) }}</strong>
           <small>&nbsp;a cada {{ duracao(tela.adesao.periodicidadeMeses) }}</small>
         </div>
+        <div>
+          <span>Recorrência</span>
+          <strong>{{ recorrencia(tela.adesao.quantidadePeriodos, tela.adesao.periodicidadeMeses) }}</strong>
+        </div>
+        @if (tela.adesao.terminoPrevisto; as termino) {
+          <div>
+            <span>Término previsto</span>
+            <strong>{{ data(termino) }}</strong>
+          </div>
+        }
       </div>
     </section>
 
@@ -48,6 +58,18 @@
               }
             </select>
           </label>
+          <label
+            >Recorrência do novo plano
+            <input
+              name="quantidadePeriodos"
+              type="number"
+              min="1"
+              max="60"
+              step="1"
+              placeholder="Em branco: contínua"
+              [(ngModel)]="quantidadePeriodos"
+            />
+          </label>
           <div class="grupo-acoes">
             <button type="submit" class="acao acao-principal" [disabled]="ocupado()">Trocar plano</button>
             <button type="button" class="acao acao-perigo" [disabled]="ocupado()" (click)="cancelar()">
@@ -61,42 +83,9 @@
       </section>
     }
 
-    <section class="bloco tabela-dados">
-      <h2>Mensalidades</h2>
-      <table>
-        <thead>
-          <tr>
-            <th>Período</th>
-            <th>Vencimento</th>
-            <th>Valor</th>
-            <th>Valor devido</th>
-            <th>Situação</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody>
-          @for (mensalidade of tela.mensalidades; track mensalidade.identificador) {
-            <tr>
-              <td>{{ data(mensalidade.periodoInicio) }} a {{ data(mensalidade.periodoFim) }}</td>
-              <td>{{ data(mensalidade.vencimento) }}</td>
-              <td>{{ moeda(mensalidade.valor) }}</td>
-              <td>{{ mensalidade.situacao === 'PAGA' ? '—' : moeda(mensalidade.valorDevido) }}</td>
-              <td>
-                <span class="marcador" [class.marcador-neutro]="mensalidade.situacao === 'PAGA'">{{
-                  rotulosMensalidade[mensalidade.situacao]
-                }}</span>
-              </td>
-              <td>
-                <a [routerLink]="['/core/mensalidade', mensalidade.identificador, 'visualizacao']">Ver</a>
-              </td>
-            </tr>
-          } @empty {
-            <tr>
-              <td colspan="6" class="estado-vazio">Nenhuma mensalidade gerada.</td>
-            </tr>
-          }
-        </tbody>
-      </table>
+    <section class="bloco">
+      <h2>Parcelas</h2>
+      <app-cronograma [cronograma]="tela.cronograma" [detalharMensalidades]="true" />
     </section>
   </main>
 }

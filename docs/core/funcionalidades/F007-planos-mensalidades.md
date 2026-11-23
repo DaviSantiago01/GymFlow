@@ -38,6 +38,22 @@ as próprias mensalidades em **Meu plano**.
 - RN8: o estorno exige motivo (até 250 caracteres), marca o pagamento como `ESTORNADO` com data e motivo, preserva o
   registro e reabre a mensalidade, que volta a constar em atraso se já venceu.
 
+## Recorrência da adesão
+O administrador pode informar, na adesão ou na troca, a quantidade de cobranças (1 a 60). Sem ela, a cobrança continua
+até a troca ou o cancelamento, como antes.
+- Uma adesão mensal com 5 cobranças dura 5 meses; uma trimestral com 2 cobranças dura 6 meses. A quantidade e o término
+  previsto (último dia do último período) ficam registrados na adesão.
+- A geração de mensalidades para na última cobrança contratada.
+- Terminado o último período, a adesão passa a `CONCLUIDA`, com encerramento no dia seguinte ao término. Isso acontece
+  pela rotina agendada (`treino.adesoes.intervalo-ms`, padrão de 1 minuto; desligável com
+  `treino.adesoes.agendamento=false`), pelo botão **Gerar mensalidades** e, se preciso, na próxima adesão do aluno. As
+  mensalidades em aberto continuam devidas.
+- Troca e cancelamento antes do término funcionam como sem recorrência: as parcelas que ainda não começaram deixam de
+  ser cobradas.
+- O cronograma da adesão lista as parcelas pagas, em aberto, em atraso e as previstas ("a vencer"), com número, período,
+  vencimento e valor, além de quantas faltam e o valor restante. O administrador o vê na adesão; o aluno, em **Meu plano**.
+  O valor das parcelas previstas é o valor atual do plano.
+
 ## Contrato HTTP
 Todos os POSTs exigem o cabeçalho `X-XSRF-TOKEN`.
 
@@ -52,8 +68,8 @@ Todos os POSTs exigem o cabeçalho `X-XSRF-TOKEN`.
 | GET | `/backend/core/adesao-plano/pesquisa?aluno=&situacao=` | Adesões |
 | GET | `/backend/core/adesao-plano/{id}/visualizacao` | Adesão, mensalidades e planos para troca |
 | GET | `/backend/core/adesao-plano/meu-plano` | Somente aluno: adesão ativa e mensalidades |
-| POST | `/backend/core/adesao-plano/aderir` | `{aluno, plano}` |
-| POST | `/backend/core/adesao-plano/{id}/trocar` | `{plano}` |
+| POST | `/backend/core/adesao-plano/aderir` | `{aluno, plano, quantidadePeriodos?}` |
+| POST | `/backend/core/adesao-plano/{id}/trocar` | `{plano, quantidadePeriodos?}` |
 | POST | `/backend/core/adesao-plano/{id}/cancelar` | Cancelar |
 | GET | `/backend/core/mensalidade/pesquisa?aluno=&situacao=ABERTA\|ATRASADA\|PAGA` | Mensalidades com atraso, multa, juros e valor devido |
 | GET | `/backend/core/mensalidade/{id}/visualizacao` | Mensalidade e histórico de pagamentos |
@@ -65,3 +81,5 @@ Todos os POSTs exigem o cabeçalho `X-XSRF-TOKEN`.
 - `dominio-core/src/test/resources/features/planos-mensalidades.feature` (RN1 a RN8 e autorização).
 - `PlanosMensalidadesRepositorioTest` (restrições do banco, troca, pagamento e estorno persistidos, filtros de atraso).
 - `PlanosMensalidadesIntegracaoTest` (HTTP, login do administrador, CSRF, permissões do aluno, multa e juros).
+- Recorrência: `recorrencia-planos.feature`, `RecorrenciaAdesaoRepositorioTest`, `RecorrenciaPlanosIntegracaoTest` e
+  `ConclusaoAdesoesIntegracaoTest` (rotina agendada).
