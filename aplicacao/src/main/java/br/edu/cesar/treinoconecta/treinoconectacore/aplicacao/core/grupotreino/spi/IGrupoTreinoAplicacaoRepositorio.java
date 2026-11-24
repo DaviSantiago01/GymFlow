@@ -5,6 +5,7 @@ import br.edu.cesar.treinoconecta.treinoconectacore.aplicacao.core.grupotreino.D
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.aluno.AlunoIdentificador;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.grupotreino.GrupoTreinoIdentificador;
 import dev.sauloaraujo.d5.framework.aplicacao.spi.IAgregadoAplicacaoRepositorio;
+import java.util.List;
 import java.util.Optional;
 public interface IGrupoTreinoAplicacaoRepositorio extends IAgregadoAplicacaoRepositorio<GrupoTreinoProjecao,GrupoTreinoConsulta> {
     Contexto contexto(AlunoIdentificador aluno);
@@ -13,4 +14,6 @@ public interface IGrupoTreinoAplicacaoRepositorio extends IAgregadoAplicacaoRepo
     TreinoDetalhe treino(GrupoTreinoIdentificador grupo,long treino,AlunoIdentificador aluno);
     Pagina<ConviteEntrada> convites(AlunoIdentificador aluno,int pagina,boolean historico);
     Pagina<TreinoResumo> convitesTreino(AlunoIdentificador aluno,int pagina,boolean historico);
+    /** Treinos de grupo em que o aluno confirmou presença (inclusive os cancelados depois): próximos primeiro, depois o histórico. */
+    List<TreinoResumo> agendamentos(AlunoIdentificador aluno);
 }

@@ -329,3 +329,44 @@ h3 {
     gap: 0.8rem;
   }
 }
+
+.campo-data {
+  max-width: 260px;
+}
+.horarios {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 0.6rem;
+  margin-top: 0.8rem;
+}
+.horario {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  padding: 0.7rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid #354453;
+  background: #1f2631;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.horario small {
+  color: #aab3a3;
+}
+.horario:hover:not(:disabled) {
+  border-color: #c5ff78;
+}
+.horario.escolhido {
+  border-color: #c5ff78;
+  background: #26331f;
+}
+.horario.escolhido small {
+  color: #c5ff78;
+}
+.horario:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}

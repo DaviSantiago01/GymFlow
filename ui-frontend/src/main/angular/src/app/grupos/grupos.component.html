@@ -258,20 +258,64 @@
       <form class="cartao formulario" (ngSubmit)="propor()" novalidate>
         <h2>{{ d.grupo.nome }}</h2>
         <p>
-          Defina a data e o horário do encontro. Todos os horários são de Brasília.
+          Escolha a data, um horário com vaga e o professor que vai acompanhar o grupo. Os treinos
+          duram uma hora e todos os horários são de Brasília.
         </p>
-        <div class="grade">
-          <label
-            >Data do treino<input
-              name="data"
-              type="date"
-              [(ngModel)]="data"
-              [min]="minimo()"
-              required /></label
-          ><label
-            >Horário do treino<input name="hora" type="time" [(ngModel)]="hora" required /></label
-          >
-        </div>
+        <label class="campo-data"
+          >Data do treino<input
+            name="data"
+            type="date"
+            [ngModel]="data"
+            (ngModelChange)="escolherData($event)"
+            [min]="minimo()"
+            required
+        /></label>
+        @if (data) {
+          <fieldset class="selecao">
+            <legend>Horário</legend>
+            @if (carregandoHorarios()) {
+              <p class="nota">Carregando horários…</p>
+            } @else {
+              <div class="horarios" role="radiogroup" aria-label="Horários do dia">
+                @for (h of horarios(); track h.inicio) {
+                  <button
+                    type="button"
+                    class="horario"
+                    role="radio"
+                    [attr.aria-checked]="horario()?.inicio === h.inicio"
+                    [class.escolhido]="horario()?.inicio === h.inicio"
+                    [disabled]="!horarioDisponivel(h)"
+                    (click)="escolherHorario(h)"
+                  >
+                    <strong
+                      >{{ h.inicio | date: 'HH:mm' : '-0300' }} – {{ h.fim | date: 'HH:mm' : '-0300' }}</strong
+                    >
+                    <small>{{ situacaoHorario(h) }}</small>
+                  </button>
+                } @empty {
+                  <p class="nota">Nenhum horário oferecido nesta data.</p>
+                }
+              </div>
+            }
+          </fieldset>
+        }
+        @if (horario(); as h) {
+          <fieldset class="selecao">
+            <legend>Professor disponível às {{ h.inicio | date: 'HH:mm' : '-0300' }}</legend>
+            <div class="opcoes">
+              @for (p of h.professores; track p.identificador) {
+                <label class="opcao"
+                  ><input
+                    type="radio"
+                    name="professor"
+                    [value]="p.identificador"
+                    [(ngModel)]="professor"
+                  /><span class="crescer">{{ p.nome }}</span></label
+                >
+              }
+            </div>
+          </fieldset>
+        }
         <p class="nota">
           @if (prazoPrevisto(); as p) {
             A confirmação dos membros encerra automaticamente uma hora antes do treino, em
@@ -283,6 +327,10 @@
         </p>
         <div class="destaque">
           <h3>{{ membrosAtivos().length }} membros receberão um convite</h3>
+          <p class="nota">
+            Como organizador, sua presença é confirmada automaticamente e o treino fica salvo em
+            <a routerLink="/core/aulas/minhas">Meus agendamentos</a>.
+          </p>
           <p>
             @for (m of membrosAtivos(); track m.identificador) {
               <span class="etiqueta">{{ m.nome }}{{ m.organizador ? ' · Organizador' : '' }}</span>
@@ -294,7 +342,11 @@
           >
         </div>
         <div class="acoes">
-          <button class="botao principal" type="submit" [disabled]="ocupado()">
+          <button
+            class="botao principal"
+            type="submit"
+            [disabled]="ocupado() || !horario() || !professor"
+          >
             Propor treino e enviar convites</button
           ><a class="botao secundario" [routerLink]="['/core/grupo-treino', id(), 'visualizacao']"
             >Voltar ao grupo</a

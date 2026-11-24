@@ -13,9 +13,11 @@ import {
   mensagemErro,
   validarNome,
   validarAgenda,
-  instanteBrasil,
   prazoDeConfirmacao,
   rotuloSituacao,
+  HorarioOpcao,
+  situacaoHorario,
+  horarioDisponivel,
 } from './grupos.service';
 import { SelecaoAlunosComponent } from './selecao-alunos.component';
 import { TreinoGrupoComponent } from './treino-grupo.component';
@@ -50,7 +52,12 @@ export class GruposComponent {
   nome = '';
   convidados: string[] = [];
   data = '';
-  hora = '';
+  readonly horarios = signal<HorarioOpcao[]>([]);
+  readonly carregandoHorarios = signal(false);
+  readonly horario = signal<HorarioOpcao | null>(null);
+  professor = '';
+  readonly situacaoHorario = situacaoHorario;
+  readonly horarioDisponivel = horarioDisponivel;
   alunoEscolhido: string[] = [];
   readonly rotulo = rotuloSituacao;
   private recebido = Date.now();
@@ -65,9 +72,18 @@ export class GruposComponent {
       this.convidados = [];
       this.alunoEscolhido = [];
       this.editarNome.set(false);
+      this.data = '';
+      this.horarios.set([]);
+      this.horario.set(null);
+      this.professor = '';
       this.recebido = Date.now();
+      const params = this.rota.snapshot.queryParamMap;
       this.aviso.set(
-        this.rota.snapshot.queryParamMap.get('criado') ? 'Grupo criado com sucesso.' : '',
+        params.get('criado')
+          ? 'Grupo criado com sucesso.'
+          : params.get('proposto')
+            ? 'Treino proposto. Sua presença já está confirmada e o treino foi salvo em Meus agendamentos.'
+            : '',
       );
     });
   }
@@ -196,14 +212,43 @@ export class GruposComponent {
       return;
     this.executar(`${this.id()}/${acao}`, {}, 'Grupo atualizado.', acao === 'sair');
   }
+  /** Ao escolher a data, carrega os horários do dia com as vagas e os professores livres em cada um. */
+  escolherData(data: string) {
+    this.data = data;
+    this.horario.set(null);
+    this.professor = '';
+    this.horarios.set([]);
+    if (!data) return;
+    this.carregandoHorarios.set(true);
+    this.erro.set('');
+    this.api
+      .horarios(this.id(), data)
+      .pipe(
+        takeUntilDestroyed(this.destroy),
+        finalize(() => this.carregandoHorarios.set(false)),
+      )
+      .subscribe({
+        next: (h) => this.horarios.set(h),
+        error: (e) => this.falha(mensagemErro(e)),
+      });
+  }
+  escolherHorario(h: HorarioOpcao) {
+    if (!horarioDisponivel(h)) return;
+    this.horario.set(h);
+    if (!h.professores.some((p) => p.identificador === this.professor)) this.professor = '';
+  }
   propor() {
-    if (!this.data || !this.hora) {
-      this.falha('Informe a data e o horário do treino.');
+    const h = this.horario();
+    if (!this.data || !h) {
+      this.falha('Escolha a data e um horário com vaga disponível.');
       return;
     }
-    const inicio = instanteBrasil(this.data, this.hora);
+    if (!this.professor) {
+      this.falha('Escolha o professor do treino.');
+      return;
+    }
     const agora = Date.parse(this.dados().detalhe!.agora) + Date.now() - this.recebido;
-    const erro = validarAgenda(inicio, agora);
+    const erro = validarAgenda(h.inicio, agora);
     if (erro) {
       this.falha(erro);
       return;
@@ -211,14 +256,20 @@ export class GruposComponent {
     if (this.ocupado()) return;
     this.ocupado.set(true);
     this.api
-      .comando(`${this.id()}/propor`, { inicio })
+      .comando(`${this.id()}/propor`, { inicio: h.inicio, professor: this.professor })
       .pipe(
         takeUntilDestroyed(this.destroy),
         finalize(() => this.ocupado.set(false)),
       )
       .subscribe({
-        next: () => this.router.navigate(['/core/grupo-treino', this.id(), 'visualizacao']),
-        error: (e) => this.falha(mensagemErro(e)),
+        next: () =>
+          this.router.navigate(['/core/grupo-treino', this.id(), 'visualizacao'], {
+            queryParams: { proposto: true },
+          }),
+        error: (e) => {
+          this.falha(mensagemErro(e));
+          this.escolherData(this.data);
+        },
       });
   }
   acaoTreino(evento: { treino: TreinoResumo; acao: string }) {
@@ -266,7 +317,8 @@ export class GruposComponent {
     );
   }
   prazoPrevisto() {
-    return this.data && this.hora ? prazoDeConfirmacao(instanteBrasil(this.data, this.hora)) : '';
+    const h = this.horario();
+    return h ? prazoDeConfirmacao(h.inicio) : '';
   }
   minimo() {
     const base =

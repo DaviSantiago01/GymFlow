@@ -10,6 +10,15 @@ public final class ParametrosAcademia {
     /** O prazo de confirmação de um treino de grupo termina automaticamente uma hora antes do início. */
     public static final int ANTECEDENCIA_CONFIRMACAO_SEGUNDOS = 3600;
 
+    /** Treinos de grupo ocupam horários fixos de uma hora, começando em hora cheia. */
+    public static final int DURACAO_TREINO_GRUPO_MINUTOS = 60;
+    /** Primeiro horário de treino de grupo (inclusive), no fuso da academia. */
+    public static final int PRIMEIRO_HORARIO_TREINO_GRUPO = 6;
+    /** Último horário de treino de grupo (inclusive): o treino das 21h termina às 22h, quando a academia fecha. */
+    public static final int ULTIMO_HORARIO_TREINO_GRUPO = 21;
+    /** Quantidade de treinos de grupo que a academia comporta ao mesmo tempo, em cada horário. */
+    public static final int VAGAS_TREINO_GRUPO_POR_HORARIO = 2;
+
     public static final int INTERVALO_MINIMO_SEGUNDOS = 15;
     public static final int INTERVALO_MAXIMO_SEGUNDOS = 300;
 

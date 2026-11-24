@@ -19,12 +19,14 @@ Prefixo: `/backend/core/grupo-treino`. Sessão de aluno obrigatória; POST exige
 | GET | `/convites` | Convites de entrada próprios; `pagina`, `historico=false` |
 | POST | `/{g}/convites/{c}/aceitar` | Aceitar entrada |
 | POST | `/{g}/convites/{c}/recusar` | Recusar entrada |
-| POST | `/{g}/propor` | `{"inicio":"2026-12-10T18:00:00-03:00"}` |
+| GET | `/{g}/horarios?data=2026-12-10` | Somente o organizador. Lista os horários do dia (06h–21h, uma hora cada) com `inicio`, `fim`, `vagas` restantes, `aberto` (ainda aceita proposta) e os `professores` livres no horário. |
+| POST | `/{g}/propor` | `{"inicio":"2026-12-10T18:00:00-03:00","professor":"1"}` — horário em hora cheia, com vaga, e professor livre nele (RN09–RN10). |
 | GET | `/{g}/treinos/{t}/visualizacao` | Treino, contagens, convite próprio e respostas dos participantes |
 | GET | `/{g}/treinos/{t}/convite` | Contexto do convite de treino |
 | GET | `/{g}/treinos/{t}/confirmados` | Lista atual dos confirmados |
 | POST | `/{g}/treinos/{t}/cancelar` | Cancelar treino antes do início, pelo organizador |
 | GET | `/convites-treino` | Treinos futuros aos quais o aluno foi convidado; `pagina` |
+| GET | `/meus-agendamentos` | Treinos de grupo em que o aluno confirmou presença (inclusive os que propôs), próximos primeiro e depois o histórico |
 | GET | `/historico` | Treinos passados/cancelados do aluno, mesmo após saída; `pagina` |
 | POST | `/{g}/treinos/{t}/convites/{c}/confirmar` | Confirmar presença |
 | POST | `/{g}/treinos/{t}/convites/{c}/recusar` | Recusar presença |

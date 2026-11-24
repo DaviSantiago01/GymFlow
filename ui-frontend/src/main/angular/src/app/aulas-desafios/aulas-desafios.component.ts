@@ -4,6 +4,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Aula, Avaliacao, Desafio, AulasDesafiosService, Professor } from './aulas-desafios.service';
+import { GruposService, TreinoResumo, situacaoAgendamento } from '../grupos/grupos.service';
 
 @Component({
   selector: 'app-aulas-desafios', standalone: true, imports: [CommonModule, FormsModule, RouterLink],
@@ -12,6 +13,7 @@ import { Aula, Avaliacao, Desafio, AulasDesafiosService, Professor } from './aul
 export class AulasDesafiosComponent implements OnInit {
   private readonly api = inject(AulasDesafiosService);
   private readonly route = inject(ActivatedRoute);
+  private readonly grupos = inject(GruposService);
   readonly modo = this.route.snapshot.data['modo'] as string;
   readonly id = Number(this.route.snapshot.paramMap.get('id'));
   readonly aulas = signal<Aula[]>([]);
@@ -21,6 +23,8 @@ export class AulasDesafiosComponent implements OnInit {
   readonly alunos = signal<{ identificador: number; nome: string }[]>([]);
   readonly inscricoes = signal<Record<string, unknown>[]>([]);
   readonly notificacoes = signal<Record<string, unknown>[]>([]);
+  readonly treinosGrupo = signal<TreinoResumo[]>([]);
+  situacaoTreino(t: TreinoResumo) { return situacaoAgendamento(t, Date.now()); }
   readonly avaliacoes = signal<Avaliacao[]>([]);
   readonly evolucoes = signal<Record<string, unknown>[]>([]);
   readonly erro = signal('');
@@ -45,7 +49,10 @@ export class AulasDesafiosComponent implements OnInit {
       if (this.modo === 'aulas-gestao') this.api.notificacoes().subscribe({ next: x => this.notificacoes.set(x), error: () => this.notificacoes.set([]) });
       if (this.modo === 'aulas-gestao') this.api.professores().subscribe({ next: x => this.professores.set(x), error: e => this.falha(e) });
     }
-    if (this.modo === 'aulas-minhas') this.api.minhasAulas().subscribe({ next: x => this.inscricoes.set(x), error: e => this.falha(e) });
+    if (this.modo === 'aulas-minhas') {
+      this.api.minhasAulas().subscribe({ next: x => this.inscricoes.set(x), error: e => this.falha(e) });
+      this.grupos.agendamentos().subscribe({ next: x => this.treinosGrupo.set(x), error: () => this.treinosGrupo.set([]) });
+    }
     if (this.modo === 'aulas-inscritos') {
       this.api.aula(this.id).subscribe({ next: x => this.aulaAtual.set(x), error: e => this.falha(e) });
       this.api.inscritos(this.id).subscribe({ next: x => this.inscricoes.set(x), error: e => this.falha(e) });

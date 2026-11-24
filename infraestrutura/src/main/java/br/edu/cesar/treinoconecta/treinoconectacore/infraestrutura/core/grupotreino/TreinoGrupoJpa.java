@@ -14,6 +14,7 @@ public class TreinoGrupoJpa {
     @Column(name="TGR_PRAZO",nullable=false) Instant prazo;
     @Column(name="TGR_CRIACAO",nullable=false) Instant criacao;
     @Column(name="TGR_CANCELAMENTO") @Nullable Instant cancelamento;
+    @Column(name="PRF_ID") @Nullable Long professor;
     @OneToMany(mappedBy="treino",cascade={CascadeType.PERSIST,CascadeType.MERGE}) @OrderBy("identificador") List<ConviteTreinoJpa> convites=new ArrayList<>();
     protected TreinoGrupoJpa(){}
 }

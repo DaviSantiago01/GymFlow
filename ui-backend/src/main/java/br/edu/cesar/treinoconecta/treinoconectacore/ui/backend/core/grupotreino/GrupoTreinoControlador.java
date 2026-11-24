@@ -1,6 +1,8 @@
 package br.edu.cesar.treinoconecta.treinoconectacore.ui.backend.core.grupotreino;
 
 import java.time.Instant;
+import java.time.LocalDate;
+import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.profissional.ProfissionalIdentificador;
 import java.util.*;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.grupotreino.*;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.aluno.AlunoIdentificador;
@@ -12,6 +14,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.http.HttpStatus;
+import org.springframework.transaction.annotation.Transactional;
 @RestController @RequestMapping(Backend.PREFIXO+"core/grupo-treino")
 public class GrupoTreinoControlador extends AgregadoControladorAbstrato<GrupoTreinoIdentificador,GrupoTreino,AgregadoAutorizacoes<GrupoTreino>,GrupoTreinoProjecao,GrupoTreinoConsulta> {
     private final GrupoTreinoServico comandos;private final GrupoTreinoAplicacaoServico consultas;
@@ -19,7 +22,7 @@ public class GrupoTreinoControlador extends AgregadoControladorAbstrato<GrupoTre
     public record Criacao(@NotNull String nome,Optional<@Size(max=50) List<@NotNull AlunoIdentificador>> convidados){}
     public record Nome(@NotNull String nome){}
     public record Destinatario(@NotNull AlunoIdentificador aluno){}
-    public record Agenda(@NotNull Instant inicio){}
+    public record Agenda(@NotNull Instant inicio,@NotNull ProfissionalIdentificador professor){}
     @GetMapping("criacao") public Contexto contexto(){return consultas.contexto();}
     @GetMapping("alunos") public Pagina<AlunoOpcao> alunos(@RequestParam(defaultValue="")String busca,@RequestParam(defaultValue="0")int pagina,@RequestParam Optional<GrupoTreinoIdentificador> grupo){return consultas.alunos(busca,pagina,grupo);}
     @PostMapping("criar") public Map<String,String> criar(@Valid @RequestBody Criacao r){return Map.of("identificador",comandos.criar(new NomeGrupo(r.nome()),r.convidados().orElse(List.of())).getIdentificador().orElseThrow().toString());}
@@ -33,10 +36,13 @@ public class GrupoTreinoControlador extends AgregadoControladorAbstrato<GrupoTre
     @PostMapping("{identificador}/convites/{convite}/recusar") @ResponseStatus(HttpStatus.NO_CONTENT) public void recusar(@PathVariable GrupoTreinoIdentificador identificador,@PathVariable long convite){comandos.responderGrupo(identificador,convite,false);}
     @PostMapping("{identificador}/sair") @ResponseStatus(HttpStatus.NO_CONTENT) public void sair(@PathVariable GrupoTreinoIdentificador identificador){comandos.sair(identificador);}
     @PostMapping("{identificador}/encerrar") @ResponseStatus(HttpStatus.NO_CONTENT) public void encerrar(@PathVariable GrupoTreinoIdentificador identificador){comandos.encerrar(identificador);}
-    @PostMapping("{identificador}/propor") @ResponseStatus(HttpStatus.NO_CONTENT) public void propor(@PathVariable GrupoTreinoIdentificador identificador,@Valid @RequestBody Agenda r){comandos.propor(identificador,r.inicio());}
+    @PostMapping("{identificador}/propor") @ResponseStatus(HttpStatus.NO_CONTENT) public void propor(@PathVariable GrupoTreinoIdentificador identificador,@Valid @RequestBody Agenda r){comandos.propor(identificador,r.inicio(),r.professor());}
+    /** Transação somente leitura: a agenda carrega o agregado do grupo para conferir o organizador. */
+    @GetMapping("{identificador}/horarios") @Transactional(readOnly=true) public List<HorarioOpcao> horarios(@PathVariable GrupoTreinoIdentificador identificador,@RequestParam LocalDate data){return consultas.horarios(identificador,data);}
     @GetMapping({"{identificador}/treinos/{treino}/visualizacao","{identificador}/treinos/{treino}/convite"}) public TreinoDetalhe treino(@PathVariable GrupoTreinoIdentificador identificador,@PathVariable long treino){return consultas.treino(identificador,treino);}
     @GetMapping("{identificador}/treinos/{treino}/confirmados") public List<Presenca> confirmados(@PathVariable GrupoTreinoIdentificador identificador,@PathVariable long treino){return consultas.treino(identificador,treino).presencas().stream().filter(p->p.situacao().equals("CONFIRMADO")).toList();}
     @GetMapping("convites-treino") public Pagina<TreinoResumo> convitesTreino(@RequestParam(defaultValue="0")int pagina,@RequestParam(defaultValue="false")boolean historico){return consultas.convitesTreino(pagina,historico);}
+    @GetMapping("meus-agendamentos") public List<TreinoResumo> agendamentos(){return consultas.agendamentos();}
     @GetMapping("historico") public Pagina<TreinoResumo> historico(@RequestParam(defaultValue="0")int pagina){return consultas.convitesTreino(pagina,true);}
     @PostMapping("{identificador}/treinos/{treino}/cancelar") @ResponseStatus(HttpStatus.NO_CONTENT) public void cancelarTreino(@PathVariable GrupoTreinoIdentificador identificador,@PathVariable long treino){comandos.cancelarTreino(identificador,treino);}
     @PostMapping("{identificador}/treinos/{treino}/convites/{convite}/confirmar") @ResponseStatus(HttpStatus.NO_CONTENT) public void confirmar(@PathVariable GrupoTreinoIdentificador identificador,@PathVariable long treino,@PathVariable long convite){comandos.responderTreino(identificador,treino,convite,true);}

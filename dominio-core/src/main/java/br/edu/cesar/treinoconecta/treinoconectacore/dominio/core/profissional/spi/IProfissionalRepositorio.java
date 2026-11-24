@@ -1,5 +1,6 @@
 package br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.profissional.spi;
 
+import java.util.List;
 import java.util.Optional;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.profissional.Cpf;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.profissional.Cref;
@@ -11,4 +12,6 @@ public interface IProfissionalRepositorio extends IAgregadoRepositorio<Profissio
     Profissional bloquear(ProfissionalIdentificador identificador);
     boolean existePorCpf(Cpf cpf, Optional<ProfissionalIdentificador> identificadorIgnorado);
     boolean existePorCref(Cref cref, Optional<ProfissionalIdentificador> identificadorIgnorado);
+    /** Profissionais ativos classificados como professor, em ordem de nome. */
+    List<Profissional> professoresAtivos();
 }

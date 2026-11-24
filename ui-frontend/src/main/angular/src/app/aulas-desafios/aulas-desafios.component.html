@@ -38,6 +38,21 @@
     <section class="bloco"><div class="titulo-painel"><div><h2>Seu histórico de aulas</h2><p>Cancelamentos pela academia ficam registrados e liberam a vaga.</p></div><button class="secundario" (click)="carregar()">Atualizar</button></div>
       <div class="cartoes">@for (i of inscricoes(); track $any(i)['identificador']) {<article class="cartao"><span class="estado" [class.fechado]="$any(i)['status']!=='AGENDADO'">{{ $any(i)['status']==='AGENDADO' ? 'Agendado' : $any(i)['status']==='CONCLUIDO' ? 'Concluído' : $any(i)['status']==='CANCELADO_PELA_ACADEMIA' ? 'Cancelado pela academia' : 'Cancelado' }}</span><h3>{{ $any(i)['titulo'] }}</h3><p>{{ $any(i)['modalidade'] }} · {{ $any(i)['data'] | date:'dd/MM/yyyy' }} às {{ $any(i)['inicio'] | slice:0:5 }}</p><p>Instrutor: {{ $any(i)['professor'] }}</p>@if ($any(i)['status']==='CANCELADO_PELA_ACADEMIA') {<p class="alerta-texto">A academia cancelou esta turma. Consulte as notificações para mais informações.</p>}@if ($any(i)['status']==='AGENDADO') {<button class="perigo" (click)="cancelarInscricao($any(i)['identificador'])">Cancelar inscrição</button>}</article>} @empty {<p class="vazio">Você ainda não tem agendamentos.</p>}</div>
     </section>
+    <section class="bloco">
+      <div class="titulo-painel"><div><h2>Treinos em grupo</h2><p>Treinos dos seus grupos em que sua presença está confirmada, inclusive os que você propôs.</p></div></div>
+      <div class="cartoes">
+        @for (t of treinosGrupo(); track t.identificador) {
+          <article class="cartao">
+            <span class="estado" [class.fechado]="situacaoTreino(t) !== 'Agendado'">{{ situacaoTreino(t) }}</span>
+            <h3>{{ t.grupoNome }}</h3>
+            <p>{{ t.inicio | date: "EEEE, dd/MM/yyyy 'às' HH:mm" : '-0300' }}</p>
+            @if (t.professor) {<p>Professor: {{ t.professor }}</p>}
+            <p>{{ t.confirmados }} de {{ t.convidados }} confirmados{{ t.souOrganizador ? ' · Você organizou' : '' }}</p>
+            @if (t.membro) {<a class="secundario" [routerLink]="['/core/grupo-treino', t.grupo, 'treinos', t.identificador, 'visualizacao']">Ver treino</a>}
+          </article>
+        } @empty {<p class="vazio">Você ainda não tem treinos em grupo confirmados.</p>}
+      </div>
+    </section>
   }
 
   @if (modo === 'aulas-inscritos') {

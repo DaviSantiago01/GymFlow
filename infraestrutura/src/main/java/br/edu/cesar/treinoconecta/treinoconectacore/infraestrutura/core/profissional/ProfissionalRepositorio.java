@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Objects;
 import java.util.Optional;
@@ -15,6 +16,7 @@ import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.profissional.Es
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.profissional.Profissional;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.profissional.ProfissionalIdentificador;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.profissional.ProfissionalServico;
+import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.profissional.SituacaoProfissional;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.profissional.spi.IProfissionalRepositorio;
 import dev.sauloaraujo.d5.framework.infraestrutura.AgregadoRepositorioAbstrato;
 
@@ -96,5 +98,10 @@ public final class ProfissionalRepositorio
     public boolean existePorCref(Cref cref, Optional<ProfissionalIdentificador> identificadorIgnorado) {
         Objects.requireNonNull(cref);
         return repositorioJpa.existePorCref(cref.toString(), identificadorIgnorado.map(this::paraIdentificadorJpa).orElse(null));
+    }
+
+    @Override
+    public List<Profissional> professoresAtivos() {
+        return repositorioJpa.professores(SituacaoProfissional.ATIVO).stream().map(this::paraAgregado).toList();
     }
 }

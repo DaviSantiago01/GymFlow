@@ -1,5 +1,6 @@
 package br.edu.cesar.treinoconecta.treinoconectacore.infraestrutura.core.profissional;
 
+import java.util.List;
 import java.util.Optional;
 import jakarta.persistence.LockModeType;
 import org.jspecify.annotations.Nullable;
@@ -37,4 +38,7 @@ public interface IProfissionalRepositorioJpa extends JpaRepository<ProfissionalJ
             """ + FILTROS, countQuery = "select count(p) from ProfissionalJpa p " + FILTROS)
     Page<ProfissionalProjecao> pesquisar(@Nullable String busca, @Nullable Boolean professor,
             @Nullable Boolean personalTrainer, @Nullable SituacaoProfissional situacao, Pageable pageable);
+
+    @Query("select p from ProfissionalJpa p where p.professor = true and p.situacao = :situacao order by p.nome")
+    List<ProfissionalJpa> professores(SituacaoProfissional situacao);
 }

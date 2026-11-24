@@ -40,20 +40,51 @@ async function abrirGrupos(page: Page) {
     page.getByRole('heading', { name: 'Meus grupos de treino', exact: true }),
   ).toBeVisible();
 }
+/** Primeiro horário livre (com vaga e professor) a partir de depois de amanhã, para não depender da hora do teste. */
+async function proximoHorario(page: Page, grupo: string) {
+  const dia = new Date();
+  dia.setUTCDate(dia.getUTCDate() + 2);
+  for (let i = 0; i < 14; i++, dia.setUTCDate(dia.getUTCDate() + 1)) {
+    const data = dia.toISOString().slice(0, 10);
+    const r = await page.request.get(`${base}/${grupo}/horarios`, { params: { data } });
+    expect(r.ok()).toBe(true);
+    const livre = ((await r.json()) as HorarioOpcao[]).find(
+      (h) => h.aberto && h.vagas > 0 && h.professores.length > 0,
+    );
+    if (livre) return { data, horario: livre };
+  }
+  throw new Error('Nenhum horário livre nas próximas duas semanas');
+}
+interface HorarioOpcao {
+  inicio: string;
+  aberto: boolean;
+  vagas: number;
+  professores: { identificador: string; nome: string }[];
+}
 async function propor(page: Page) {
   await page.getByRole('link', { name: 'Propor treino', exact: true }).click();
-  const campo = page.getByLabel('Data do treino', { exact: true });
-  const data = new Date(`${await campo.getAttribute('min')}T12:00:00Z`);
-  data.setUTCDate(data.getUTCDate() + 2);
-  const dia = data.toISOString().slice(0, 10);
-  await campo.fill(dia);
-  await page.getByLabel('Horário do treino', { exact: true }).fill('18:00');
-  await expect(page.getByText(/encerra automaticamente uma hora antes do treino, em/)).toContainText(
-    '17:00',
-  );
+  const grupo = page.url().split('/').at(-2)!;
+  const { data, horario } = await proximoHorario(page, grupo);
+  await page.getByLabel('Data do treino', { exact: true }).fill(data);
+  const hora = new Date(horario.inicio).toLocaleTimeString('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+  await page.getByRole('radio', { name: new RegExp(`^${hora} –`) }).click();
+  await page.getByRole('radio', { name: horario.professores[0].nome, exact: true }).check();
+  await expect(page.getByText(/encerra automaticamente uma hora antes do treino, em/)).toBeVisible();
   await page.getByRole('button', { name: 'Propor treino e enviar convites' }).click();
   await expect(page.getByRole('heading', { name: 'Treinos agendados', exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Confirmar presença', exact: true })).toBeVisible();
+  await expect(page.getByText(`Professor: ${horario.professores[0].nome}`)).toBeVisible();
+  // Quem propõe já fica confirmado e o treino vai para "Meus agendamentos".
+  await expect(page.locator('.sucesso')).toContainText('Sua presença já está confirmada');
+  await expect(page.locator('.situacao')).toContainText('Presença confirmada');
+  await expect(page.getByRole('button', { name: 'Confirmar presença', exact: true })).toHaveCount(0);
+  await page.goto('/core/aulas/minhas');
+  await expect(page.getByRole('heading', { name: 'Treinos em grupo', exact: true })).toBeVisible();
+  await expect(page.getByText(`Professor: ${horario.professores[0].nome}`)).toBeVisible();
+  await page.goBack();
 }
 test('organizador e membro percorrem convites, presença, saída e encerramento', async ({
   page,
@@ -92,8 +123,6 @@ test('organizador e membro percorrem convites, presença, saída e encerramento'
       page.getByRole('heading', { name: 'Grupo de colegas', exact: true }),
     ).toBeVisible();
     await propor(page);
-    await page.getByRole('button', { name: 'Confirmar presença', exact: true }).click();
-    await expect(page.locator('.situacao')).toContainText('Presença confirmada');
     await membro.getByRole('link', { name: 'Convites para treinos', exact: true }).click();
     await membro.getByRole('button', { name: 'Confirmar presença', exact: true }).click();
     await expect(membro.locator('.situacao')).toContainText('Presença confirmada');
@@ -132,8 +161,6 @@ test('grupos funcionam no celular com confirmação e cancelamento de treino', a
   await page.getByRole('button', { name: 'Criar grupo e enviar convites' }).click();
   await expect(page.getByRole('heading', { name: 'Treino no celular', exact: true })).toBeVisible();
   await propor(page);
-  await page.getByRole('button', { name: 'Confirmar presença', exact: true }).click();
-  await expect(page.locator('.situacao')).toContainText('Presença confirmada');
   await page.getByRole('link', { name: 'Ver detalhes do treino', exact: true }).click();
   await expect(
     page.getByRole('heading', { name: 'Participantes confirmados', exact: true }),
@@ -154,27 +181,28 @@ test('grupos funcionam no celular com confirmação e cancelamento de treino', a
   await page.getByRole('button', { name: 'Encerrar grupo', exact: true }).click();
   await expect(page.getByText(/Grupo encerrado em/)).toBeVisible();
 });
-test('tela deixa de permitir confirmação quando o prazo termina', async ({ page }) => {
+test('tela deixa de permitir cancelar a presença quando o prazo termina', async ({ page }) => {
   await cadastrar(page, 'Prazo');
   const criado = await comando(page, 'criar', { nome: 'Grupo com prazo curto' });
   expect(criado.ok()).toBe(true);
   const { identificador: g } = await criado.json();
-  const agora = Date.now();
+  const { horario } = await proximoHorario(page, g);
   expect(
     (
       await comando(page, `${g}/propor`, {
-        // início 1h + 10s à frente: o prazo (início - 1h) vence em ~10s
-        inicio: new Date(agora + 3610000).toISOString(),
+        inicio: horario.inicio,
+        professor: horario.professores[0].identificador,
       })
     ).ok(),
   ).toBe(true);
+  // Os treinos usam horários fixos; o relógio do navegador é adiantado até o fim do prazo (início - 1h).
+  await page.clock.install();
   await page.goto('/core/grupo-treino/convites-treino');
-  await expect(page.getByRole('button', { name: 'Confirmar presença', exact: true })).toBeVisible();
-  await expect(page.getByRole('button', { name: 'Confirmar presença', exact: true })).toBeHidden({
-    timeout: 20000,
-  });
-  await expect(page.locator('.situacao')).toContainText('Prazo encerrado');
-  await page.reload();
-  await expect(page.locator('.situacao')).toContainText('Prazo encerrado');
+  // O organizador já está confirmado; o cancelamento da presença vale até uma hora antes do início.
+  const cancelar = page.getByRole('button', { name: 'Cancelar minha presença', exact: true });
+  await expect(cancelar).toBeVisible();
+  await page.clock.fastForward(Date.parse(horario.inicio) - 3600000 - Date.now() + 1000);
+  await expect(cancelar).toBeHidden({ timeout: 20000 });
+  await expect(page.locator('.situacao')).toContainText('Presença confirmada');
   expect((await comando(page, `${g}/encerrar`)).ok()).toBe(true);
 });

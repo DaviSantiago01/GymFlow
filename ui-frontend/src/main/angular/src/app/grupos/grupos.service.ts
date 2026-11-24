@@ -73,6 +73,19 @@ export interface TreinoResumo {
   souOrganizador: boolean;
   membro: boolean;
   agora: string;
+  professor: string | null;
+}
+export interface ProfessorOpcao {
+  identificador: string;
+  nome: string;
+}
+/** Horário fixo de uma hora oferecido pela academia, com as vagas restantes e os professores livres nele. */
+export interface HorarioOpcao {
+  inicio: string;
+  fim: string;
+  vagas: number;
+  aberto: boolean;
+  professores: ProfessorOpcao[];
 }
 export interface GrupoDetalhe {
   grupo: Grupo;
@@ -114,6 +127,22 @@ export const ANTECEDENCIA_CONFIRMACAO_MS = 3_600_000;
 export function prazoDeConfirmacao(inicio: string) {
   const i = Date.parse(inicio);
   return Number.isFinite(i) ? new Date(i - ANTECEDENCIA_CONFIRMACAO_MS).toISOString() : '';
+}
+/** Situação de um horário para o organizador: só é possível escolher horários abertos, com vaga e com professor. */
+export function situacaoHorario(h: HorarioOpcao) {
+  if (!h.aberto) return 'Encerrado';
+  if (h.vagas <= 0) return 'Esgotado';
+  if (!h.professores.length) return 'Sem professor';
+  return h.vagas === 1 ? '1 vaga' : `${h.vagas} vagas`;
+}
+/** Situação do treino de grupo na agenda do aluno. */
+export function situacaoAgendamento(t: TreinoResumo, agora: number) {
+  if (t.cancelamento) return 'Treino cancelado';
+  if (t.meuConvite?.situacao === 'CANCELADO') return 'Presença cancelada';
+  return Date.parse(t.inicio) > agora ? 'Agendado' : 'Realizado';
+}
+export function horarioDisponivel(h: HorarioOpcao) {
+  return h.aberto && h.vagas > 0 && h.professores.length > 0;
 }
 export function validarAgenda(inicio: string, agora: number) {
   const i = Date.parse(inicio);
@@ -212,6 +241,13 @@ export class GruposService {
   }
   criar(nome: string, convidados: string[]) {
     return this.http.post<{ identificador: string }>(`${this.base}/criar`, { nome, convidados });
+  }
+  /** Treinos de grupo em que o aluno confirmou presença, exibidos em "Meus agendamentos". */
+  agendamentos() {
+    return this.http.get<TreinoResumo[]>(`${this.base}/meus-agendamentos`);
+  }
+  horarios(grupo: string, data: string) {
+    return this.http.get<HorarioOpcao[]>(`${this.base}/${grupo}/horarios`, { params: { data } });
   }
   comando(caminho: string, dados: unknown = {}) {
     return this.http.post<void>(`${this.base}/${caminho}`, dados);

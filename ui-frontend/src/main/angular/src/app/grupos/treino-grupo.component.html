@@ -7,6 +7,9 @@
     }}</span>
   </div>
   <h3>{{ t.inicio | date: "EEEE, dd/MM/yyyy 'às' HH:mm" : '-0300' }}</h3>
+  @if (t.professor) {
+    <p>Professor: <strong>{{ t.professor }}</strong></p>
+  }
   <p>Confirme até {{ t.prazo | date: "dd/MM/yyyy 'às' HH:mm" : '-0300' }} · Horário de Brasília</p>
   <div class="numeros">
     <span

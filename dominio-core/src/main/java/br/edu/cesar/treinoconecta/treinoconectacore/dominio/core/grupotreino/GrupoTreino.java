@@ -4,6 +4,7 @@ import java.time.Instant;
 import java.util.*;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.aluno.*;
 import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.academia.AcademiaIdentificador;
+import br.edu.cesar.treinoconecta.treinoconectacore.dominio.core.profissional.ProfissionalIdentificador;
 import dev.sauloaraujo.d5.framework.dominio.IAgregado;
 import dev.sauloaraujo.d5.framework.dominio.spi.NaoAutorizadoExcecao;
 public final class GrupoTreino implements IAgregado<GrupoTreinoIdentificador> {
@@ -44,7 +45,8 @@ public final class GrupoTreino implements IAgregado<GrupoTreinoIdentificador> {
         if(aceitar){if(membro(aluno))throw new IllegalStateException("Aluno já participa do grupo");participacoes.add(new ParticipacaoGrupo(Optional.empty(),aluno,agora,Optional.empty()));}
         convites.set(convites.indexOf(c),resposta);
     }
-    public void propor(AlunoIdentificador autor,Instant inicio,Instant agora){exigirOrganizador(autor);treinos.add(TreinoGrupo.propor(inicio,agora,participacoes.stream().filter(ParticipacaoGrupo::ativa).map(ParticipacaoGrupo::aluno).toList()));}
+    /** A vaga no horário e a disponibilidade do professor envolvem outros agregados e são verificadas pelo serviço. */
+    public void propor(AlunoIdentificador autor,HorarioTreinoGrupo horario,ProfissionalIdentificador professor,Instant agora){exigirOrganizador(autor);treinos.add(TreinoGrupo.propor(horario,professor,autor,agora,participacoes.stream().filter(ParticipacaoGrupo::ativa).map(ParticipacaoGrupo::aluno).toList()));}
     public TreinoGrupo treino(long id){return treinos.stream().filter(t->t.identificador().filter(i->i==id).isPresent()).findFirst().orElseThrow(()->new NoSuchElementException("Treino do grupo inexistente"));}
     public void responderTreino(long id,long convite,AlunoIdentificador autor,boolean confirmar,Instant agora){exigirMembro(autor);var t=treino(id);treinos.set(treinos.indexOf(t),t.responder(convite,autor,confirmar,agora));}
     public void cancelarPresenca(long id,long convite,AlunoIdentificador autor,Instant agora){exigirMembro(autor);var t=treino(id);treinos.set(treinos.indexOf(t),t.cancelarPresenca(convite,autor,agora));}
